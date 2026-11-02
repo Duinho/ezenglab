@@ -170,7 +170,7 @@ def to_html(folder, sha=None):
             f'<li><a href="#{s}">{html.escape(t)}</a></li>' for s, t in toc) + "</ul></div>"
     out = out.replace("<p>ZZTOCZZ</p>", toc_html)
     if meta.get("summary"):  # 목차 앞 소개 문장 = 블로그 목록에 보이는 소개 글
-        out = f'<p class="lead">{html.escape(meta["summary"])}</p>' + out
+        out = f'<p class="lead">{html.escape(meta["summary"])}</p><!--more-->' + out
     if os.path.exists(os.path.join(ROOT, folder, "cover.png")):  # 표지 = 본문 첫 그림 = 블로거 썸네일
         out = (f'<figure class="cover"><img src="{img_base}cover.png" alt="{html.escape(meta.get("title", ""))}"/></figure>'
                + out)

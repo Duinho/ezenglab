@@ -131,15 +131,16 @@ body{{width:1200px;height:630px;font-family:P;background:{bg};position:relative;
 .chip{{align-self:flex-start;background:#fff;color:{c};font-weight:800;font-size:34px;padding:8px 24px;border-radius:40px}}
 .tw{{flex:1;display:flex;align-items:center}}
 h1{{font-weight:800;font-size:150px;line-height:1.08;color:#fff;letter-spacing:-2px;white-space:nowrap}}
-.rt{{position:absolute;left:680px;top:44px;width:470px;height:560px;display:flex;flex-direction:column;text-align:center}}
+.edge{{position:absolute;left:1000px;top:0;width:200px;height:630px;background:repeating-linear-gradient(135deg,{c}14 0 14px,transparent 14px 34px)}}
+.rt{{position:absolute;left:655px;top:44px;width:320px;height:560px;display:flex;flex-direction:column;text-align:center}}
 svg{{align-self:center}}
-h2{{margin-top:22px;font-weight:800;font-size:36px;line-height:1.3;color:{c};text-wrap:balance}}
-.quote{{margin-top:12px;font-size:25px;line-height:1.5;color:#3d4a63}}
-.blog{{margin-top:auto;font-size:20px;color:#7a869c;font-weight:600}}
+h2{{margin-top:22px;font-weight:800;font-size:32px;line-height:1.3;color:{c};text-wrap:balance}}
+.quote{{margin-top:12px;font-size:23px;line-height:1.5;color:#3d4a63}}
+.blog{{margin-top:auto;font-size:18px;color:#7a869c;font-weight:600}}
 </style></head><body>
 <div class="sq"><span class="chip">{field}</span><div class="tw"><h1>{t1}</h1></div></div>
-<div class="rt">
-<svg width="300" height="300" viewBox="0 0 440 440">
+<div class="edge"></div><div class="rt">
+<svg width="270" height="270" viewBox="0 0 440 440">
 <defs><marker id="ar" markerWidth="10" markerHeight="10" refX="5" refY="5" orient="auto"><path d="M0 0 L10 5 L0 10z" fill="#9aa6bb"/></marker></defs>
 <rect x="0" y="0" width="440" height="440" rx="28" fill="#fff" stroke="#d6e2f5" stroke-width="3"/>{motif}
 </svg>
@@ -150,8 +151,8 @@ FIT_JS = """() => {  // 큰 제목: 정사각형 안(폭 510, 높이 여유)에 
   const h1 = document.querySelector('h1'), tw = document.querySelector('.tw'), rt = document.querySelector('.rt');
   let s = 150; const fit = () => h1.scrollWidth <= tw.clientWidth && h1.scrollHeight <= tw.clientHeight;
   while (!fit() && s > 60) { s -= 2; h1.style.fontSize = s + 'px'; }
-  const h2 = document.querySelector('h2'); let t = 36;
-  while (rt.scrollHeight > rt.clientHeight && t > 28) { t -= 2; h2.style.fontSize = t + 'px'; }
+  const h2 = document.querySelector('h2'); let t = 32;
+  while (rt.scrollHeight > rt.clientHeight && t > 24) { t -= 2; h2.style.fontSize = t + 'px'; }
   return {h1: s, h1fit: fit(), h2: t, right_overflow: rt.scrollHeight > rt.clientHeight,
           fonts: [...document.fonts].map(f => f.status)};
 }"""
