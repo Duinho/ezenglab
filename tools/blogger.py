@@ -41,6 +41,8 @@ STYLE = """<style>
 .ezl .callout>p:first-child{font-weight:bold}
 .ezl .callout.warn{background:#fff8e1;border-left-color:#e0a800}
 .ezl .callout.warn>p:first-child{font-weight:normal}
+.ezl .cover{margin:0 0 18px}
+.ezl .cover img{border-radius:10px}
 .ezl .toc{background:#f6f8fa;border-radius:6px;padding:10px 18px;margin:12px 0 24px}
 .ezl .toc ul{margin:6px 0;padding-left:4px;list-style:none}
 .ezl .toc li{margin:2px 0}
@@ -166,6 +168,9 @@ def to_html(folder, sha=None):
         toc_html = '<div class="toc"><b>목차</b><ul>' + "".join(
             f'<li><a href="#{s}">{html.escape(t)}</a></li>' for s, t in toc) + "</ul></div>"
     out = out.replace("<p>ZZTOCZZ</p>", toc_html)
+    if os.path.exists(os.path.join(ROOT, folder, "cover.png")):  # 표지 = 본문 첫 그림 = 블로거 썸네일
+        out = (f'<figure class="cover"><img src="{img_base}cover.png" alt="{html.escape(meta.get("title", ""))}"/></figure>'
+               + out)
     extra = MATHJAX if "\\[" in out else ""
     return meta, f'{STYLE}{extra}<div class="ezl">{out}</div>'
 
