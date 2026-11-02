@@ -28,13 +28,14 @@ def _fruit(x, y, star=True, check=True):
     return o
 
 
-M["fruit"] = (_fruit(95, 105) + _fruit(95, 230) + _fruit(95, 355) +
-    '<line x1="170" y1="230" x2="238" y2="230" stroke="#9aa6bb" stroke-width="5"/>'
-    '<polygon points="256,230 234,218 234,242" fill="#9aa6bb"/>'
-    '<circle cx="335" cy="230" r="72" fill="{c}" fill-opacity=".07" stroke="{c}" stroke-width="4" stroke-dasharray="12 9"/>'
-    + _fruit(335, 236, star=False, check=False).replace('r="34"', 'r="44"') +
-    '<ellipse cx="335" cy="190" rx="26" ry="12" fill="#56a64b"/>'
-    '<text x="335" y="355" text-anchor="middle" font-family="P" font-weight="800" font-size="44" fill="{c}">?</text>')
+M["fruit"] = (  # 위: 정답 붙은 열매 3개 → 아래: 처음 보는 열매(가운데 정렬)
+    _fruit(110, 110) + _fruit(220, 110) + _fruit(330, 110) +
+    '<line x1="220" y1="182" x2="220" y2="222" stroke="#9aa6bb" stroke-width="5"/>'
+    '<polygon points="220,240 208,218 232,218" fill="#9aa6bb"/>'
+    '<circle cx="220" cy="320" r="72" fill="{c}" fill-opacity=".07" stroke="{c}" stroke-width="4" stroke-dasharray="12 9"/>'
+    + _fruit(220, 326, star=False, check=False).replace('r="34"', 'r="44"') +
+    '<ellipse cx="220" cy="280" rx="26" ry="12" fill="#56a64b"/>'
+    '<text x="315" y="345" font-family="P" font-weight="800" font-size="44" fill="{c}">?</text>')
 
 M["knn"] = """
 <circle cx="220" cy="225" r="105" fill="{c}" fill-opacity=".07" stroke="{c}" stroke-width="4" stroke-dasharray="12 9"/>
@@ -133,7 +134,7 @@ body{{width:1200px;height:630px;font-family:P;background:{bg};position:relative;
 h1{{font-weight:800;font-size:150px;line-height:1.08;color:#fff;letter-spacing:-2px;white-space:nowrap}}
 .edge{{position:absolute;left:1000px;top:0;width:200px;height:630px;background:repeating-linear-gradient(135deg,{c}14 0 14px,transparent 14px 34px)}}
 .rt{{position:absolute;left:655px;top:44px;width:320px;height:560px;display:flex;flex-direction:column;text-align:center}}
-svg{{align-self:center;visibility:hidden}}
+svg{{align-self:center}}
 h2{{margin-top:22px;font-weight:800;font-size:32px;line-height:1.3;color:{c};text-wrap:balance}}
 .quote{{margin-top:12px;font-size:23px;line-height:1.5;color:#3d4a63}}
 .blog{{margin-top:auto;font-size:18px;color:#7a869c;font-weight:600}}
