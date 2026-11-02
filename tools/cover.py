@@ -132,7 +132,7 @@ body{{width:1200px;height:630px;font-family:P;background:{bg};position:relative;
 .tw{{flex:1;display:flex;align-items:center}}
 h1{{font-weight:800;font-size:150px;line-height:1.08;color:#fff;letter-spacing:-2px;white-space:nowrap}}
 .edge{{position:absolute;left:1000px;top:0;width:200px;height:630px;background:repeating-linear-gradient(135deg,{c}14 0 14px,transparent 14px 34px)}}
-.rt{{position:absolute;left:655px;top:44px;width:320px;height:560px;display:flex;flex-direction:column;text-align:center}}
+.rt{{visibility:hidden;position:absolute;left:655px;top:44px;width:320px;height:560px;display:flex;flex-direction:column;text-align:center}}
 svg{{align-self:center;opacity:.55;filter:saturate(.45)}}
 h2{{margin-top:22px;font-weight:800;font-size:32px;line-height:1.3;color:{c};text-wrap:balance}}
 .quote{{margin-top:12px;font-size:23px;line-height:1.5;color:#3d4a63}}
