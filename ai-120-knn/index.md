@@ -4,6 +4,7 @@ field: 인공지능
 order: 120
 level: 기초
 tags: [머신러닝, 분류]
+summary: "kNN(k-Nearest Neighbors, k-최근접 이웃)은 새로운 데이터가 들어왔을 때 정답을 이미 알고 있는 데이터 가운데 가장 가까운 k개를 찾고 그 이웃들이 가장 많이 속한 쪽으로 답을 정하는 방법이에요."
 notion_id: 40710cbca0ae815a8ea6f9435fe393b5
 ---
 

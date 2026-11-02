@@ -115,35 +115,44 @@ COVERS = {  # 폴더: (그림, 한 줄 문구 — 강좌 본문 문장에서 가
     "parts-120-resistor": ("resistor", "전류가 지나가기 어렵게 만들어\n흐름을 원하는 만큼 줄여요"),
 }
 
+TITLE_LINES = {  # 왼쪽 정사각형에 크게 넣을 제목 줄(없으면 띄어쓰기 기준으로 나눔)
+    "ee-110-voltage-current-resistance": ["전압", "전류", "저항"],
+    "parts-110-map": ["전자 부품", "지도"],
+}
+
+# 왼쪽 630x630 = 블로그 목록 정사각형 썸네일 영역(분야 + 큰 제목만), 오른쪽 = 공유 미리보기에서만 보이는 보조 정보
 PAGE = """<!doctype html><html><head><meta charset="utf-8"><style>
 @font-face{{font-family:P;src:url(file://{font}/Paperlogy-4Regular.ttf);font-weight:400}}
 @font-face{{font-family:P;src:url(file://{font}/Paperlogy-6SemiBold.ttf);font-weight:600}}
 @font-face{{font-family:P;src:url(file://{font}/Paperlogy-8ExtraBold.ttf);font-weight:800}}
 *{{margin:0;box-sizing:border-box}}
 body{{width:1200px;height:630px;font-family:P;background:{bg};position:relative;overflow:hidden;word-break:keep-all}}
-.bar{{position:absolute;left:0;top:0;width:18px;height:630px;background:{c}}}
-.col{{position:absolute;left:80px;top:70px;width:580px;height:450px;display:flex;flex-direction:column}}
-.chip{{align-self:flex-start;background:{c};color:#fff;font-weight:600;font-size:26px;padding:8px 20px;border-radius:30px}}
-h1{{margin-top:34px;font-weight:800;font-size:96px;line-height:1.1;color:#14213d;letter-spacing:-1px;white-space:nowrap}}
-h2{{margin-top:14px;font-weight:600;font-size:46px;line-height:1.3;color:{c};text-wrap:balance}}
-.quote{{margin-top:auto;font-size:30px;line-height:1.5;color:#3d4a63}}
-.blog{{position:absolute;left:80px;bottom:52px;font-size:24px;color:#7a869c;font-weight:600}}
-svg{{position:absolute;right:60px;top:95px}}
-</style></head><body><div class="bar"></div>
-<div class="col"><span class="chip">{field}</span><h1>{t1}</h1><h2>{t2}</h2><p class="quote">{quote}</p></div>
-<p class="blog">눈높이가 바닥에 있는 공학 연구소</p>
-<svg width="440" height="440" viewBox="0 0 440 440">
+.sq{{position:absolute;left:0;top:0;width:630px;height:630px;background:{c};padding:64px 60px;display:flex;flex-direction:column}}
+.chip{{align-self:flex-start;background:#fff;color:{c};font-weight:800;font-size:34px;padding:8px 24px;border-radius:40px}}
+.tw{{flex:1;display:flex;align-items:center}}
+h1{{font-weight:800;font-size:150px;line-height:1.08;color:#fff;letter-spacing:-2px;white-space:nowrap}}
+.rt{{position:absolute;left:680px;top:44px;width:470px;height:560px;display:flex;flex-direction:column;text-align:center}}
+svg{{align-self:center}}
+h2{{margin-top:22px;font-weight:800;font-size:36px;line-height:1.3;color:{c};text-wrap:balance}}
+.quote{{margin-top:12px;font-size:25px;line-height:1.5;color:#3d4a63}}
+.blog{{margin-top:auto;font-size:20px;color:#7a869c;font-weight:600}}
+</style></head><body>
+<div class="sq"><span class="chip">{field}</span><div class="tw"><h1>{t1}</h1></div></div>
+<div class="rt">
+<svg width="300" height="300" viewBox="0 0 440 440">
 <defs><marker id="ar" markerWidth="10" markerHeight="10" refX="5" refY="5" orient="auto"><path d="M0 0 L10 5 L0 10z" fill="#9aa6bb"/></marker></defs>
 <rect x="0" y="0" width="440" height="440" rx="28" fill="#fff" stroke="#d6e2f5" stroke-width="3"/>{motif}
-</svg></body></html>"""
+</svg>
+<h2>{t2}</h2><p class="quote">{quote}</p><p class="blog">눈높이가 바닥에 있는 공학 연구소</p></div>
+</body></html>"""
 
-FIT_JS = """() => {  // 제목이 칸보다 넓으면 글자를 줄임(최소 64px), 부제가 3줄 이상이면 줄임
-  const h1 = document.querySelector('h1'), h2 = document.querySelector('h2'), col = document.querySelector('.col');
-  let s = 96; while (h1.scrollWidth > col.clientWidth && s > 64) { s -= 2; h1.style.fontSize = s + 'px'; }
-  let t = 46; const lines = () => Math.round(h2.getBoundingClientRect().height / (t * 1.3));
-  while (lines() > 2 && t > 34) { t -= 2; h2.style.fontSize = t + 'px'; }
-  const q = document.querySelector('.quote').getBoundingClientRect(), b = h2.getBoundingClientRect();
-  return {h1: s, h2: t, h2lines: lines(), h1fit: h1.scrollWidth <= col.clientWidth, gap: Math.round(q.top - b.bottom),
+FIT_JS = """() => {  // 큰 제목: 정사각형 안(폭 510, 높이 여유)에 들어올 때까지 줄임
+  const h1 = document.querySelector('h1'), tw = document.querySelector('.tw'), rt = document.querySelector('.rt');
+  let s = 150; const fit = () => h1.scrollWidth <= tw.clientWidth && h1.scrollHeight <= tw.clientHeight;
+  while (!fit() && s > 60) { s -= 2; h1.style.fontSize = s + 'px'; }
+  const h2 = document.querySelector('h2'); let t = 36;
+  while (rt.scrollHeight > rt.clientHeight && t > 28) { t -= 2; h2.style.fontSize = t + 'px'; }
+  return {h1: s, h1fit: fit(), h2: t, right_overflow: rt.scrollHeight > rt.clientHeight,
           fonts: [...document.fonts].map(f => f.status)};
 }"""
 
@@ -167,7 +176,8 @@ def build(folders):
             title, field = meta(folder)
             t1, _, t2 = title.partition(":")
             c, bg = FIELD[field]
-            page = PAGE.format(font=FONT, bg=bg, c=c, field=html.escape(field), t1=html.escape(t1.strip()),
+            lines = TITLE_LINES.get(folder) or t1.strip().rsplit(" ", 1)
+            page = PAGE.format(font=FONT, bg=bg, c=c, field=html.escape(field), t1="<br>".join(map(html.escape, lines)),
                                t2=html.escape(t2.strip()), quote="<br>".join(map(html.escape, quote.split("\n"))),
                                motif=M[motif].replace("{c}", c))
             tmp = os.path.join(ROOT, "build", f"cover_{folder}.html")
