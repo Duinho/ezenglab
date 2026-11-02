@@ -104,9 +104,18 @@ M["resistor"] = """
 <g><rect x="148" y="167" width="20" height="106" fill="#d22f2f"/><rect x="183" y="167" width="20" height="106" fill="#d22f2f"/><rect x="218" y="167" width="20" height="106" fill="#7a4a21"/><rect x="278" y="167" width="20" height="106" fill="#c9a227"/></g>
 <text x="220" y="370" text-anchor="middle" font-family="P" font-weight="800" font-size="44" fill="{c}">220Ω</text>"""
 
+M["sigmoid"] = """
+<g stroke="#e3e9f3" stroke-width="2"><line x1="50" y1="370" x2="400" y2="370"/><line x1="50" y1="70" x2="400" y2="70" stroke-dasharray="8 8"/><line x1="50" y1="220" x2="400" y2="220" stroke-dasharray="8 8"/></g>
+<path d="M50 336 C 160 336, 190 330, 215 220 S 270 104, 400 104" fill="none" stroke="{c}" stroke-width="8" stroke-linecap="round"/>
+<g fill="#3b6fb6"><circle cx="80" cy="370" r="15"/><circle cx="125" cy="370" r="15"/><circle cx="165" cy="370" r="15"/><circle cx="215" cy="370" r="15"/></g>
+<g fill="#e07a1f"><circle cx="230" cy="70" r="15"/><circle cx="285" cy="70" r="15"/><circle cx="330" cy="70" r="15"/><circle cx="375" cy="70" r="15"/></g>
+<circle cx="215" cy="220" r="16" fill="#fff" stroke="#14213d" stroke-width="5"/>
+<text x="240" y="232" font-family="P" font-weight="800" font-size="32" fill="#14213d">0.5</text>"""
+
 COVERS = {  # 폴더: (그림, 한 줄 문구 — 강좌 본문 문장에서 가져옴, \n=줄바꿈)
     "ai-110-first-step": ("fruit", "데이터에서 규칙을 배워\n처음 보는 상황에서도 판단해요"),
     "ai-120-knn": ("knn", "나와 비슷한 이웃을 보면\n내가 누군지 알 수 있다"),
+    "ai-140-logistic-regression": ("sigmoid", "확률부터 계산하고\n기준을 넘으면 '예'로 판단해요"),
     "ai-130-linear-regression": ("line", "가장 잘 지나는 직선으로\n새 값의 숫자를 예측해요"),
     "ee-110-voltage-current-resistance": ("circuit", "미는 힘, 흐르는 양,\n그 흐름을 막는 정도"),
     "ee-120-ohms-law": ("ohm", "전압·전류·저항을\n하나의 식으로 묶었어요"),
@@ -119,6 +128,7 @@ COVERS = {  # 폴더: (그림, 한 줄 문구 — 강좌 본문 문장에서 가
 TITLE_LINES = {  # 왼쪽 정사각형에 크게 넣을 제목 줄(없으면 띄어쓰기 기준으로 나눔)
     "ee-110-voltage-current-resistance": ["전압", "전류", "저항"],
     "parts-110-map": ["전자 부품", "지도"],
+    "ai-140-logistic-regression": ["로지스틱", "회귀"],
 }
 
 # 왼쪽 630x630 = 블로그 목록 정사각형 썸네일 영역(분야 + 큰 제목만), 오른쪽 = 공유 미리보기에서만 보이는 보조 정보

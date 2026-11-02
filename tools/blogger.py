@@ -104,6 +104,14 @@ def mention_html(nid, posts, by_notion):
     return f"「{html.escape(title)}」"
 
 
+def lecture_link(folder, posts):
+    if not os.path.isfile(os.path.join(ROOT, folder, "index.md")):
+        return "(준비 중인 강좌)"
+    title = read_lecture(folder)[0]["title"]
+    url = posts.get(folder, {}).get("url")
+    return f'<a href="{url}">{html.escape(title)}</a>' if url else f"「{html.escape(title)}」"
+
+
 def to_html(folder, sha=None):
     meta, body = read_lecture(folder)
     posts = load_posts()
@@ -130,6 +138,9 @@ def to_html(folder, sha=None):
     # 강좌 링크
     body = re.sub(r'<mention url="https://app\.notion\.com/p/([0-9a-f]+)" />',
                   lambda m: mention_html(m.group(1), posts, by_notion), body)
+    # 새 강좌 링크: <mention lecture="폴더이름" />
+    body = re.sub(r'<mention lecture="([^"]+)" />',
+                  lambda m: lecture_link(m.group(1), posts), body)
     # 토글
     body = re.sub(r"<toggle>\n(.*?)\n\n(.*?)\n</toggle>",
                   lambda m: f'\n<details markdown="1"><summary>{html.escape(m.group(1))}</summary>\n\n{m.group(2)}\n\n</details>\n',
