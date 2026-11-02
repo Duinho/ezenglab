@@ -31,7 +31,10 @@ STYLE = """<style>
 .ezl figcaption{font-size:.9em;color:#666;margin-top:6px}
 .ezl table{border-collapse:collapse;width:100%;margin:16px 0;font-size:.95em}
 .ezl th,.ezl td{border:1px solid #d0d7de;padding:8px 10px;text-align:left;vertical-align:top}
-.ezl th{background:#f3f6fa}
+.ezl th,.ezl td{word-break:keep-all;text-wrap:balance}
+.ezl th{background:#f3f6fa;white-space:nowrap;text-wrap:nowrap}
+.ezl .tw{overflow-x:auto;margin:16px 0}
+.ezl .tw table{margin:0}
 .ezl details{border:1px solid #d0d7de;border-radius:6px;padding:8px 14px;margin:14px 0;background:#fafbfc}
 .ezl summary{cursor:pointer;font-weight:bold;color:#0b5cad}
 .ezl .callout{background:#eaf2fb;border-left:4px solid #3b6fb6;border-radius:6px;padding:12px 16px;margin:18px 0}
@@ -149,6 +152,7 @@ def to_html(folder, sha=None):
         return f'<h{lvl} id="{sid}">{txt}</h{lvl}>'
 
     out = re.sub(r"<h([23])>(.*?)</h\1>", head, out)
+    out = out.replace("<table>", '<div class="tw"><table>').replace("</table>", "</table></div>")  # 좁은 화면에선 표만 가로 스크롤
     toc_html = ""
     if has_toc:
         toc_html = '<div class="toc"><b>목차</b><ol>' + "".join(
