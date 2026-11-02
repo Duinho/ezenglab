@@ -142,17 +142,24 @@ def to_html(folder, sha=None):
     for i, h in enumerate(store):
         out = out.replace(f"<p>ZZKEEP{i}ZZ</p>", h).replace(f"ZZKEEP{i}ZZ", h)
 
-    used, toc = set(), []
+    used, toc, secs = set(), [], {}
 
     def head(m):
         lvl, txt = m.group(1), m.group(2)
         sid = slug(re.sub("<[^>]+>", "", txt), used)
+        mnum = re.match(r"\s*(\d+(?:-\d+)?)\.\s", re.sub("<[^>]+>", "", txt))
+        if mnum:
+            secs[mnum.group(1)] = sid  # 단원 번호 → 이동 주소
         if lvl == "2":
             plain = re.sub("<[^>]+>", "", txt)
             toc.append((sid, plain))  # 본문 소제목 번호를 그대로 보여 줌(목차 자동번호 없음)
         return f'<h{lvl} id="{sid}">{txt}</h{lvl}>'
 
     out = re.sub(r"<h([23])>(.*?)</h\1>", head, out)
+    def seclink(m):  # 표 칸의 "4장", "7-3"을 해당 단원으로 이동하는 링크로
+        key = m.group(2) + (m.group(3) or "")
+        return f'{m.group(1)}<a href="#{secs[key]}">{m.group(2)}{m.group(3) or "장"}</a></td>' if key in secs else m.group(0)
+    out = re.sub(r"(<td[^>]*>)\s*(\d+)(?:장|(-\d+))\s*</td>", seclink, out)
     out = out.replace("<table>", '<div class="tw"><table>').replace("</table>", "</table></div>")  # 좁은 화면에선 표만 가로 스크롤
     toc_html = ""
     if has_toc:
