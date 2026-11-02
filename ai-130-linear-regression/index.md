@@ -4,6 +4,7 @@ field: 인공지능
 order: 130
 level: 기초
 tags: [머신러닝]
+summary: "선형 회귀는 데이터 점들 사이를 가장 잘 지나는 직선을 찾고 그 직선으로 새 값의 숫자를 예측하는 방법이에요."
 notion_id: 40910cbca0ae811e995bef41118bb84a
 ---
 

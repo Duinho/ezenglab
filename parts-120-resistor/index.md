@@ -4,6 +4,7 @@ field: 전자 부품
 order: 120
 level: 기초
 tags: [전자 기초, 아두이노]
+summary: "저항은 전류가 지나가기 어렵게 만들어서 흐름을 원하는 만큼 줄이는 부품이에요."
 notion_id: 40c10cbca0ae81808dd9ed3e3eefa0e4
 ---
 

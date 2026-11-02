@@ -4,6 +4,7 @@ field: 전자공학
 order: 130
 level: 기초
 tags: [전자 기초, 아두이노]
+summary: "키르히호프의 법칙은 회로가 지키는 두 가지 규칙이에요."
 notion_id: 40810cbca0ae81648f7fd6c277a668e5
 ---
 

@@ -4,6 +4,7 @@ field: 전자공학
 order: 120
 level: 기초
 tags: [전자 기초, 옴의 법칙, 아두이노]
+summary: "옴의 법칙은 전압, 전류, 저항 세 가지가 서로 어떻게 움직이는지 하나의 식으로 묶은 거예요."
 notion_id: 40710cbca0ae81ffb803e0dd4145e939
 ---
 

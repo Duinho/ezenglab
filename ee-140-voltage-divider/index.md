@@ -4,6 +4,7 @@ field: 전자공학
 order: 140
 level: 기초
 tags: [전자 기초, 아두이노]
+summary: "저항을 한 줄로 이으면 전원 전압을 저항 크기의 비율대로 나눠 가져요. 이걸 전압 분배라고 해요."
 notion_id: 40810cbca0ae8187aa2bfab5d7fd66ab
 ---
 

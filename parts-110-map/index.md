@@ -4,6 +4,7 @@ field: 전자 부품
 order: 110
 level: 기초
 tags: [전자 기초, 아두이노]
+summary: "전자 기기 속 부품은 하는 일에 따라 크게 다섯 갈래로 나눌 수 있어요."
 notion_id: 40910cbca0ae81aa99e8cfb5272d216e
 ---
 
