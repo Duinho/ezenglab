@@ -7,3 +7,10 @@
 
 - 블로그: https://ezenglab.blogspot.com/
 - 강좌마다 폴더 하나: `index.md`(강좌 원본)와 그 강좌의 그림
+
+## 올리는 방법
+- `python3 tools/blogger.py html <폴더>`: 블로그용 HTML 미리 보기(build/)
+- `python3 tools/blogger.py draft <폴더>`: 블로거 임시저장 글 만들기·고치기
+- `python3 tools/blogger.py publish <폴더>`: 게시
+- `posts.json`: 강좌 폴더와 블로그 글 번호 연결표
+- 그림 주소는 jsDelivr로 커밋에 고정해서 불러와요.

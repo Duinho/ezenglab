@@ -2,5 +2,37 @@
   "ai-120-knn": {
     "id": "6792130998452789656",
     "status": "DRAFT"
+  },
+  "ai-110-first-step": {
+    "id": "5725911748566774281",
+    "status": "DRAFT"
+  },
+  "ai-130-linear-regression": {
+    "id": "2134700132505607067",
+    "status": "DRAFT"
+  },
+  "ee-110-voltage-current-resistance": {
+    "id": "4323541089998095177",
+    "status": "DRAFT"
+  },
+  "ee-120-ohms-law": {
+    "id": "7926191720776463889",
+    "status": "DRAFT"
+  },
+  "ee-130-kirchhoff": {
+    "id": "7813299020299289255",
+    "status": "DRAFT"
+  },
+  "ee-140-voltage-divider": {
+    "id": "3071999842149197348",
+    "status": "DRAFT"
+  },
+  "parts-110-map": {
+    "id": "1360843329333878470",
+    "status": "DRAFT"
+  },
+  "parts-120-resistor": {
+    "id": "3970643177142023589",
+    "status": "DRAFT"
   }
 }
