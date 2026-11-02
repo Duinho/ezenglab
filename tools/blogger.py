@@ -42,7 +42,8 @@ STYLE = """<style>
 .ezl .callout.warn{background:#fff8e1;border-left-color:#e0a800}
 .ezl .callout.warn>p:first-child{font-weight:normal}
 .ezl .toc{background:#f6f8fa;border-radius:6px;padding:10px 18px;margin:12px 0 24px}
-.ezl .toc ol{margin:6px 0;padding-left:20px}
+.ezl .toc ul{margin:6px 0;padding-left:4px;list-style:none}
+.ezl .toc li{margin:2px 0}
 .ezl .math{overflow-x:auto;margin:14px 0}
 </style>"""
 MATHJAX = ('<script>window.MathJax={tex:{inlineMath:[["\\\\(","\\\\)"]]}};</script>'
@@ -148,15 +149,15 @@ def to_html(folder, sha=None):
         sid = slug(re.sub("<[^>]+>", "", txt), used)
         if lvl == "2":
             plain = re.sub("<[^>]+>", "", txt)
-            toc.append((sid, re.sub(r"^\s*\d+(?:-\d+)*\.\s*", "", plain)))  # 목차 자동번호와 겹치지 않게 앞 번호 제거
+            toc.append((sid, plain))  # 본문 소제목 번호를 그대로 보여 줌(목차 자동번호 없음)
         return f'<h{lvl} id="{sid}">{txt}</h{lvl}>'
 
     out = re.sub(r"<h([23])>(.*?)</h\1>", head, out)
     out = out.replace("<table>", '<div class="tw"><table>').replace("</table>", "</table></div>")  # 좁은 화면에선 표만 가로 스크롤
     toc_html = ""
     if has_toc:
-        toc_html = '<div class="toc"><b>목차</b><ol>' + "".join(
-            f'<li><a href="#{s}">{html.escape(t)}</a></li>' for s, t in toc) + "</ol></div>"
+        toc_html = '<div class="toc"><b>목차</b><ul>' + "".join(
+            f'<li><a href="#{s}">{html.escape(t)}</a></li>' for s, t in toc) + "</ul></div>"
     out = out.replace("<p>ZZTOCZZ</p>", toc_html)
     extra = MATHJAX if "\\[" in out else ""
     return meta, f'{STYLE}{extra}<div class="ezl">{out}</div>'
