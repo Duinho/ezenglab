@@ -144,7 +144,8 @@ def to_html(folder, sha=None):
         lvl, txt = m.group(1), m.group(2)
         sid = slug(re.sub("<[^>]+>", "", txt), used)
         if lvl == "2":
-            toc.append((sid, re.sub("<[^>]+>", "", txt)))
+            plain = re.sub("<[^>]+>", "", txt)
+            toc.append((sid, re.sub(r"^\s*\d+(?:-\d+)*\.\s*", "", plain)))  # 목차 자동번호와 겹치지 않게 앞 번호 제거
         return f'<h{lvl} id="{sid}">{txt}</h{lvl}>'
 
     out = re.sub(r"<h([23])>(.*?)</h\1>", head, out)
