@@ -113,11 +113,12 @@ M["sigmoid"] = """
 <text x="240" y="232" font-family="P" font-weight="800" font-size="32" fill="#14213d">0.5</text>"""
 
 M["pot"] = """
-<path d="M 128 302 A 130 130 0 1 1 312 302" fill="none" stroke="#7a5230" stroke-width="26" stroke-linecap="round"/>
-<line x1="220" y1="210" x2="310" y2="128" stroke="#14213d" stroke-width="12" stroke-linecap="round"/>
-<circle cx="220" cy="210" r="26" fill="#14213d"/>
-<circle cx="316" cy="122" r="17" fill="#e07a1f"/>
-<g stroke-width="12" stroke-linecap="round"><line x1="128" y1="318" x2="128" y2="400" stroke="#9aa6bb"/><line x1="220" y1="236" x2="220" y2="400" stroke="#e07a1f"/><line x1="312" y1="318" x2="312" y2="400" stroke="#9aa6bb"/></g>"""
+<line x1="20" y1="250" x2="420" y2="250" stroke="#9aa6bb" stroke-width="9" stroke-linecap="round"/>
+<rect x="90" y="210" width="260" height="80" rx="24" fill="#e9d3a8" stroke="#c9ad78" stroke-width="4"/>
+<line x1="270" y1="120" x2="270" y2="192" stroke="#e07a1f" stroke-width="9" stroke-linecap="round"/>
+<path d="M252 186 L288 186 L270 212 Z" fill="#e07a1f"/>
+<g stroke="#9aa6bb" stroke-width="6" stroke-linecap="round" fill="none"><path d="M150 120 H230 M150 120 l14 -12 M150 120 l14 12"/><path d="M310 120 H390 M390 120 l-14 -12 M390 120 l-14 12"/></g>
+<text x="220" y="370" text-anchor="middle" font-family="P" font-weight="800" font-size="44" fill="{c}">10kΩ</text>"""
 
 COVERS = {
     "전자 부품 130 가변저항": ("pot", "손잡이로 나누는 자리를 옮겨서\n출력 전압을 바꿔요"),  # 폴더: (그림, 한 줄 문구 — 강좌 본문 문장에서 가져옴, \n=줄바꿈)
