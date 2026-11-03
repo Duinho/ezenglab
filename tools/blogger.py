@@ -66,7 +66,7 @@ def save_posts(p):
 
 def read_lecture(folder):
     src = open(os.path.join(ROOT, folder, "index.md"), encoding="utf-8").read()
-    m = re.match(r"^---\n(.*?)\n---\n", src, re.S)
+    m = re.match(r"^<!--\n(.*?)\n-->\n", src, re.S) or re.match(r"^---\n(.*?)\n---\n", src, re.S)
     meta = {}
     for line in m.group(1).splitlines():
         k, v = line.split(":", 1)
@@ -76,7 +76,11 @@ def read_lecture(folder):
         elif v.startswith('"') and v.endswith('"'):
             v = v[1:-1]
         meta[k.strip()] = v
-    return meta, src[m.end():]
+    body = src[m.end():]
+    # GitHub에서 보이라고 넣은 맨 위 제목(#)과 표지 그림 줄은 블로그에선 따로 처리
+    body = re.sub(r"\A\s*# [^\n]*\n", "\n", body)
+    body = re.sub(r"\A\s*!\[[^\]]*\]\(cover\.png\)\n", "\n", body)
+    return meta, body
 
 
 def head_sha():
@@ -122,7 +126,7 @@ def to_html(folder, sha=None):
             if mm.get("notion_id"):
                 by_notion[mm["notion_id"]] = d
     sha = sha or head_sha()
-    img_base = f"https://cdn.jsdelivr.net/gh/{REPO}@{sha}/{folder}/"
+    img_base = f"https://cdn.jsdelivr.net/gh/{REPO}@{sha}/{urllib.parse.quote(folder)}/"
     store = []
 
     def keep(h):
@@ -132,25 +136,29 @@ def to_html(folder, sha=None):
     # 수식 블록
     body = re.sub(r"\$\$\n(.*?)\n\$\$", lambda m: keep(f'<div class="math">\\[{html.escape(m.group(1))}\\]</div>'), body, flags=re.S)
     # 그림
-    body = re.sub(r'<image source="([^"]+)">\n(.*?)\n</image>',
-                  lambda m: keep(f'<figure><img src="{img_base}{m.group(1)}" alt="{html.escape(m.group(2))}" loading="lazy"/>'
-                                 f'<figcaption>{html.escape(m.group(2))}</figcaption></figure>'), body, flags=re.S)
+    body = re.sub(r'^!\[([^\]\n]*)\]\(([^)\s<>]+)\)[ \t]*$',
+                  lambda m: keep(f'<figure><img src="{img_base}{urllib.parse.quote(m.group(2))}" alt="{html.escape(m.group(1))}" loading="lazy"/>'
+                                 f'<figcaption>{html.escape(m.group(1))}</figcaption></figure>'), body, flags=re.M)
     # 강좌 링크
     body = re.sub(r'<mention url="https://app\.notion\.com/p/([0-9a-f]+)" />',
                   lambda m: mention_html(m.group(1), posts, by_notion), body)
-    # 새 강좌 링크: <mention lecture="폴더이름" />
-    body = re.sub(r'<mention lecture="([^"]+)" />',
+    # 다른 강좌 링크: [제목](<../폴더/index.md>) → 게시됐으면 블로그 주소, 아니면 「제목」
+    body = re.sub(r'\[[^\]\n]+\]\(<\.\./([^>\n]+)/index\.md>\)',
                   lambda m: lecture_link(m.group(1), posts), body)
     # 토글
-    body = re.sub(r"<toggle>\n(.*?)\n\n(.*?)\n</toggle>",
+    body = re.sub(r"<details>\n<summary>(.*?)</summary>\n\n(.*?)\n\n</details>",
                   lambda m: f'\n<details markdown="1"><summary>{html.escape(m.group(1))}</summary>\n\n{m.group(2)}\n\n</details>\n',
                   body, flags=re.S)
     # 요약 상자
-    body = re.sub(r'<callout([^>]*)>\n(.*?)\n</callout>',
-                  lambda m: f'\n<div class="callout{" warn" if "yellow" in m.group(1) else ""}" markdown="1">\n\n{m.group(2)}\n\n</div>\n', body, flags=re.S)
+    def box(m):
+        inner = "\n".join(re.sub(r"^> ?", "", l) for l in m.group(0).rstrip("\n").split("\n"))
+        warn = inner.startswith("⚠️ ")
+        inner = inner[len("⚠️ "):] if warn else inner
+        return f'\n<div class="callout{" warn" if warn else ""}" markdown="1">\n\n{inner}\n\n</div>\n'
+    body = re.sub(r"(?:^>[^\n]*(?:\n|$))+", box, body, flags=re.M)
     body = re.sub(r"<p />\n?", "", body)
-    has_toc = "<table-of-contents />" in body
-    body = body.replace("<table-of-contents />", "ZZTOCZZ")
+    has_toc = "<!-- 목차 -->" in body or "<table-of-contents />" in body
+    body = body.replace("<!-- 목차 -->", "ZZTOCZZ").replace("<table-of-contents />", "ZZTOCZZ")
 
     out = markdown.markdown(body, extensions=["tables", "md_in_html", "sane_lists"])
     for i, h in enumerate(store):

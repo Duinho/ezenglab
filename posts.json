@@ -1,50 +1,50 @@
 {
-  "ai-120-knn": {
+  "인공지능 120 kNN 알고리즘": {
     "id": "6792130998452789656",
     "status": "LIVE",
     "url": "https://ezenglab.blogspot.com/2026/11/knn.html"
   },
-  "ai-110-first-step": {
+  "인공지능 110 인공지능 첫걸음": {
     "id": "5725911748566774281",
     "status": "LIVE",
     "url": "https://ezenglab.blogspot.com/2026/11/ai.html"
   },
-  "ai-130-linear-regression": {
+  "인공지능 130 선형 회귀": {
     "id": "2134700132505607067",
     "status": "LIVE",
     "url": "https://ezenglab.blogspot.com/2026/11/blog-post.html"
   },
-  "ee-110-voltage-current-resistance": {
+  "전자공학 110 전압·전류·저항": {
     "id": "4323541089998095177",
     "status": "LIVE",
     "url": "https://ezenglab.blogspot.com/2026/11/blog-post_02.html"
   },
-  "ee-120-ohms-law": {
+  "전자공학 120 옴의 법칙": {
     "id": "7926191720776463889",
     "status": "LIVE",
     "url": "https://ezenglab.blogspot.com/2026/11/v-i-r.html"
   },
-  "ee-130-kirchhoff": {
+  "전자공학 130 키르히호프의 법칙": {
     "id": "7813299020299289255",
     "status": "LIVE",
     "url": "https://ezenglab.blogspot.com/2026/11/blog-post_570.html"
   },
-  "ee-140-voltage-divider": {
+  "전자공학 140 전압 분배": {
     "id": "3071999842149197348",
     "status": "LIVE",
     "url": "https://ezenglab.blogspot.com/2026/11/blog-post_282.html"
   },
-  "parts-110-map": {
+  "전자 부품 110 전자 부품 지도": {
     "id": "1360843329333878470",
     "status": "LIVE",
     "url": "https://ezenglab.blogspot.com/2026/11/blog-post_607.html"
   },
-  "parts-120-resistor": {
+  "전자 부품 120 저항": {
     "id": "3970643177142023589",
     "status": "LIVE",
     "url": "https://ezenglab.blogspot.com/2026/11/blog-post_346.html"
   },
-  "ai-140-logistic-regression": {
+  "인공지능 140 로지스틱 회귀": {
     "id": "4790635852103654564",
     "status": "DRAFT"
   }
