@@ -112,7 +112,15 @@ M["sigmoid"] = """
 <circle cx="215" cy="220" r="16" fill="#fff" stroke="#14213d" stroke-width="5"/>
 <text x="240" y="232" font-family="P" font-weight="800" font-size="32" fill="#14213d">0.5</text>"""
 
-COVERS = {  # 폴더: (그림, 한 줄 문구 — 강좌 본문 문장에서 가져옴, \n=줄바꿈)
+M["pot"] = """
+<path d="M 128 302 A 130 130 0 1 1 312 302" fill="none" stroke="#7a5230" stroke-width="26" stroke-linecap="round"/>
+<line x1="220" y1="210" x2="310" y2="128" stroke="#14213d" stroke-width="12" stroke-linecap="round"/>
+<circle cx="220" cy="210" r="26" fill="#14213d"/>
+<circle cx="316" cy="122" r="17" fill="#e07a1f"/>
+<g stroke-width="12" stroke-linecap="round"><line x1="128" y1="318" x2="128" y2="400" stroke="#9aa6bb"/><line x1="220" y1="236" x2="220" y2="400" stroke="#e07a1f"/><line x1="312" y1="318" x2="312" y2="400" stroke="#9aa6bb"/></g>"""
+
+COVERS = {
+    "전자 부품 130 가변저항": ("pot", "손잡이로 쉼터를 옮겨서\n출력 전압을 바꿔요"),  # 폴더: (그림, 한 줄 문구 — 강좌 본문 문장에서 가져옴, \n=줄바꿈)
     "인공지능 110 인공지능 첫걸음": ("fruit", "데이터에서 규칙을 배워\n처음 보는 상황에서도 판단해요"),
     "인공지능 120 kNN 알고리즘": ("knn", "나와 비슷한 이웃을 보면\n내가 누군지 알 수 있다"),
     "인공지능 140 로지스틱 회귀 개념편": ("sigmoid", "확률부터 계산하고\n기준을 넘으면 '예'로 판단해요"),

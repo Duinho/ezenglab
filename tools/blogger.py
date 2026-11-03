@@ -44,6 +44,8 @@ STYLE = """<style>
 .ezl .cover{margin:0 0 18px}
 .ezl .cover img{border-radius:10px}
 .ezl .lead{font-size:1.08em;color:#333;margin:0 0 14px}
+.ezl pre{background:#f6f8fa;border:1px solid #d0d7de;border-radius:6px;padding:12px 14px;overflow-x:auto;line-height:1.5}
+.ezl pre code{font-size:.9em}
 .ezl .toc{background:#f6f8fa;border-radius:6px;padding:10px 18px;margin:12px 0 24px}
 .ezl .toc ul{margin:6px 0;padding-left:4px;list-style:none}
 .ezl .toc li{margin:2px 0}
@@ -160,7 +162,7 @@ def to_html(folder, sha=None):
     has_toc = "<!-- 목차 -->" in body or "<table-of-contents />" in body
     body = body.replace("<!-- 목차 -->", "ZZTOCZZ").replace("<table-of-contents />", "ZZTOCZZ")
 
-    out = markdown.markdown(body, extensions=["tables", "md_in_html", "sane_lists"])
+    out = markdown.markdown(body, extensions=["tables", "md_in_html", "sane_lists", "fenced_code"])
     for i, h in enumerate(store):
         out = out.replace(f"<p>ZZKEEP{i}ZZ</p>", h).replace(f"ZZKEEP{i}ZZ", h)
 
