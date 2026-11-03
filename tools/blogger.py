@@ -237,10 +237,11 @@ def draft(folder):
     print(folder, r["id"], r.get("status"), r.get("url"))
 
 
-def publish(folder):
+def publish(folder, when=None):
+    """when: 게시 시각(RFC3339). 블로그 목록 순서를 정할 때 씀. 없으면 블로거 기본값"""
     posts = load_posts()
     info = posts[folder]
-    r = api("POST", f"/posts/{info['id']}/publish")
+    r = api("POST", f"/posts/{info['id']}/publish", params={"publishDate": when} if when else None)
     info.update(status=r.get("status"), url=r.get("url"))
     posts[folder] = info
     save_posts(posts)
@@ -258,4 +259,4 @@ if __name__ == "__main__":
     elif cmd == "draft":
         draft(folder)
     elif cmd == "publish":
-        publish(folder)
+        publish(folder, sys.argv[3] if len(sys.argv) > 3 else None)
