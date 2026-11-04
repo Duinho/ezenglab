@@ -130,6 +130,10 @@ def build(folder, outdir, only=None):
                 "segments": [{"marked": s, "slow": sl, "tokens": tokens(s, dic)} for s, sl in segs]}
         json.dump(info, open(os.path.join(outdir, f"{sc['id']}.json"), "w"), ensure_ascii=False, indent=1)
         print(sc["id"], f"{dur:.2f}초", f"새로 만든 글자 {used}")
+        for w0, w1, w2 in zip(words, words[1:], words[2:]):
+            before, after = w1["start"] - w0["end"], w2["start"] - w1["end"]
+            if w1["text"].endswith(",") and before > 0.3 and after < 0.2 and not w0["text"].endswith(("?", "!", ".", ",")):
+                print(f"  ⚠️ 쉼이 앞으로 밀림: '{w0['text']}' [{before:.2f}초 쉼] '{w1['text']}' [{after:.2f}초] '{w2['text']}' → 문장을 나누거나 순서를 바꿀 것")
     if used:
         add_usage(used, f"{os.path.basename(folder.rstrip('/'))} {' '.join(only) if only else '전체'}")
     d, m = ledger_month()
