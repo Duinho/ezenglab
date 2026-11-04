@@ -60,6 +60,7 @@ const SCENES = {
   },
 
   L02: INTRO,   // 공통 인트로(tools/video/intro.js)
+  L28: OUTRO,   // 공통 마무리 인사(tools/video/intro.js)
 
   L03: {
     init(ctx) {
@@ -305,8 +306,8 @@ function makeBoard(ctx, parent, x, y, w = 560) {
     <div class="br"><span class="bl" style="color:#c27c00">귤</span><span class="bv" data-k="귤"></span></div>
     <div class="bres"></div>`;
   b.setVotes = (a, g) => {
-    b.querySelector('[data-k="사과"]').innerHTML = '<i class="dot" style="background:' + APPLE + '"></i>'.repeat(a) + (a ? '' : '');
-    b.querySelector('[data-k="귤"]').innerHTML = '<i class="dot" style="background:' + TANG + '"></i>'.repeat(g);
+    b.querySelector('[data-k="사과"]').innerHTML = ('<i class="dot" style="background:' + APPLE + '"></i>').repeat(a);
+    b.querySelector('[data-k="귤"]').innerHTML = ('<i class="dot" style="background:' + TANG + '"></i>').repeat(g);
   };
   b.setRes = (txt, u = 1) => { const r = b.querySelector('.bres'); r.textContent = txt; r.style.opacity = u; r.style.transform = `scale(${E.lerp(.7, 1, E.back(u))})`; };
   return b;
@@ -543,7 +544,7 @@ SCENES.L14 = {
     this.name = chip(s, L ? 1180 : 100, L ? 690 : 880, '<b>인스턴스 기반 학습</b>', { size: 46 });
     this.year = el('div', { class: 'abs center', style: { left: 0, width: '100%', top: (L ? 820 : 1030) + 'px', fontSize: '40px', fontWeight: 600, color: COLOR.sub } }, s);
     this.year.textContent = '1951 · Evelyn Fix, Joseph Hodges';
-    this.t = { no: ctx.w('케이엔엔에는') - .1, cab: ctx.w('저장해') - .1, q: ctx.w('질문이') - .1, c: ctx.w('계산하죠') - .2, n: ctx.w('인스턴스') - .1, y: ctx.w('1951') - .1 };
+    this.t = { no: ctx.w('케이엔엔에는') - .1, cab: ctx.w('저장해') - .1, q: ctx.w('질문이') - .1, c: ctx.w('계산하죠') - .2, n: ctx.w('인스턴스') - .1, y: ctx.w('천구백오십일') - .1 };
   },
   frame(ctx, t) {
     show(this.no, E.prog(t, this.t.no, .4), 20);
@@ -596,7 +597,7 @@ SCENES.L16 = {
     if (!L) this.list.classList.add('row');
     this.list.innerHTML = [[1, '사과', APPLE], [3, '귤', '#c27c00'], [5, '귤', '#c27c00']].map(([k, r, c]) => `<div class="kr"><span class="kk">k = ${k}</span><span class="kv" style="color:${c}">${r}</span></div>`).join('');
     this.rows = [...this.list.querySelectorAll('.kr')];
-    this.t = { k: [ctx.w('1이면') - .2, ctx.w('3이면') - .2, ctx.w('5면') - .2], diff: ctx.w('달라졌어요') - .1 };
+    this.t = { k: [ctx.w('일이면') - .2, ctx.w('삼이면') - .2, ctx.w('오면') - .2], diff: ctx.w('달라졌어요') - .1 };
   },
   frame(ctx, t) {
     const P = this.P; let k = 0, r = 0;
@@ -620,7 +621,7 @@ SCENES.L17 = {
     this.tag = el('div', { class: 'abs center tagx', style: { left: (P.pt('사과6')[0] - 170) + 'px', top: (P.pt('사과6')[1] - 130) + 'px', width: '340px' } }, ctx.stage);
     this.tag.innerHTML = '유난히 작은 사과';
     this.ans = chip(ctx.stage, L ? 1220 : 300, L ? 200 : 880, '', { size: 56 });
-    this.t = { a6: ctx.eq('사과') - .1, odd: ctx.w('유난히') - .1, k1: ctx.w('1이면') - .2, up: ctx.w('키우면') - .2, ok: ctx.w('흔들려요') - .3 };
+    this.t = { a6: ctx.eq('사과') - .1, odd: ctx.w('유난히') - .1, k1: ctx.w('일이면') - .2, up: ctx.w('키우면') - .2, ok: ctx.w('흔들려요') - .3 };
   },
   frame(ctx, t) {
     const P = this.P, a = E.prog(t, this.t.a6, .3), odd = E.prog(t, this.t.odd, .35);
@@ -647,7 +648,7 @@ SCENES.L18 = {
     this.c1 = chip(ctx.stage, 1220, 560, '잡음에는 <b>강해짐</b>', { size: 40 });
     this.c2 = chip(ctx.stage, 1220, 660, '경계는 <b style="color:#d24a5a">흐려짐</b>', { size: 40 });
     this.try = chip(ctx.stage, 1220, 770, 'k = 1, 3, 5, 7 … <b>시험해 보고 고르기</b>', { size: 36 });
-    this.t = { st: ctx.w('강해지지만') - .1, bl: ctx.w('경계가') - .1, all: ctx.w('12까지') - .2, mv: ctx.w('어디에') - .2, tr: ctx.w('여러') - .1, k: ctx.w('키우는') - .2 };
+    this.t = { st: ctx.w('강해지지만') - .1, bl: ctx.w('경계가') - .1, all: ctx.w('십이까지') - .2, mv: ctx.w('어디에') - .2, tr: ctx.w('여러') - .1, k: ctx.w('키우는') - .2 };
   },
   frame(ctx, t) {
     const P = this.P;
@@ -728,7 +729,7 @@ SCENES.L20 = {
     this.win.textContent = 'B가 더 가까움';
     this.norm = el('div', { class: 'abs center rule', style: { left: (L ? 360 : 60) + 'px', width: (L ? 1200 : 960) + 'px', top: (L ? 120 : 860) + 'px' } }, s);
     this.norm.innerHTML = '<b>정규화</b>: 특징마다 값의 범위를 0~1로 맞추기';
-    this.t = { mm: ctx.w('밀리미터로') - .1, ten: ctx.w('10이') - .1, db: ctx.w('비까지는') - .1, win: ctx.w('비가') - .1, sw: ctx.w('바뀌었어요') - .2, n: ctx.has('정규화를') ? ctx.w('정규화를') - .3 : 999 };
+    this.t = { mm: ctx.w('밀리미터로') - .1, ten: ctx.eq('십이') - .1, db: ctx.w('비까지는') - .1, win: ctx.w('비가') - .1, sw: ctx.w('바뀌었어요') - .2, n: ctx.has('정규화를') ? ctx.w('정규화를') - .3 : 999 };
   },
   frame(ctx, t) {
     const D = this.D, st = E.ease(E.prog(t, this.t.mm, 1.2));

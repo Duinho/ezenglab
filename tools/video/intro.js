@@ -48,3 +48,34 @@ const INTRO = {
     this.floor.style.transform = `scaleX(${E.ease(E.prog(t, .2, .8))})`;
   },
 };
+
+// 공통 마무리 인사: "지금까지 눈바공 연구소 바닥 연구소장이었습니다. … 구독과 좋아요 … 다음 영상에서 만나요."
+// 모든 강좌 영상 끝에 같은 장면을 쓴다(장면표에서 이 장면 이름을 OUTRO로 연결).
+const OUTRO = {
+  init(ctx) {
+    const L = ctx.long, s = ctx.stage;
+    this.logo = el('div', { class: 'abs center intro-target', style: { left: 0, width: '100%', top: (L ? 90 : 120) + 'px', fontSize: (L ? 150 : 130) + 'px' } }, s);
+    this.logo.innerHTML = '눈바공<span class="lab"> 연구소</span>';
+    this.role = el('div', { class: 'abs center', style: { left: 0, width: '100%', top: (L ? 300 : 320) + 'px' } }, s);
+    this.role.innerHTML = '<span class="intro-role">바닥 연구소장</span>';
+    this.btns = el('div', { class: 'abs center outro-btns', style: { left: 0, width: '100%', top: (L ? 480 : 560) + 'px' } }, s);
+    this.btns.innerHTML = '<span class="ob sub"><svg viewBox="0 0 24 24" width="1em" height="1em"><path d="M12 3a6 6 0 0 0-6 6v4l-2 3h16l-2-3V9a6 6 0 0 0-6-6zm-2 15a2 2 0 0 0 4 0z" fill="currentColor"/></svg>구독</span>'
+      + '<span class="ob like"><svg viewBox="0 0 24 24" width="1em" height="1em"><path d="M2 10h4v11H2zm6 11h9.5a2 2 0 0 0 2-1.6l1.4-7A2 2 0 0 0 19 10h-5.5l.8-4a2 2 0 0 0-3.6-1.4L8 9z" fill="currentColor"/></svg>좋아요</span>';
+    [this.sub, this.like] = this.btns.querySelectorAll('.ob');
+    this.bye = el('div', { class: 'abs center outro-bye', style: { left: 0, width: '100%', top: (L ? 700 : 820) + 'px', fontSize: (L ? 64 : 64) + 'px' } }, s);
+    this.bye.textContent = '다음 영상에서 만나요';
+    this.t = { logo: ctx.at('눈바공', 1, .6) - .1, role: ctx.at('바닥', 1, 1.4) - .1, sub: ctx.w('구독과') - .1, like: ctx.w('좋아요') - .1,
+      ask: ctx.w('부탁드려요') - .1, bye: ctx.w('다음') - .1 };
+  },
+  frame(ctx, t) {
+    pop(this.logo, E.prog(t, Math.min(0, this.t.logo), .45), .8);
+    pop(this.role, E.prog(t, this.t.role, .45), .7);
+    pop(this.sub, E.prog(t, this.t.sub, .4), .6);
+    pop(this.like, E.prog(t, this.t.like, .4), .6);
+    const press = E.prog(t, this.t.ask, .5);              // 부탁할 때 두 버튼이 한 번 눌림
+    const k = 1 - .12 * Math.sin(Math.PI * press);
+    if (press > 0 && press < 1) { this.sub.style.transform = `scale(${k})`; this.like.style.transform = `scale(${k})`; }
+    this.sub.classList.toggle('on', press >= .5);
+    show(this.bye, E.prog(t, this.t.bye, .4), 20);
+  },
+};

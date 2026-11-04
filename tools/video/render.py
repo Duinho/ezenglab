@@ -48,6 +48,11 @@ html,body{margin:0;width:%(W)dpx;height:%(H)dpx;overflow:hidden;background:#f2f8
 .intro-target{font-weight:800;color:#14936a;line-height:1.1}.intro-target .lab{color:#14213d}
 .intro-role{display:inline-block;background:#14936a;color:#fff;font-weight:800;font-size:60px;padding:14px 46px;border-radius:999px}
 .intro-floor{height:12px;background:#14936a;border-radius:6px;opacity:.35;transform-origin:50%% 50%%}
+.outro-btns{display:flex;justify-content:center;gap:48px}
+.ob{display:inline-flex;align-items:center;gap:16px;font-weight:800;font-size:64px;padding:20px 54px;border-radius:999px;background:#fff;border:5px solid #14213d;color:#14213d}
+.ob.sub{border-color:#d24a5a;color:#d24a5a}.ob.sub.on{background:#d24a5a;color:#fff}
+.ob.like{border-color:#3b6fb6;color:#3b6fb6}
+.outro-bye{font-weight:800;color:#14936a}
 #host{position:absolute;z-index:5;width:%(hs)dpx;height:%(hs)dpx;left:%(hx)dpx;top:%(hy)dpx;filter:drop-shadow(0 6px 10px rgba(0,0,0,.12))}
 #host svg{width:100%%;height:100%%}
 #host #eyes{transform-box:fill-box;transform-origin:50%% 50%%}
