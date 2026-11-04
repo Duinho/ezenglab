@@ -4,7 +4,7 @@
   python3 tools/video/render.py "영상/폴더" 음성폴더 long L01-L06 결과.mp4
   python3 tools/video/render.py "영상/폴더" 음성폴더 short L03-L06 결과.mp4 --hook "이 음식, 누가 좋아할까?"
 """
-import argparse, json, os, re, shutil, subprocess, sys, wave
+import argparse, hashlib, json, math, os, re, shutil, subprocess, sys, wave
 sys.path.insert(0, os.path.dirname(__file__))
 from common import parse_scenes
 from subtitles import scene_phrases
@@ -17,6 +17,7 @@ STAGE = {"long": (0, 0, 1920, 920), "short": (0, 300, 1080, 1150)}
 MAXCH = {"long": 26, "short": 30}   # 쇼츠는 두 줄까지 한 화면에
 MAXLINES = {"long": 1, "short": 2}
 END_SEC = 2.2
+SCENE_CACHE = "/home/claude/build/scene_cache"   # 장면별 완성 조각(mp4)과 그림 지문
 
 CSS = """
 @font-face{font-family:P;src:url(file://%(f)s/Paperlogy-4Regular.ttf);font-weight:400}
@@ -86,7 +87,7 @@ window.render = function (t) {
   const host = document.getElementById('host');
   if (host && host.firstChild) {
     const speaking = sc.words.some(w => lt >= w.start && lt < w.end);
-    const open = speaking && Math.floor(t * 9) % 2 === 0;
+    const open = speaking && Math.floor(lt * 9) % 2 === 0;   // 장면 안 시간 기준(장면별 재사용 가능하게)
     const mo = host.querySelector('#mouth-open'), mc = host.querySelector('#mouth-closed');
     if (mo) { mo.style.display = open ? '' : 'none'; mc.style.display = open ? 'none' : ''; }
     const eyes = host.querySelector('#eyes');
@@ -94,9 +95,9 @@ window.render = function (t) {
     const hi = sc.words.find(w => w.text.startsWith('안녕하세요'));
     let bow = 0;
     if (hi) { const a = hi.start - .05, b = hi.end + .35; if (lt > a && lt < b) bow = Math.sin(Math.PI * (lt - a) / (b - a)); }
-    if (eyes) eyes.style.transform = (bow > .15 || (t % 3.7) < .13) ? 'scaleY(.12)' : '';
+    if (eyes) eyes.style.transform = (bow > .15 || (lt % 3.7) < .13) ? 'scaleY(.12)' : '';
     host.style.transformOrigin = '50% 95%';
-    host.style.transform = bow > 0 ? `translateY(${bow * 14}px) perspective(600px) rotateX(${-bow * 22}deg)` : `translateY(${speaking ? Math.sin(t * 6) * 2 : 0}px)`;
+    host.style.transform = bow > 0 ? `translateY(${bow * 14}px) perspective(600px) rotateX(${-bow * 22}deg)` : `translateY(${speaking ? Math.sin(lt * 6) * 2 : 0}px)`;
   }
   const ph = sc.phrases.find(p => lt >= p.start - .05 && lt < p.end + .25);
   const txt = ph ? ph.text : '';
@@ -198,6 +199,7 @@ def main():
     ap.add_argument("--no-host", action="store_true")
     ap.add_argument("--preview", type=float, default=0, help="영상 대신 N초마다 한 장씩만 저장(빠른 확인)")
     ap.add_argument("--end-cue", default="", help="마지막 장면에서 이 단어를 말할 때 끝 안내 화면을 띄움(쇼츠)")
+    ap.add_argument("--full", action="store_true", help="저장된 장면을 쓰지 않고 전부 다시 만듦(업로드 전 최종본)")
     ap.add_argument("--end-tail", type=float, default=0.8, help="--end-cue를 쓸 때 말이 끝난 뒤 남길 시간(초)")
     a = ap.parse_args()
 
@@ -217,13 +219,13 @@ def main():
     for s in sel:
         info = json.load(open(os.path.join(a.audio, s["id"] + ".json")))
         lead = s.get("lead", 0)
-        dur = lead + info["duration"] + s["hold"]
+        dur = math.ceil(round((lead + info["duration"] + s["hold"]) * FPS, 6)) / FPS   # 프레임 단위로 맞춤(장면별 재사용을 위해)
         words = [dict(w, start=round(w["start"] + lead, 3), end=round(w["end"] + lead, 3)) for w in info["words"]]
         phrases = [dict(p, start=round(p["start"] + lead, 3), end=round(p["end"] + lead, 3)) for p in scene_phrases(info, MAXCH[a.layout])]
-        tl.append({"id": s["id"], "start": round(t, 3), "dur": round(dur, 3), "audioDur": round(lead + info["duration"], 3),
+        tl.append({"id": s["id"], "start": round(t, 4), "dur": round(dur, 4), "audioDur": round(lead + info["duration"], 3),
                    "words": words, "phrases": phrases, "hold": s["hold"], "lead": lead})
         t += dur
-    end_sec = END_SEC if a.layout == "short" else 0
+    end_sec = (math.ceil(END_SEC * FPS) / FPS) if a.layout == "short" else 0
     end_at = None
     if a.end_cue:
         last = tl[-1]
@@ -233,7 +235,7 @@ def main():
         end_at = round(last["start"] + w[-1]["start"] - 0.15, 3)   # 같은 단어가 여러 번이면 마지막 것
         spoken_end = last["start"] + max(x["end"] for x in last["words"])
         end_sec = 0
-        last["dur"] = round(spoken_end + a.end_tail - last["start"], 3)
+        last["dur"] = round(math.ceil(round((spoken_end + a.end_tail - last["start"]) * FPS, 6)) / FPS, 4)
         last["hold"] = 0
         t = last["start"] + last["dur"]
     total = t + end_sec
@@ -283,6 +285,67 @@ def main():
     from playwright.sync_api import sync_playwright
     n = int(round(total * FPS))
     report = {"frames": n, "subtitle_max_lines": 0, "subtitle_over_1line": [], "console": []}
+    # 장면 구간(프레임 번호). 마지막 끝 화면은 "끝" 구간
+    segs = [(sc["id"], int(round(sc["start"] * FPS)), int(round((sc["start"] + sc["dur"]) * FPS))) for sc in tl]
+    if n > segs[-1][2]:
+        segs.append(("끝", segs[-1][2], n))
+    variant = hashlib.md5(json.dumps([a.layout, a.hook, a.endtext, a.end_cue, a.end_tail, a.no_host]).encode()).hexdigest()[:8]
+    cdir = os.path.join(SCENE_CACHE, os.path.basename(os.path.abspath(a.folder)), f"{a.layout}_{variant}")
+    os.makedirs(cdir, exist_ok=True)
+
+    def check_range(pg, f0, f1, shot_dir):
+        """f0~f1 프레임을 찍고(shot_dir가 있으면) 자막·빈 화면·겹침을 검사. 결과는 장면 안 시간으로 돌려줌"""
+        rep = {"subtitle_max_lines": 0, "subtitle_over_1line": []}
+        last_sub, run, empty_flagged, seen = None, 0.0, False, set()
+        for i in range(f0, f1):
+            tt = i / FPS; k = i - f0
+            pg.evaluate(f"render({tt})")
+            s_ = pg.evaluate("document.getElementById('sub').dataset.t||''")
+            if s_ and s_ != last_sub:
+                lines = pg.evaluate("subLines()")
+                rep["subtitle_max_lines"] = max(rep["subtitle_max_lines"], lines)
+                if lines > MAXLINES[a.layout]:
+                    rep["subtitle_over_1line"].append([round(k / FPS, 2), s_, lines])
+                if lines >= 2 and pg.evaluate("subLastLine()") <= 1:
+                    rep.setdefault("subtitle_orphan", []).append([round(k / FPS, 2), s_])
+                last_sub = s_
+            if shot_dir and (not a.preview or i % max(1, int(a.preview * FPS)) == 0):
+                pg.screenshot(path=os.path.join(shot_dir, f"{i:05d}.jpg"), type="jpeg", quality=92 if not a.preview else 70)
+            if k % 6 == 0:                                   # 0.2초마다: 말하는데 화면이 비어 있는지
+                empty = pg.evaluate("stageEmpty()")
+                run = (run + 0.2) if empty and s_ else 0.0
+                if run >= 1.0 and not empty_flagged:
+                    rep.setdefault("empty_stage", []).append(round(k / FPS - 1.0, 2)); empty_flagged = True
+                if not empty:
+                    empty_flagged = False
+            if k % 15 == 0:                                  # 0.5초마다: 겹침·여백·진행자 가림·칸 넘침
+                for o in pg.evaluate("overlaps()"):
+                    key = json.dumps(o[:3], ensure_ascii=False)
+                    if key not in seen:
+                        seen.add(key); rep.setdefault("layout_issues", []).append([round(k / FPS, 1)] + o)
+        return rep
+
+    def merge(sid, f0, rep):
+        t0 = f0 / FPS
+        report["subtitle_max_lines"] = max(report["subtitle_max_lines"], rep.get("subtitle_max_lines", 0))
+        report["subtitle_over_1line"] += [[round(t0 + x[0], 2)] + x[1:] for x in rep.get("subtitle_over_1line", [])]
+        for k in ("subtitle_orphan", "empty_stage"):
+            for x in rep.get(k, []):
+                report.setdefault(k, []).append(round(t0 + x, 2) if not isinstance(x, list) else [round(t0 + x[0], 2)] + x[1:])
+        for x in rep.get("layout_issues", []):
+            report.setdefault("layout_issues", []).append([sid, round(t0 + x[0], 1)] + x[1:])
+
+    def fingerprint(pg, f0, f1):
+        """장면을 0.5초마다 한 장(+마지막 장) 찍어 그림 지문을 만듦. 코드가 바뀌어도 화면이 같으면 지문이 같음"""
+        idx = list(range(f0, f1, 15)) + [f1 - 1]
+        hs = []
+        for i in idx:
+            pg.evaluate(f"render({i / FPS})")
+            hs.append(hashlib.md5(pg.screenshot(type="png")).hexdigest()[:12])
+        return hs
+
+    whole = a.preview or a.frames_only
+    redo, reused = [], []
     with sync_playwright() as pw:
         b = pw.chromium.launch()
         pg = b.new_page(viewport={"width": W, "height": H})
@@ -292,37 +355,28 @@ def main():
         pg.evaluate("document.fonts.ready")
         pg.wait_for_timeout(300)
         report["fonts"] = pg.evaluate("[...document.fonts].filter(f=>f.status==='loaded').map(f=>f.weight).join(',')")
-        last_sub = None
-        run, empty_flagged = 0.0, False
-        seen_issue = set()
-        for i in range(n):
-            tt = i / FPS
-            pg.evaluate(f"render({tt})")
-            s = pg.evaluate("document.getElementById('sub').dataset.t||''")
-            if s and s != last_sub:
-                lines = pg.evaluate("subLines()")
-                report["subtitle_max_lines"] = max(report["subtitle_max_lines"], lines)
-                if lines > MAXLINES[a.layout]:
-                    report["subtitle_over_1line"].append([round(tt, 2), s, lines])
-                if lines >= 2 and pg.evaluate("subLastLine()") <= 1:
-                    report.setdefault("subtitle_orphan", []).append([round(tt, 2), s])
-                last_sub = s
-            if not a.preview or i % max(1, int(a.preview * FPS)) == 0:
-                pg.screenshot(path=os.path.join(work, "f", f"{i:05d}.jpg"), type="jpeg", quality=92 if not a.preview else 70)
-            if i % 6 == 0:                                   # 0.2초마다: 말하는데 화면이 비어 있는지
-                empty = pg.evaluate("stageEmpty()")
-                run = (run + 0.2) if empty and s else 0.0
-                if run >= 1.0 and not empty_flagged:
-                    report.setdefault("empty_stage", []).append(round(tt - 1.0, 2)); empty_flagged = True
-                if not empty:
-                    empty_flagged = False
-            if i % 15 == 0:                                  # 0.5초마다: 겹침·여백·진행자 가림
-                cur_id = next((sc["id"] for sc in tl if sc["start"] <= tt < sc["start"] + sc["dur"]), "끝")
-                for o in pg.evaluate("overlaps()"):
-                    key = json.dumps([cur_id] + o[:3], ensure_ascii=False)
-                    if key not in seen_issue:
-                        seen_issue.add(key); report.setdefault("layout_issues", []).append([cur_id, round(tt, 1)] + o)
+        if whole:
+            for sid, f0, f1 in segs:
+                merge(sid, f0, check_range(pg, f0, f1, os.path.join(work, "f")))
+        else:
+            for sid, f0, f1 in segs:
+                fp = fingerprint(pg, f0, f1)
+                cj, cv = os.path.join(cdir, sid + ".json"), os.path.join(cdir, sid + ".mp4")
+                old = json.load(open(cj)) if os.path.exists(cj) else None
+                if not a.full and old and old["fp"] == fp and old["frames"] == f1 - f0 and os.path.exists(cv):
+                    merge(sid, f0, old["report"]); reused.append(sid); continue
+                d = os.path.join(work, "f_" + sid); os.makedirs(d, exist_ok=True)
+                rep = check_range(pg, f0, f1, d)
+                pg.evaluate(f"render({f0 / FPS})")
+                if fingerprint(pg, f0, f1) != fp:        # 같은 순간을 두 번 찍어도 같은지(지문 신뢰성)
+                    report.setdefault("fingerprint_unstable", []).append(sid)
+                subprocess.run(["ffmpeg", "-v", "error", "-y", "-framerate", str(FPS), "-start_number", str(f0), "-i", os.path.join(d, "%05d.jpg"),
+                                "-c:v", "libx264", "-preset", "veryfast", "-crf", "18", "-pix_fmt", "yuv420p", "-r", str(FPS), cv], check=True)
+                json.dump({"fp": fp, "frames": f1 - f0, "report": rep}, open(cj, "w"), ensure_ascii=False)
+                merge(sid, f0, rep); redo.append(sid)
+                shutil.rmtree(d, ignore_errors=True)
         b.close()
+    report["다시 만든 장면"] = redo; report["재사용한 장면"] = len(reused)
     json.dump({"timeline": [{k: v for k, v in s.items() if k != "words"} for s in tl], "report": report},
               open(os.path.join(work, "report.json"), "w"), ensure_ascii=False, indent=1)
     if a.preview:
@@ -340,10 +394,11 @@ def main():
         print(json.dumps(report, ensure_ascii=False)[:3000]); return
     if a.frames_only:
         print(json.dumps(report, ensure_ascii=False)[:800]); return
-    subprocess.run(["ffmpeg", "-v", "error", "-y", "-framerate", str(FPS), "-i", os.path.join(work, "f", "%05d.jpg"),
-                    "-i", os.path.join(work, "audio.wav"), "-c:v", "libx264", "-preset", "veryfast", "-crf", "18",
-                    "-pix_fmt", "yuv420p", "-c:a", "aac", "-b:a", "192k", "-shortest", "-movflags", "+faststart", a.out], check=True)
-    print(a.out, f"{total:.2f}초", f"{n}프레임")
+    lst = os.path.join(work, "clips.txt")
+    open(lst, "w").write("".join(f"file '{os.path.join(cdir, sid + '.mp4')}'\n" for sid, _, _ in segs))
+    subprocess.run(["ffmpeg", "-v", "error", "-y", "-f", "concat", "-safe", "0", "-i", lst, "-i", os.path.join(work, "audio.wav"),
+                    "-c:v", "copy", "-c:a", "aac", "-b:a", "192k", "-shortest", "-movflags", "+faststart", a.out], check=True)
+    print(a.out, f"{total:.2f}초", f"{n}프레임", f"다시 만든 장면 {len(redo)}개, 재사용 {len(reused)}개")
     print(json.dumps(report, ensure_ascii=False)[:800])
 
 
