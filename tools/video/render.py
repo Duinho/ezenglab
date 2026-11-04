@@ -48,10 +48,10 @@ html,body{margin:0;width:%(W)dpx;height:%(H)dpx;overflow:hidden;background:#f2f8
 .intro-target{font-weight:800;color:#14936a;line-height:1.1}.intro-target .lab{color:#14213d}
 .intro-role{display:inline-block;background:#14936a;color:#fff;font-weight:800;font-size:60px;padding:14px 46px;border-radius:999px}
 .intro-floor{height:12px;background:#14936a;border-radius:6px;opacity:.35;transform-origin:50%% 50%%}
-#host{position:absolute;width:%(hs)dpx;height:%(hs)dpx;left:%(hx)dpx;top:%(hy)dpx;filter:drop-shadow(0 6px 10px rgba(0,0,0,.12))}
+#host{position:absolute;z-index:5;width:%(hs)dpx;height:%(hs)dpx;left:%(hx)dpx;top:%(hy)dpx;filter:drop-shadow(0 6px 10px rgba(0,0,0,.12))}
 #host svg{width:100%%;height:100%%}
 #host #eyes{transform-box:fill-box;transform-origin:50%% 50%%}
-#sub{position:absolute;left:%(subx)dpx;width:%(subw)dpx;top:%(suby)dpx;text-align:center}
+#sub{position:absolute;z-index:5;left:%(subx)dpx;width:%(subw)dpx;top:%(suby)dpx;text-align:center}
 #sub span{display:inline-block;max-width:100%%;background:rgba(20,33,61,.88);color:#fff;font-weight:600;font-size:%(subf)dpx;line-height:1.3;padding:14px 34px;border-radius:18px;text-wrap:balance}
 #hook{position:absolute;left:60px;right:60px;top:90px;text-align:center;font-weight:800;font-size:78px;line-height:1.25;color:#14213d;text-wrap:balance}
 #hook b{color:#14936a}
@@ -67,7 +67,7 @@ window.render = function (t) {
   let sc = TL.scenes.find(s => t >= s.start && t < s.start + s.dur);
   const end = document.getElementById('endcard');
   if (!sc) { end.style.opacity = 1; sub.innerHTML = ''; return; }
-  end.style.opacity = 0;
+  end.style.opacity = TL.endAt != null ? Math.min(1, Math.max(0, (t - TL.endAt) / .35)) : 0;
   if (cur !== sc.id) {
     stage.innerHTML = ''; cur = sc.id;
     ctx = makeCtx(sc, stage, TL.layout);
@@ -125,6 +125,8 @@ def main():
     ap.add_argument("--hook", default=""); ap.add_argument("--endtext", default="")
     ap.add_argument("--frames-only", action="store_true")
     ap.add_argument("--no-host", action="store_true")
+    ap.add_argument("--end-cue", default="", help="마지막 장면에서 이 단어를 말할 때 끝 안내 화면을 띄움(쇼츠)")
+    ap.add_argument("--end-tail", type=float, default=0.8, help="--end-cue를 쓸 때 말이 끝난 뒤 남길 시간(초)")
     a = ap.parse_args()
 
     md = open(os.path.join(a.folder, "장면표.md"), encoding="utf-8").read()
@@ -150,6 +152,18 @@ def main():
                    "words": words, "phrases": phrases, "hold": s["hold"], "lead": lead})
         t += dur
     end_sec = END_SEC if a.layout == "short" else 0
+    end_at = None
+    if a.end_cue:
+        last = tl[-1]
+        w = [x for x in last["words"] if a.end_cue in x["text"]]
+        if not w:
+            raise SystemExit(f"--end-cue 단어를 찾지 못함: {a.end_cue}")
+        end_at = round(last["start"] + w[-1]["start"] - 0.15, 3)   # 같은 단어가 여러 번이면 마지막 것
+        spoken_end = last["start"] + max(x["end"] for x in last["words"])
+        end_sec = 0
+        last["dur"] = round(spoken_end + a.end_tail - last["start"], 3)
+        last["hold"] = 0
+        t = last["start"] + last["dur"]
     total = t + end_sec
 
     work = os.path.join(os.path.dirname(os.path.abspath(a.out)), "_work_" + os.path.basename(a.out).rsplit(".", 1)[0])
@@ -162,11 +176,14 @@ def main():
         return b"\0" * (int(sec * p0.framerate) * p0.sampwidth * p0.nchannels)
     with wave.open(os.path.join(work, "audio.wav"), "wb") as out:
         out.setparams(p0)
-        for s in sel:
+        bpf = p0.sampwidth * p0.nchannels
+        for s, seg in zip(sel, tl):
             out.writeframes(silence(s.get("lead", 0)))
             with wave.open(os.path.join(a.audio, s["id"] + ".wav")) as w:
-                out.writeframes(w.readframes(w.getnframes()))
-            out.writeframes(silence(s["hold"]))
+                fr = w.readframes(w.getnframes())
+            need = int((seg["dur"] - s.get("lead", 0)) * p0.framerate) * bpf
+            fr = fr[:need] if len(fr) >= need else fr + b"\0" * (need - len(fr))
+            out.writeframes(fr)
         out.writeframes(silence(end_sec))
 
     sx, sy, sw, sh = STAGE[a.layout]
@@ -184,7 +201,7 @@ def main():
     html = f"""<!doctype html><html><head><meta charset="utf-8"><style>{css}</style></head><body>
 <div id="stage"></div>{hook}<div id="host">{host_svg}</div><div id="sub"></div>
 <div id="endcard"><div class="a">{endtext}</div><div class="b">눈높이가 바닥에 있는 공학 연구소</div></div>
-<script>const TL={json.dumps({"layout": a.layout, "scenes": tl}, ensure_ascii=False)};</script>
+<script>const TL={json.dumps({"layout": a.layout, "scenes": tl, "endAt": end_at}, ensure_ascii=False)};</script>
 <script>{lib}</script><script>{scn}</script><script>{RUNTIME}</script></body></html>"""
     page_path = os.path.join(work, "page.html")
     open(page_path, "w", encoding="utf-8").write(html)
