@@ -74,13 +74,22 @@ function card(parent, x, y, w, h, opt = {}) {
   return d;
 }
 
-// 화살표(svg 선). 길이 u(0~1)만큼 그려짐
+// 화살표(svg 선). 길이 u(0~1)만큼 그려지고, 화살촉은 선 끝을 따라 함께 움직인다.
+// 선은 화살촉 밑변에서 끝나게 해서 둥근 선 끝이 화살촉 밖으로 삐져나오지 않게 한다.
 function arrow(svg, x1, y1, x2, y2, color, width = 8) {
-  const len = Math.hypot(x2 - x1, y2 - y1);
+  const ang = Math.atan2(y2 - y1, x2 - x1), len = Math.hypot(x2 - x1, y2 - y1);
+  const hl = width * 3.4, hw = width * 2.1;              // 화살촉 길이·반폭
   const g = el('g', {}, svg);
-  const p = el('line', { x1, y1, x2, y2, stroke: color, 'stroke-width': width, 'stroke-linecap': 'round',
-    'stroke-dasharray': len, 'stroke-dashoffset': len }, g);
-  const ang = Math.atan2(y2 - y1, x2 - x1), hs = width * 3.2;
-  const head = el('polygon', { points: `${x2},${y2} ${x2 - hs * Math.cos(ang - .45)},${y2 - hs * Math.sin(ang - .45)} ${x2 - hs * Math.cos(ang + .45)},${y2 - hs * Math.sin(ang + .45)}`, fill: color, opacity: 0 }, g);
-  return u => { p.setAttribute('stroke-dashoffset', len * (1 - E.ease(u))); head.setAttribute('opacity', u >= .95 ? 1 : 0); };
+  const line = el('line', { x1, y1, x2: x1, y2: y1, stroke: color, 'stroke-width': width, 'stroke-linecap': 'round' }, g);
+  const head = el('polygon', { fill: color, stroke: color, 'stroke-width': width * .45, 'stroke-linejoin': 'round', opacity: 0 }, g);
+  return u => {
+    const k = E.ease(u), d = len * k;
+    const tx = x1 + Math.cos(ang) * d, ty = y1 + Math.sin(ang) * d;           // 지금 화살촉 끝
+    const bd = Math.max(0, d - hl * .85);                                      // 선은 화살촉 밑변까지
+    line.setAttribute('x2', x1 + Math.cos(ang) * bd); line.setAttribute('y2', y1 + Math.sin(ang) * bd);
+    const bx = tx - Math.cos(ang) * hl, by = ty - Math.sin(ang) * hl, nx = -Math.sin(ang) * hw, ny = Math.cos(ang) * hw;
+    head.setAttribute('points', `${tx},${ty} ${bx + nx},${by + ny} ${bx - nx},${by - ny}`);
+    head.setAttribute('opacity', E.clamp(d / (hl * 1.2)));
+    line.setAttribute('opacity', d > 1 ? 1 : 0);
+  };
 }
