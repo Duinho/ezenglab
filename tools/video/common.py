@@ -10,10 +10,11 @@ def parse_scenes(md):
     out = []
     for m in re.finditer(r"^### (L\d+) · (.*?)\n(.*?)(?=^### |^## |\Z)", md, re.S | re.M):
         sid, title, body = m.groups()
-        f = dict(re.findall(r"^- (읽기|화면|움직임|멈춤): (.*)$", body, re.M))
+        f = dict(re.findall(r"^- (읽기|화면|움직임|멈춤|앞멈춤): (.*)$", body, re.M))
         hold = float(re.sub(r"[^0-9.]", "", f.get("멈춤", "0")) or 0)
+        lead = float(re.sub(r"[^0-9.]", "", f.get("앞멈춤", "0")) or 0)
         out.append(dict(id=sid, title=title.strip(), reading=f.get("읽기", ""),
-                        screen=f.get("화면", ""), motion=f.get("움직임", ""), hold=hold))
+                        screen=f.get("화면", ""), motion=f.get("움직임", ""), hold=hold, lead=lead))
     return out
 
 
@@ -44,7 +45,8 @@ def tokens(marked, dic):
     for m in MARK_RE.finditer(marked):
         if m.start() > pos:
             toks += _dict_tokens(marked[pos:m.start()], dic)
-        toks.append((m.group(1), m.group(2)))
+        # 읽기와 자막이 같아도 '끊지 않는 덩어리'로 표시(보이지 않는 글자 U+2060을 붙임)
+        toks.append((m.group(1), m.group(2) if m.group(2) != m.group(1) else m.group(2) + "\u2060"))
         pos = m.end()
     toks += _dict_tokens(marked[pos:], dic)
     return [t for t in toks if t[0]]
@@ -74,7 +76,7 @@ def subtitle_text(marked, dic):
     out = []
     for seg, _ in segments(marked):
         out.append("".join(s for _, s in tokens(seg, dic)))
-    return " ".join(out)
+    return " ".join(out).replace("\u2060", "")
 
 
 def nospace(s):

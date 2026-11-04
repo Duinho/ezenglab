@@ -65,7 +65,7 @@ def _sub(R, toks, a, b):
                 out.append(r[x - ta:y - ta])
         elif a <= ta < b:
             out.append(s)
-    return re.sub(r"\s+", " ", "".join(out)).strip()
+    return re.sub(r"\s+", " ", "".join(out)).replace("\u2060", "").strip()
 
 
 CONNECT = ("고", "서", "며", "면", "지만", "는데", "니까", "도", "요", "죠")
@@ -109,7 +109,7 @@ def _split_sentence(us, R, toks, max_chars):
         res = None
         for j in range(i + 1, n - parts + 2):
             L = length(i, j)
-            if L > max_chars or L < MIN_CHARS:
+            if L > max_chars or (L < MIN_CHARS and not (us[j - 1]["punct"] == "," and L >= 5)):
                 continue
             L = L * 0.3
             score, cuts = dp(j, parts - 1)

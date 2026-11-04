@@ -40,6 +40,13 @@ html,body{margin:0;width:%(W)dpx;height:%(H)dpx;overflow:hidden;background:#f2f8
 .rule{font-weight:600;font-size:62px;line-height:1.35;background:#fff;border-radius:30px;padding:30px;border:5px solid #14936a}
 .rule b,.endnote b{color:#14936a;font-weight:800}
 .endnote{font-weight:800;font-size:72px}
+.intro-full{font-weight:800;color:#14213d;line-height:1.35}.intro-row{white-space:nowrap}
+.intro-ch{display:inline-block;transform-origin:50%% 50%%}
+.intro-ch.key{color:color-mix(in srgb,#14936a calc(var(--hi,0)*100%%),#14213d);position:relative;z-index:2}
+.intro-ch.key::before{content:'';position:absolute;left:50%%;top:52%%;width:1.18em;height:1.18em;border-radius:50%%;background:#14936a;opacity:calc(var(--hi,0)*.16);transform:translate(-50%%,-50%%);z-index:-1}
+.intro-target{font-weight:800;color:#14936a;line-height:1.1}.intro-target .lab{color:#14213d}
+.intro-role{display:inline-block;background:#14936a;color:#fff;font-weight:800;font-size:60px;padding:14px 46px;border-radius:999px}
+.intro-floor{height:12px;background:#14936a;border-radius:6px;opacity:.35;transform-origin:50%% 50%%}
 #sub{position:absolute;left:%(subx)dpx;width:%(subw)dpx;top:%(suby)dpx;text-align:center}
 #sub span{display:inline-block;max-width:100%%;background:rgba(20,33,61,.88);color:#fff;font-weight:600;font-size:%(subf)dpx;line-height:1.3;padding:14px 34px;border-radius:18px;text-wrap:balance}
 #hook{position:absolute;left:60px;right:60px;top:90px;text-align:center;font-weight:800;font-size:78px;line-height:1.25;color:#14213d;text-wrap:balance}
@@ -72,7 +79,7 @@ window.render = function (t) {
 };
 window.overlaps = () => {
   const st = stage.getBoundingClientRect(), out = [];
-  const nodes = [...stage.children].filter(n => n.tagName.toLowerCase() !== 'svg' && parseFloat(getComputedStyle(n).opacity) > .3 && n.offsetWidth > 0);
+  const nodes = [...stage.children].filter(n => n.tagName.toLowerCase() !== 'svg' && !n.classList.contains('noqa') && parseFloat(getComputedStyle(n).opacity) > .3 && n.offsetWidth > 0);
   const R = nodes.map(n => { const r = n.getBoundingClientRect(); return { n, r, name: (n.className && n.className.baseVal === undefined ? n.className : '') + ':' + (n.textContent || '').trim().slice(0, 12) }; });
   for (const a of R) {
     if (a.r.left < st.left - 2 || a.r.right > st.right + 2 || a.r.top < st.top - 2 || a.r.bottom > st.bottom + 2) out.push(['밖', a.name]);
@@ -111,9 +118,12 @@ def main():
     tl, t = [], 0.0
     for s in sel:
         info = json.load(open(os.path.join(a.audio, s["id"] + ".json")))
-        dur = info["duration"] + s["hold"]
-        tl.append({"id": s["id"], "start": round(t, 3), "dur": round(dur, 3), "audioDur": info["duration"],
-                   "words": info["words"], "phrases": scene_phrases(info, MAXCH[a.layout]), "hold": s["hold"]})
+        lead = s.get("lead", 0)
+        dur = lead + info["duration"] + s["hold"]
+        words = [dict(w, start=round(w["start"] + lead, 3), end=round(w["end"] + lead, 3)) for w in info["words"]]
+        phrases = [dict(p, start=round(p["start"] + lead, 3), end=round(p["end"] + lead, 3)) for p in scene_phrases(info, MAXCH[a.layout])]
+        tl.append({"id": s["id"], "start": round(t, 3), "dur": round(dur, 3), "audioDur": round(lead + info["duration"], 3),
+                   "words": words, "phrases": phrases, "hold": s["hold"], "lead": lead})
         t += dur
     end_sec = END_SEC if a.layout == "short" else 0
     total = t + end_sec
@@ -129,6 +139,7 @@ def main():
     with wave.open(os.path.join(work, "audio.wav"), "wb") as out:
         out.setparams(p0)
         for s in sel:
+            out.writeframes(silence(s.get("lead", 0)))
             with wave.open(os.path.join(a.audio, s["id"] + ".wav")) as w:
                 out.writeframes(w.readframes(w.getnframes()))
             out.writeframes(silence(s["hold"]))
@@ -141,7 +152,7 @@ def main():
                      endf=72 if a.layout == "short" else 80)
     hook = f'<div id="hook">{a.hook}</div><div id="brand">눈높이가 바닥에 있는 공학 연구소</div>' if a.layout == "short" else ""
     endtext = a.endtext or "전체 설명은<br>관련 동영상에서"
-    lib = open(os.path.join(HERE, "lib.js"), encoding="utf-8").read()
+    lib = open(os.path.join(HERE, "lib.js"), encoding="utf-8").read() + "\n" + open(os.path.join(HERE, "intro.js"), encoding="utf-8").read()
     scn = open(os.path.join(a.folder, "scenes.js"), encoding="utf-8").read()
     html = f"""<!doctype html><html><head><meta charset="utf-8"><style>{css}</style></head><body>
 <div id="stage"></div>{hook}<div id="sub"></div>

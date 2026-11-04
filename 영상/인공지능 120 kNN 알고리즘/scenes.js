@@ -59,15 +59,7 @@ const SCENES = {
     },
   },
 
-  L02: {
-    init(ctx) {
-      const L = ctx.long;
-      this.box = el('div', { class: 'abs center', style: { left: 0, width: '100%', top: (L ? 300 : 600) + 'px' } }, ctx.stage);
-      this.box.innerHTML = `<div class="chip">눈높이가 바닥에 있는</div><div class="big" style="font-size:${L ? 120 : 104}px">공학 연구소</div>
-        <div class="floor" style="width:${L ? 900 : 760}px"></div>`;
-    },
-    frame(ctx, t) { show(this.box, E.prog(t, 0, .6), 40); },
-  },
+  L02: INTRO,   // 공통 인트로(tools/video/intro.js)
 
   L03: {
     init(ctx) {
