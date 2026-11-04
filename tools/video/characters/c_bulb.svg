@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 360">
+  <!-- 시안 C: 엘이디 박사. 초록 LED 머리에 다리 두 개 -->
+  <g id="body">
+    <line x1="125" y1="262" x2="118" y2="345" stroke="#8a94a6" stroke-width="10" stroke-linecap="round"/>
+    <line x1="175" y1="262" x2="186" y2="330" stroke="#8a94a6" stroke-width="10" stroke-linecap="round"/>
+    <ellipse cx="114" cy="348" rx="20" ry="8" fill="#14213d"/><ellipse cx="190" cy="334" rx="20" ry="8" fill="#14213d"/>
+    <rect x="88" y="235" width="124" height="34" rx="8" fill="#c9d3e0"/>
+    <path d="M 88 240 L 88 150 A 62 62 0 0 1 212 150 L 212 240 Z" fill="#7fd6b2" stroke="#14936a" stroke-width="6"/>
+    <path d="M 110 140 A 40 40 0 0 1 150 102" fill="none" stroke="#ffffff" stroke-width="10" stroke-linecap="round" opacity=".7"/>
+  </g>
+  <g id="arm"><path d="M 212 210 q 45 -12 55 -60" fill="none" stroke="#8a94a6" stroke-width="10" stroke-linecap="round"/><circle cx="268" cy="146" r="11" fill="#14213d"/></g>
+  <g id="eyes"><rect x="114" y="158" width="20" height="26" rx="10" fill="#14213d"/><rect x="166" y="158" width="20" height="26" rx="10" fill="#14213d"/><circle cx="128" cy="164" r="4" fill="#fff"/><circle cx="180" cy="164" r="4" fill="#fff"/></g>
+  <g id="mouth-closed"><path d="M 134 206 q 16 12 32 0" fill="none" stroke="#14213d" stroke-width="6" stroke-linecap="round"/></g>
+  <g id="mouth-open" style="display:none"><path d="M 132 200 q 18 30 36 0 z" fill="#14213d"/></g>
+</svg>

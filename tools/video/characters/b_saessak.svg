@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 360">
+  <!-- 시안 B: 새싹 연구원. 바닥에서 막 올라온 새싹, 흰 가운 -->
+  <g id="body">
+    <path d="M 150 70 C 150 40, 130 20, 100 18 C 102 48, 122 66, 150 70 Z" fill="#14936a"/>
+    <path d="M 150 70 C 152 38, 176 20, 206 22 C 202 52, 180 68, 150 70 Z" fill="#2fb383"/>
+    <line x1="150" y1="70" x2="150" y2="92" stroke="#14936a" stroke-width="8"/>
+    <path d="M 70 360 L 82 250 Q 150 220 218 250 L 230 360 Z" fill="#ffffff" stroke="#cfd8e3" stroke-width="5"/>
+    <path d="M 150 238 L 150 360" stroke="#cfd8e3" stroke-width="4"/>
+    <rect x="160" y="270" width="34" height="24" rx="4" fill="#e9f5ef" stroke="#14936a" stroke-width="3"/>
+    <circle cx="150" cy="165" r="80" fill="#ffe3c2" stroke="#e8c49a" stroke-width="5"/>
+  </g>
+  <g id="arm"><path d="M 218 260 q 45 -25 50 -75" fill="none" stroke="#ffffff" stroke-width="22" stroke-linecap="round"/><path d="M 218 260 q 45 -25 50 -75" fill="none" stroke="#cfd8e3" stroke-width="3" stroke-linecap="round" opacity=".6"/><circle cx="268" cy="180" r="13" fill="#ffe3c2" stroke="#e8c49a" stroke-width="3"/></g>
+  <g id="eyes"><ellipse cx="122" cy="158" rx="11" ry="14" fill="#14213d"/><ellipse cx="178" cy="158" rx="11" ry="14" fill="#14213d"/><circle cx="126" cy="152" r="4" fill="#fff"/><circle cx="182" cy="152" r="4" fill="#fff"/></g>
+  <g id="mouth-closed"><path d="M 134 196 q 16 12 32 0" fill="none" stroke="#14213d" stroke-width="6" stroke-linecap="round"/></g>
+  <g id="mouth-open" style="display:none"><ellipse cx="150" cy="198" rx="16" ry="13" fill="#14213d"/><ellipse cx="150" cy="204" rx="9" ry="5" fill="#e0701b"/></g>
+  <circle cx="100" cy="188" r="10" fill="#f6a99a" opacity=".6"/><circle cx="200" cy="188" r="10" fill="#f6a99a" opacity=".6"/>
+</svg>
