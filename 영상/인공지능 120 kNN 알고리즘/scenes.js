@@ -98,11 +98,14 @@ const SCENES = {
       });
       this.ask = el('div', { class: 'abs center ask', style: { left: 0, width: '100%', top: (g.cardY - 110) + 'px' } }, s);
       this.ask.textContent = '각각 누가 좋아할까요?';
+      this.tAsk = ctx.at('누가', 1, 4) - .1;
+      this.tName = ['에이', '비', '씨'].map((w, i) => ctx.at(w, 1, .2 + i * .2));
       this.count = el('div', { class: 'abs center count', style: { left: (ctx.W / 2 - 150) + 'px', width: '300px', top: (ctx.long ? 705 : 1000) + 'px', fontSize: (ctx.long ? 150 : 130) + 'px', lineHeight: 1.1 } }, s);
     },
     frame(ctx, t) {
-      this.friends.forEach(f => show(f, 1));
-      show(this.ask, E.prog(t, .1, .5), 20);
+      // "A, B, C가 말하지 않은": 이름이 불릴 때 친구가 살짝 튀어 오름
+      this.friends.forEach((f, i) => { const u = E.prog(t, this.tName[i] - .05, .35); f.style.opacity = 1; f.style.transform = `scale(${1 + .12 * Math.sin(Math.PI * u)})`; });
+      show(this.ask, E.prog(t, this.tAsk, .4), 20);
       this.cards.forEach(c => pop(c.c, E.prog(t, c.t, .45), .7));
       const h = t - ctx.audioDur;                          // 말이 끝난 뒤 멈춤 시간
       if (h > 0) {

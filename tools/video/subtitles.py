@@ -76,7 +76,10 @@ def _break_pen(u):
     """이 단어 뒤에서 끊을 때의 벌점(작을수록 자연스러움)"""
     w = _clean(u["w2"]["text"] if "w2" in u else u["w"]["text"])
     if u["punct"] == ",":
-        return 0
+        # 절이 끝나는 쉼표(…만, …고, …네,)는 끊기 좋은 자리, 낱말을 늘어놓는 쉼표(칼국수, 소불고기,)는 아님
+        if "w2" in u or w.endswith(("만", "고", "서", "요", "죠", "다", "데", "면", "네", "니", "며", "도", "지만")):
+            return 0
+        return 5
     if len(w) <= 1:
         return 12
     if w.endswith(CONNECT):
