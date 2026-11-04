@@ -1,48 +1,8 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="-10 -10 320 320">
-  <!-- 바닥 연구소장(팀장님 본인 캐릭터): 숱 많은 바가지 앞머리가 한쪽으로 살짝 내려와 눈썹을 덮음, 귀는 드러남, 동글동글한 볼, 가늘고 졸린 눈, 한쪽만 올라간 미소 -->
-  <g id="hair-back">
-    <path d="M 60 150 C 50 80, 96 30, 156 30 C 216 30, 258 78, 248 152 L 238 156 L 64 156 Z" fill="#2e2420"/>
-  </g>
-  <g id="ears">
-    <ellipse cx="66" cy="182" rx="15" ry="22" fill="#f6d3b0"/><path d="M 64 172 q -6 10 0 20" fill="none" stroke="#e9b98f" stroke-width="4" stroke-linecap="round"/>
-    <ellipse cx="240" cy="182" rx="15" ry="22" fill="#f6d3b0"/><path d="M 242 172 q 6 10 0 20" fill="none" stroke="#e9b98f" stroke-width="4" stroke-linecap="round"/>
-  </g>
-  <g id="face">
-    <path d="M 68 150 C 58 218, 92 268, 152 268 C 212 268, 246 218, 238 150 C 238 120, 68 120, 68 150 Z" fill="#f6d3b0"/>
-  </g>
-  <g id="hair">
-    <!-- 앞머리: 왼쪽(화면 기준)은 조금 높고 오른쪽으로 갈수록 내려와 눈썹을 덮음. 끝은 둥글게 살짝 들쭉날쭉 -->
-    <path d="M 58 150 C 54 96, 100 56, 156 56 C 212 56, 254 96, 250 152
-             C 246 160, 240 166, 232 170 C 222 168, 214 162, 206 158
-             C 198 164, 188 166, 178 160 C 168 162, 158 160, 150 152
-             C 140 156, 128 156, 118 148 C 106 152, 94 150, 86 144
-             C 76 150, 66 152, 58 150 Z" fill="#2e2420"/>
-    <!-- 옆머리: 짧게 정리되어 귀 위에서 끝남 -->
-    <path d="M 58 150 C 58 160, 62 166, 70 166 C 72 158, 72 152, 70 146 Z" fill="#2e2420"/>
-    <path d="M 250 152 C 250 162, 246 168, 238 168 C 236 160, 236 154, 238 148 Z" fill="#2e2420"/>
-    <g fill="none" stroke="#6a5548" stroke-width="4" stroke-linecap="round" opacity=".85">
-      <path d="M 96 84 C 120 70, 160 68, 196 82"/>
-      <path d="M 110 100 C 130 114, 150 128, 156 146"/>
-      <path d="M 146 92 C 170 110, 188 128, 196 152"/>
-      <path d="M 186 90 C 206 108, 218 126, 222 154"/>
-      <path d="M 84 110 C 94 120, 104 130, 110 142"/>
-    </g>
-  </g>
-  <!-- 눈: 가늘고 졸린 눈 -->
-  <g id="eyes">
-    <path d="M 100 186 Q 116 176 132 186 Q 116 192 100 186 Z" fill="#ffffff"/>
-    <path d="M 174 190 Q 190 180 206 190 Q 190 196 174 190 Z" fill="#ffffff"/>
-    <ellipse cx="117" cy="186" rx="7" ry="5.5" fill="#14213d"/>
-    <ellipse cx="190" cy="190" rx="7" ry="5.5" fill="#14213d"/>
-    <path d="M 98 186 Q 116 174 134 185" fill="none" stroke="#2a1e18" stroke-width="5" stroke-linecap="round"/>
-    <path d="M 172 190 Q 190 178 208 189" fill="none" stroke="#2a1e18" stroke-width="5" stroke-linecap="round"/>
-  </g>
-  <!-- 코: 동글넓적한 코 -->
-  <path d="M 146 196 C 140 212, 138 220, 146 224 C 150 226, 156 226, 160 224" fill="none" stroke="#e9b98f" stroke-width="5" stroke-linecap="round"/>
-  <!-- 볼 -->
-  <ellipse cx="98" cy="216" rx="16" ry="10" fill="#f2a493" opacity=".45"/>
-  <ellipse cx="208" cy="218" rx="16" ry="10" fill="#f2a493" opacity=".45"/>
-  <!-- 입: 평소엔 한쪽만 올라간 미소 -->
-  <g id="mouth-closed"><path d="M 126 238 C 142 246, 162 246, 178 232" fill="none" stroke="#9a4b4b" stroke-width="5" stroke-linecap="round"/></g>
-  <g id="mouth-open" style="display:none"><path d="M 132 236 C 140 254, 166 254, 174 234 C 160 240, 146 240, 132 236 Z" fill="#5a2430"/><path d="M 142 246 Q 153 252 164 246" fill="none" stroke="#e9717a" stroke-width="4" stroke-linecap="round"/></g>
-</svg>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="-10 -10 320 320"><g id="hair-back"><path d="M 56 132 C 44 112, 50 86, 72 76 C 72 50, 98 34, 122 38 C 134 22, 162 20, 178 34 C 202 28, 228 42, 230 66 C 252 78, 256 108, 244 132 C 245 158, 240 178, 228 192 L 72 192 C 60 178, 55 158, 56 132 Z" fill="#231c1a"/></g><ellipse cx="150" cy="174" rx="74" ry="84" fill="#ffdcb5"/><g id="hair"><path d="M 240 132 C 238 162, 230 192, 217 212 C 213 194, 210 168, 207 140 Z" fill="#231c1a"/><path d="M 60 132 C 62 162, 70 192, 83 212 C 87 194, 90 168, 93 140 Z" fill="#231c1a"/><path d="M 60 130 C 66 90, 106 66, 150 66 C 194 66, 234 90, 240 130 C 234 150, 214 158, 200 148 C 190 162, 166 164, 150 152 C 134 164, 110 162, 100 148 C 86 158, 66 150, 60 130 Z" fill="#231c1a"/><path d="M 90 100 c 8 -14 24 -14 30 0" fill="none" stroke="#5b4840" stroke-width="4" stroke-linecap="round"/><path d="M 136 92 c 8 -14 24 -14 30 0" fill="none" stroke="#5b4840" stroke-width="4" stroke-linecap="round"/><path d="M 182 100 c 8 -14 24 -14 30 0" fill="none" stroke="#5b4840" stroke-width="4" stroke-linecap="round"/></g><g id="eyes"><ellipse cx="114" cy="170" rx="14" ry="12" fill="#fff"/><ellipse cx="186" cy="170" rx="14" ry="12" fill="#fff"/>
+<circle cx="116" cy="173" r="7" fill="#14213d"/><circle cx="184" cy="173" r="7" fill="#14213d"/>
+<path d="M 99 167 Q 114 155 129 167 Z" fill="#ffdcb5"/><path d="M 171 167 Q 186 155 201 167 Z" fill="#ffdcb5"/>
+<path d="M 99 167 Q 114 162 129 167" fill="none" stroke="#3b2a20" stroke-width="4" stroke-linecap="round"/><path d="M 171 167 Q 186 162 201 167" fill="none" stroke="#3b2a20" stroke-width="4" stroke-linecap="round"/></g>
+<path d="M 150 182 Q 144 197 152 201" fill="none" stroke="#e0a77c" stroke-width="4" stroke-linecap="round"/>
+<ellipse cx="100" cy="203" rx="12" ry="8" fill="#f6a99a" opacity=".5"/><ellipse cx="200" cy="203" rx="12" ry="8" fill="#f6a99a" opacity=".5"/>
+<g id="mouth-closed"><path d="M 135 220 Q 147 227 157 220 Q 163 216 168 221" fill="none" stroke="#14213d" stroke-width="5" stroke-linecap="round"/></g>
+<g id="mouth-open" style="display:none"><ellipse cx="151" cy="223" rx="13" ry="11" fill="#5a2430"/><ellipse cx="151" cy="229" rx="8" ry="4" fill="#e9717a"/></g></svg>

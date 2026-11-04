@@ -47,6 +47,9 @@ html,body{margin:0;width:%(W)dpx;height:%(H)dpx;overflow:hidden;background:#f2f8
 .intro-target{font-weight:800;color:#14936a;line-height:1.1}.intro-target .lab{color:#14213d}
 .intro-role{display:inline-block;background:#14936a;color:#fff;font-weight:800;font-size:60px;padding:14px 46px;border-radius:999px}
 .intro-floor{height:12px;background:#14936a;border-radius:6px;opacity:.35;transform-origin:50%% 50%%}
+#host{position:absolute;width:%(hs)dpx;height:%(hs)dpx;left:%(hx)dpx;top:%(hy)dpx;filter:drop-shadow(0 6px 10px rgba(0,0,0,.12))}
+#host svg{width:100%%;height:100%%}
+#host #eyes{transform-box:fill-box;transform-origin:50%% 50%%}
 #sub{position:absolute;left:%(subx)dpx;width:%(subw)dpx;top:%(suby)dpx;text-align:center}
 #sub span{display:inline-block;max-width:100%%;background:rgba(20,33,61,.88);color:#fff;font-weight:600;font-size:%(subf)dpx;line-height:1.3;padding:14px 34px;border-radius:18px;text-wrap:balance}
 #hook{position:absolute;left:60px;right:60px;top:90px;text-align:center;font-weight:800;font-size:78px;line-height:1.25;color:#14213d;text-wrap:balance}
@@ -73,6 +76,17 @@ window.render = function (t) {
   SCENES[sc.id].frame(ctx, lt);
   // 장면 전환: 앞뒤 0.2초 살짝 밝게
   stage.style.opacity = Math.min(1, lt / .2, (sc.dur - lt) / .2 + .0001);
+  // 진행자: 말하는 단어 동안 입을 여닫고, 3.7초마다 눈 깜빡임
+  const host = document.getElementById('host');
+  if (host && host.firstChild) {
+    const speaking = sc.words.some(w => lt >= w.start && lt < w.end);
+    const open = speaking && Math.floor(t * 9) % 2 === 0;
+    const mo = host.querySelector('#mouth-open'), mc = host.querySelector('#mouth-closed');
+    if (mo) { mo.style.display = open ? '' : 'none'; mc.style.display = open ? 'none' : ''; }
+    const eyes = host.querySelector('#eyes');
+    if (eyes) eyes.style.transform = (t % 3.7) < .13 ? 'scaleY(.12)' : '';
+    host.style.transform = `translateY(${speaking ? Math.sin(t * 6) * 2 : 0}px)`;
+  }
   const ph = sc.phrases.find(p => lt >= p.start - .05 && lt < p.end + .25);
   const txt = ph ? ph.text : '';
   if (sub.dataset.t !== txt) { sub.dataset.t = txt; sub.innerHTML = txt ? '<span></span>' : ''; if (txt) sub.firstChild.textContent = txt; }
@@ -106,6 +120,7 @@ def main():
     ap.add_argument("range"); ap.add_argument("out")
     ap.add_argument("--hook", default=""); ap.add_argument("--endtext", default="")
     ap.add_argument("--frames-only", action="store_true")
+    ap.add_argument("--no-host", action="store_true")
     a = ap.parse_args()
 
     md = open(os.path.join(a.folder, "장면표.md"), encoding="utf-8").read()
@@ -149,13 +164,16 @@ def main():
     css = CSS % dict(f=FONTS, W=W, H=H, sx=sx, sy=sy, sw=sw, sh=sh,
                      subx=80 if a.layout == "long" else 50, subw=W - (160 if a.layout == "long" else 100),
                      suby=935 if a.layout == "long" else 1500, subf=52 if a.layout == "long" else 56,
-                     endf=72 if a.layout == "short" else 80)
+                     endf=72 if a.layout == "short" else 80,
+                     hs=190 if a.layout == "long" else 170, hx=1700 if a.layout == "long" else 870,
+                     hy=880 if a.layout == "long" else 1300)
     hook = f'<div id="hook">{a.hook}</div><div id="brand">눈높이가 바닥에 있는 공학 연구소</div>' if a.layout == "short" else ""
     endtext = a.endtext or "전체 설명은<br>관련 동영상에서"
+    host_svg = open(os.path.join(HERE, "characters", "sojang_face.svg"), encoding="utf-8").read() if not a.no_host else ""
     lib = open(os.path.join(HERE, "lib.js"), encoding="utf-8").read() + "\n" + open(os.path.join(HERE, "intro.js"), encoding="utf-8").read()
     scn = open(os.path.join(a.folder, "scenes.js"), encoding="utf-8").read()
     html = f"""<!doctype html><html><head><meta charset="utf-8"><style>{css}</style></head><body>
-<div id="stage"></div>{hook}<div id="sub"></div>
+<div id="stage"></div>{hook}<div id="host">{host_svg}</div><div id="sub"></div>
 <div id="endcard"><div class="a">{endtext}</div><div class="b">눈높이가 바닥에 있는 공학 연구소</div></div>
 <script>const TL={json.dumps({"layout": a.layout, "scenes": tl}, ensure_ascii=False)};</script>
 <script>{lib}</script><script>{scn}</script><script>{RUNTIME}</script></body></html>"""
