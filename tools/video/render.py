@@ -69,6 +69,7 @@ html,body{margin:0;width:%(W)dpx;height:%(H)dpx;overflow:hidden;background:#f2f8
 RUNTIME = """
 let cur = null, ctx = null;
 const stage = document.getElementById('stage'), sub = document.getElementById('sub');
+window.resetScene = () => { cur = null; };   // 다음 render에서 장면을 처음부터 다시 그림(지문을 앞 상태와 무관하게)
 window.render = function (t) {
   let sc = TL.scenes.find(s => t >= s.start && t < s.start + s.dur);
   const end = document.getElementById('endcard');
@@ -339,6 +340,7 @@ def main():
         """장면을 0.5초마다 한 장(+마지막 장) 찍어 그림 지문을 만듦. 코드가 바뀌어도 화면이 같으면 지문이 같음"""
         idx = list(range(f0, f1, 15)) + [f1 - 1]
         hs = []
+        pg.evaluate("resetScene()")
         for i in idx:
             pg.evaluate(f"render({i / FPS})")
             hs.append(hashlib.md5(pg.screenshot(type="png")).hexdigest()[:12])
@@ -366,8 +368,8 @@ def main():
                 if not a.full and old and old["fp"] == fp and old["frames"] == f1 - f0 and os.path.exists(cv):
                     merge(sid, f0, old["report"]); reused.append(sid); continue
                 d = os.path.join(work, "f_" + sid); os.makedirs(d, exist_ok=True)
+                pg.evaluate("resetScene()")
                 rep = check_range(pg, f0, f1, d)
-                pg.evaluate(f"render({f0 / FPS})")
                 if fingerprint(pg, f0, f1) != fp:        # 같은 순간을 두 번 찍어도 같은지(지문 신뢰성)
                     report.setdefault("fingerprint_unstable", []).append(sid)
                 subprocess.run(["ffmpeg", "-v", "error", "-y", "-framerate", str(FPS), "-start_number", str(f0), "-i", os.path.join(d, "%05d.jpg"),
