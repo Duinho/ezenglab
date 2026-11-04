@@ -1,0 +1,39 @@
+.board{background:#fff;border:5px solid #14936a;border-radius:28px;padding:22px 30px}
+.board .bt{font-weight:800;font-size:40px;color:#14936a;margin-bottom:10px}
+.board .br{display:flex;align-items:center;gap:18px;height:74px}.board .bl{font-weight:800;font-size:44px;width:90px}
+.board .bv{display:flex;gap:12px}.board .dot{display:inline-block;width:46px;height:46px;border-radius:50%}
+.board .bres{font-weight:800;font-size:56px;color:#14936a;text-align:center;margin-top:10px;opacity:0}
+.chipx{border:5px solid;border-radius:24px;padding:16px 28px;font-weight:600;line-height:1.3;white-space:nowrap}
+.chipx b{color:#14936a;font-weight:800}
+.legend{display:flex;gap:28px;font-weight:800;font-size:40px}.legend .lg{display:flex;align-items:center;gap:12px;opacity:0}
+.legend i{display:inline-block;width:34px;height:34px;border-radius:50%}.legend i.tri{border-radius:0;width:0;height:0;border-left:19px solid transparent;border-right:19px solid transparent;border-bottom:34px solid #f0a31c;background:none}
+.step{background:#fff;border:5px solid #cfd8e3;border-radius:28px;padding:26px;text-align:center;transition:none}
+.step.on{border-color:#14936a;box-shadow:0 0 0 6px rgba(20,147,106,.18)}
+.step .sn{display:inline-block;width:84px;height:84px;line-height:84px;border-radius:50%;background:#14936a;color:#fff;font-weight:800;font-size:44px}
+.step .st{font-weight:600;font-size:50px;line-height:1.3;margin-top:16px}
+.cab{width:440px;background:#c9a27a;border-radius:20px;padding:20px;display:flex;flex-direction:column;gap:16px}
+.cab .dr{height:110px;background:#f3e3cc;border-radius:12px;display:flex;align-items:center;justify-content:center;gap:18px;position:relative}
+.cab .kn{position:absolute;left:18px;width:40px;height:12px;border-radius:6px;background:#8a6a48}
+.cab .pd{display:inline-block;width:30px;height:30px;border-radius:50%}.cab .pd.a{background:#d24a5a}.cab .pd.t{background:#f0a31c}
+.qbub{background:#fff;border:5px solid #3b6fb6;border-radius:30px;padding:20px;font-weight:800;font-size:44px;color:#14213d;line-height:1.1}
+.vt{background:#fff;border-radius:28px;padding:20px 30px}.vt .vr{display:grid;grid-template-columns:2.2fr 1fr 1fr 1fr 1fr;align-items:center;height:110px;font-weight:800;font-size:56px;text-align:center;border-bottom:3px solid #eef2f6}
+.vt .vr.h{font-size:42px;color:#667085;height:80px}.vt .nm{font-size:46px;text-align:left}.vt .dd{color:#14936a}
+.klist{display:flex;flex-direction:column;gap:20px}.klist.row{flex-direction:row;justify-content:space-between}
+.klist .kr{background:#fff;border:5px solid #cfd8e3;border-radius:24px;padding:16px 26px;display:flex;justify-content:space-between;align-items:center;gap:20px}
+.klist .kk{font-weight:800;font-size:44px}.klist .kv{font-weight:800;font-size:50px}.klist .kr.hl{border-color:#e0701b;box-shadow:0 0 0 6px rgba(224,112,27,.18)}
+.tagx{background:#d24a5a;color:#fff;font-weight:800;font-size:36px;border-radius:999px;padding:10px 0}
+.bars{display:flex;flex-direction:column;gap:22px}.bars .bar{height:40px;border-radius:20px;background:#3b6fb6}
+.pc .pt{color:#fff;font-weight:800;font-size:56px;border-radius:24px;padding:14px 0;text-align:center;margin-bottom:22px}
+.pc .pi{background:#fff;border-radius:22px;padding:22px 30px;font-weight:600;font-size:44px;margin-bottom:18px;white-space:nowrap}
+.life{background:#fff;border:5px solid #cfd8e3;border-radius:30px;padding:30px;text-align:center;height:560px}
+.life.on{border-color:#14936a;box-shadow:0 0 0 6px rgba(20,147,106,.18)}
+.life .l1{font-weight:800;font-size:44px;margin:18px 0 20px;color:#14213d}.life .l2{font-weight:600;font-size:38px;line-height:1.4;color:#445066}.life .l2 b{color:#14936a}
+.sum{font-weight:600;font-size:66px;line-height:1.5}.sum b{color:#14936a;font-weight:800}.sum span{opacity:0}
+.quiz .qt{display:inline-block;background:#e0701b;color:#fff;font-weight:800;font-size:50px;border-radius:999px;padding:8px 40px}
+.quiz .qq{font-weight:600;font-size:62px;margin-top:30px}.quiz .qq b{color:#14936a;font-weight:800}
+.blogc{background:#fff;border:5px solid #14936a;border-radius:30px;padding:30px 36px}
+.blogc .bh{font-weight:800;font-size:34px;color:#14936a}.blogc .bt2{font-weight:800;font-size:54px;line-height:1.25;margin:16px 0}
+.blogc .bl{font-weight:600;font-size:38px;line-height:1.5;color:#445066}.blogc .bd{margin-top:20px;font-weight:800;font-size:40px;color:#e0701b}
+.blogc.nx{border-color:#3b6fb6}.blogc.nx .bh{color:#3b6fb6}
+
+.rule,.chipx,.sum{text-wrap:balance}

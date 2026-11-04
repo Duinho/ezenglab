@@ -36,6 +36,22 @@ function makeCtx(scene, stage, layout) {
       console.warn('단어 없음', scene.id, text);
       return fallback;
     },
+    // 정확한 단어 찾기: 문장부호를 뺀 단어가 text로 시작(시작=true)하거나 같으면
+    w(text, n = 1, fallback = 0) {
+      let c = 0;
+      for (const x of words) { const k = x.text.replace(/[^0-9A-Za-z가-힣]/g, ''); if (k.startsWith(text) && ++c === n) return x.start; }
+      console.warn('단어 없음', scene.id, text, n); return fallback;
+    },
+    eq(text, n = 1, fallback = 0) {
+      let c = 0;
+      for (const x of words) { const k = x.text.replace(/[^0-9A-Za-z가-힣]/g, ''); if (k === text && ++c === n) return x.start; }
+      console.warn('단어 없음', scene.id, text, n); return fallback;
+    },
+    wend(text, n = 1, fallback = 0) {
+      let c = 0;
+      for (const x of words) { const k = x.text.replace(/[^0-9A-Za-z가-힣]/g, ''); if (k.startsWith(text) && ++c === n) return x.end; }
+      console.warn('단어 없음', scene.id, text, n); return fallback;
+    },
     has(text) { return words.some(w => w.text.replace(/[^0-9A-Za-z가-힣]/g, '').includes(text)); },
     endOf(text, n = 1, fallback = 0) {
       let c = 0;

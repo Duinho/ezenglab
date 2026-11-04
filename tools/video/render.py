@@ -125,6 +125,7 @@ def main():
     ap.add_argument("--hook", default=""); ap.add_argument("--endtext", default="")
     ap.add_argument("--frames-only", action="store_true")
     ap.add_argument("--no-host", action="store_true")
+    ap.add_argument("--preview", type=float, default=0, help="영상 대신 N초마다 한 장씩만 저장(빠른 확인)")
     ap.add_argument("--end-cue", default="", help="마지막 장면에서 이 단어를 말할 때 끝 안내 화면을 띄움(쇼츠)")
     ap.add_argument("--end-tail", type=float, default=0.8, help="--end-cue를 쓸 때 말이 끝난 뒤 남길 시간(초)")
     a = ap.parse_args()
@@ -196,9 +197,11 @@ def main():
     hook = f'<div id="hook">{a.hook}</div><div id="brand">눈높이가 바닥에 있는 공학 연구소</div>' if a.layout == "short" else ""
     endtext = a.endtext or "전체 설명은<br>관련 동영상에서"
     host_svg = open(os.path.join(HERE, "characters", "sojang_face.svg"), encoding="utf-8").read() if not a.no_host else ""
+    cssf = os.path.join(a.folder, "style.css")
+    extra_css = open(cssf, encoding="utf-8").read() if os.path.exists(cssf) else ""
     lib = open(os.path.join(HERE, "lib.js"), encoding="utf-8").read() + "\n" + open(os.path.join(HERE, "intro.js"), encoding="utf-8").read()
     scn = open(os.path.join(a.folder, "scenes.js"), encoding="utf-8").read()
-    html = f"""<!doctype html><html><head><meta charset="utf-8"><style>{css}</style></head><body>
+    html = f"""<!doctype html><html><head><meta charset="utf-8"><style>{css}</style><style>{extra_css}</style></head><body>
 <div id="stage"></div>{hook}<div id="host">{host_svg}</div><div id="sub"></div>
 <div id="endcard"><div class="a">{endtext}</div><div class="b">눈높이가 바닥에 있는 공학 연구소</div></div>
 <script>const TL={json.dumps({"layout": a.layout, "scenes": tl, "endAt": end_at}, ensure_ascii=False)};</script>
@@ -232,7 +235,8 @@ def main():
                 if lines >= 2 and pg.evaluate("subLastLine()") <= 1:
                     report.setdefault("subtitle_orphan", []).append([round(tt, 2), s])
                 last_sub = s
-            pg.screenshot(path=os.path.join(work, "f", f"{i:05d}.jpg"), type="jpeg", quality=92)
+            if not a.preview or i % max(1, int(a.preview * FPS)) == 0:
+                pg.screenshot(path=os.path.join(work, "f", f"{i:05d}.jpg"), type="jpeg", quality=92 if not a.preview else 70)
             if i % 6 == 0:                                   # 0.2초마다: 말하는데 화면이 비어 있는지
                 empty = pg.evaluate("stageEmpty()")
                 run = (run + 0.2) if empty and s else 0.0
@@ -248,6 +252,19 @@ def main():
         b.close()
     json.dump({"timeline": [{k: v for k, v in s.items() if k != "words"} for s in tl], "report": report},
               open(os.path.join(work, "report.json"), "w"), ensure_ascii=False, indent=1)
+    if a.preview:
+        from PIL import Image
+        fs = sorted(os.listdir(os.path.join(work, "f")))
+        for sc in tl:
+            pick = [f for f in fs if sc["start"] <= int(f[:5]) / FPS < sc["start"] + sc["dur"]]
+            if not pick: continue
+            tw, th = (480, 270) if a.layout == "long" else (216, 384)
+            cols = 6; rows = (len(pick) + cols - 1) // cols
+            sheet = Image.new("RGB", (cols * (tw + 6), rows * (th + 6)), "white")
+            for k, f in enumerate(pick):
+                sheet.paste(Image.open(os.path.join(work, "f", f)).resize((tw, th)), ((k % cols) * (tw + 6), (k // cols) * (th + 6)))
+            sheet.save(os.path.join(work, f"sheet_{sc['id']}.jpg"), quality=80)
+        print(json.dumps(report, ensure_ascii=False)[:3000]); return
     if a.frames_only:
         print(json.dumps(report, ensure_ascii=False)[:800]); return
     subprocess.run(["ffmpeg", "-v", "error", "-y", "-framerate", str(FPS), "-i", os.path.join(work, "f", "%05d.jpg"),
