@@ -139,6 +139,17 @@ window.overlaps = () => {
     const b0 = n.getBoundingClientRect(), w = (parseFloat(n.getAttribute('stroke-width')) || 2) / 2;   // 선 굵기만큼 넓혀 잼(높이 0인 가로선 대비)
     const r = cut({ left: b0.left - w, top: b0.top - w, right: b0.right + w, bottom: b0.bottom + w }, clipOf(n)); if (r) items.push({ n, r, k: 'line', name: nm(n) });
   });
+  // 글자가 자기 칸(배경·테두리가 있는 상자) 밖으로 튀어나가는지
+  { const w = document.createTreeWalker(stage, NodeFilter.SHOW_TEXT); let t;
+    while ((t = w.nextNode())) {
+      if (!t.textContent.trim() || !t.parentElement || t.parentElement.closest('svg') || noqa(t.parentElement) || vis(t.parentElement) <= .3) continue;
+      let box = t.parentElement;
+      while (box && box !== stage) { const c = getComputedStyle(box); if ((c.backgroundColor !== 'rgba(0, 0, 0, 0)' && c.backgroundColor !== 'transparent') || parseFloat(c.borderTopWidth) > 0) break; box = box.parentElement; }
+      if (!box || box === stage) continue;
+      const b = box.getBoundingClientRect(); if (b.width >= st.width - 4) continue;
+      const rg = document.createRange(); rg.selectNodeContents(t);
+      for (const c of rg.getClientRects()) if (c.right > b.right + 1 || c.left < b.left - 1 || c.bottom > b.bottom + 1 || c.top < b.top - 1) { out.push(['칸 넘침', nm(box), t.textContent.trim().slice(0, 14)]); break; }
+    } }
   const host = document.getElementById('host'), hr = host && getComputedStyle(host).display !== 'none' ? host.getBoundingClientRect() : null;
   const ov = (a, b, pad = 0) => Math.min(a.right, b.right) - Math.max(a.left, b.left) > pad && Math.min(a.bottom, b.bottom) - Math.max(a.top, b.top) > pad;
   for (const a of items) {

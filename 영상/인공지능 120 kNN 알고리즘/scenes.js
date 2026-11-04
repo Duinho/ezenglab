@@ -430,7 +430,7 @@ SCENES.L11 = {
     this.tri = el('path', { d: `M ${ax} ${ay} L ${bx} ${ay} L ${bx} ${by}`, fill: 'none', stroke: COLOR.sub, 'stroke-width': 5, 'stroke-dasharray': '14 10', opacity: 0 }, this.svg);
     this.lx = el('text', { x: (ax + bx) / 2, y: ay + 56, 'text-anchor': 'middle', 'font-family': 'P', 'font-weight': 800, 'font-size': 38, fill: COLOR.sub, opacity: 0, text: '크기 차이' }, this.svg);
     this.ly = el('text', { x: bx + 24, y: (ay + by) / 2, 'font-family': 'P', 'font-weight': 800, 'font-size': 38, fill: COLOR.sub, opacity: 0, text: '당도 차이' }, this.svg);
-    this.line = arrow(this.svg, ax, ay, bx, by, COLOR.green, 9);
+    this.line = arrow(this.svg, ax, ay, bx, by, COLOR.green, 9, { from: 34, to: 30 + 14 });   // 별·사과6(반지름 30)에 닿기 전에 멈춤
     this.ruler = el('rect', { x: -170, y: -26, width: 340, height: 52, rx: 10, fill: '#f5d77a', stroke: '#c9a227', 'stroke-width': 4, opacity: 0 }, this.svg);
     for (let i = -150; i <= 150; i += 30) el('line', { x1: i, y1: -26, x2: i, y2: i % 60 === 0 ? 0 : -10, stroke: '#8a6d12', 'stroke-width': 3, class: 'rt' }, this.svg);
     this.ticks = [...this.svg.querySelectorAll('.rt')];
@@ -821,7 +821,7 @@ SCENES.L23 = {
       c.innerHTML = `<div class="pt" style="background:${color}">${title}</div>` + items.map(i => `<div class="pi">${i}</div>`).join('');
       return [...c.querySelectorAll('.pi')];
     };
-    this.pro = col(150, '장점', COLOR.green, ['원리가 단순함', '미리 학습하는 단계가 없음', '어느 이웃을 보고 판단했는지 보여 줄 수 있음']);
+    this.pro = col(150, '장점', COLOR.green, ['원리가 단순함', '미리 학습하는 단계가 없음', '어느 이웃을 봤는지 보여 줌']);
     this.con = col(1010, '단점', APPLE, ['데이터가 많으면 느림', '단위에 민감함', 'k를 직접 정해야 함']);
     this.end = el('div', { class: 'abs center rule', style: { left: '260px', width: '1400px', top: '640px' } }, s);
     this.end.innerHTML = '데이터가 아주 많지 않고 특징이 몇 개일 때<br><b>먼저 써 보기 좋은 방법</b>';

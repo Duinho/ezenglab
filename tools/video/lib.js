@@ -93,8 +93,11 @@ function card(parent, x, y, w, h, opt = {}) {
 
 // 화살표(svg 선). 길이 u(0~1)만큼 그려지고, 화살촉은 선 끝을 따라 함께 움직인다.
 // 선은 화살촉 밑변에서 끝나게 해서 둥근 선 끝이 화살촉 밖으로 삐져나오지 않게 한다.
-function arrow(svg, x1, y1, x2, y2, color, width = 8) {
-  const ang = Math.atan2(y2 - y1, x2 - x1), len = Math.hypot(x2 - x1, y2 - y1);
+function arrow(svg, x1, y1, x2, y2, color, width = 8, gap = {}) {
+  // gap.from·gap.to: 출발점·도착점 그림(점, 별)의 반지름 + 틈. 화살촉이 도착 그림에 가려지지 않고 그 앞에서 멈춤
+  const a0 = Math.atan2(y2 - y1, x2 - x1), g0 = gap.from || 0, g1 = gap.to || 0;
+  x1 += Math.cos(a0) * g0; y1 += Math.sin(a0) * g0; x2 -= Math.cos(a0) * g1; y2 -= Math.sin(a0) * g1;
+  const ang = a0, len = Math.hypot(x2 - x1, y2 - y1);
   const hl = width * 3.4, hw = width * 2.1;              // 화살촉 길이·반폭
   const g = el('g', {}, svg);
   const line = el('line', { x1, y1, x2: x1, y2: y1, stroke: color, 'stroke-width': width, 'stroke-linecap': 'round' }, g);
