@@ -18,6 +18,7 @@ MAXCH = {"long": 26, "short": 30}   # 쇼츠는 두 줄까지 한 화면에
 MAXLINES = {"long": 1, "short": 2}
 END_SEC = 2.2
 SCENE_CACHE = "/home/claude/build/scene_cache"   # 장면별 완성 조각(mp4)과 그림 지문
+FP_TOL = 6      # 지문 비교 허용치(0~255). 시험: 그릴 때 생기는 차이 최대 1, 글자 하나 추가 79, 2px 이동 21
 
 CSS = """
 @font-face{font-family:P;src:url(file://%(f)s/Paperlogy-4Regular.ttf);font-weight:400}
@@ -337,14 +338,22 @@ def main():
             report.setdefault("layout_issues", []).append([sid, round(t0 + x[0], 1)] + x[1:])
 
     def fingerprint(pg, f0, f1):
-        """장면을 0.5초마다 한 장(+마지막 장) 찍어 그림 지문을 만듦. 코드가 바뀌어도 화면이 같으면 지문이 같음"""
+        """장면을 0.5초마다 한 장(+마지막 장) 찍어 작은 흑백 그림(지문)으로 줄임.
+        브라우저가 그릴 때마다 글자 가장자리가 1~2픽셀 미세하게 달라지므로 정확한 해시 대신 작은 그림끼리 비교한다"""
+        import io, numpy as np
+        from PIL import Image
         idx = list(range(f0, f1, 15)) + [f1 - 1]
-        hs = []
+        out = []
         pg.evaluate("resetScene()")
         for i in idx:
             pg.evaluate(f"render({i / FPS})")
-            hs.append(hashlib.md5(pg.screenshot(type="png")).hexdigest()[:12])
-        return hs
+            im = Image.open(io.BytesIO(pg.screenshot(type="png"))).convert("L").resize((W // 12, H // 12), Image.BILINEAR)
+            out.append(np.asarray(im, dtype=np.uint8))
+        return np.stack(out)
+
+    def same_fp(x, y):
+        import numpy as np
+        return x is not None and x.shape == y.shape and int(np.abs(x.astype(np.int16) - y.astype(np.int16)).max()) <= FP_TOL
 
     whole = a.preview or a.frames_only
     redo, reused = [], []
@@ -357,24 +366,29 @@ def main():
         pg.evaluate("document.fonts.ready")
         pg.wait_for_timeout(300)
         report["fonts"] = pg.evaluate("[...document.fonts].filter(f=>f.status==='loaded').map(f=>f.weight).join(',')")
+        for sid, f0, f1 in segs:                         # 미리 한 번씩 그려 글꼴·그림을 준비(첫 장면 지문이 흔들리지 않게)
+            pg.evaluate("resetScene()"); pg.evaluate(f"render({(f0 + f1) // 2 / FPS})"); pg.screenshot(type="png")
         if whole:
             for sid, f0, f1 in segs:
                 merge(sid, f0, check_range(pg, f0, f1, os.path.join(work, "f")))
         else:
             for sid, f0, f1 in segs:
                 fp = fingerprint(pg, f0, f1)
-                cj, cv = os.path.join(cdir, sid + ".json"), os.path.join(cdir, sid + ".mp4")
+                import numpy as np
+                cj, cv, cf = os.path.join(cdir, sid + ".json"), os.path.join(cdir, sid + ".mp4"), os.path.join(cdir, sid + ".fp.npy")
                 old = json.load(open(cj)) if os.path.exists(cj) else None
-                if not a.full and old and old["fp"] == fp and old["frames"] == f1 - f0 and os.path.exists(cv):
+                ofp = np.load(cf) if os.path.exists(cf) else None
+                if not a.full and old and same_fp(ofp, fp) and old["frames"] == f1 - f0 and os.path.exists(cv):
                     merge(sid, f0, old["report"]); reused.append(sid); continue
                 d = os.path.join(work, "f_" + sid); os.makedirs(d, exist_ok=True)
                 pg.evaluate("resetScene()")
                 rep = check_range(pg, f0, f1, d)
-                if fingerprint(pg, f0, f1) != fp:        # 같은 순간을 두 번 찍어도 같은지(지문 신뢰성)
+                if not same_fp(fingerprint(pg, f0, f1), fp):   # 같은 순간을 두 번 찍어도 같은지(지문 신뢰성)
                     report.setdefault("fingerprint_unstable", []).append(sid)
                 subprocess.run(["ffmpeg", "-v", "error", "-y", "-framerate", str(FPS), "-start_number", str(f0), "-i", os.path.join(d, "%05d.jpg"),
                                 "-c:v", "libx264", "-preset", "veryfast", "-crf", "18", "-pix_fmt", "yuv420p", "-r", str(FPS), cv], check=True)
-                json.dump({"fp": fp, "frames": f1 - f0, "report": rep}, open(cj, "w"), ensure_ascii=False)
+                np.save(cf, fp)
+                json.dump({"frames": f1 - f0, "report": rep}, open(cj, "w"), ensure_ascii=False)
                 merge(sid, f0, rep); redo.append(sid)
                 shutil.rmtree(d, ignore_errors=True)
         b.close()
