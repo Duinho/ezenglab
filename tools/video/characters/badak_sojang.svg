@@ -1,0 +1,70 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 380">
+  <!-- 바닥 연구소장: 더벅머리, 꺼벙한 얼굴, 흰 가운 -->
+  <g id="body">
+    <!-- 가운 -->
+    <path d="M 52 380 L 64 288 Q 150 246 236 288 L 248 380 Z" fill="#ffffff" stroke="#c9d3df" stroke-width="5"/>
+    <path d="M 118 262 L 150 316 L 182 262" fill="#14936a"/>
+    <path d="M 118 262 L 150 300 L 182 262" fill="none" stroke="#c9d3df" stroke-width="4"/>
+    <line x1="150" y1="316" x2="150" y2="380" stroke="#c9d3df" stroke-width="4"/>
+    <rect x="168" y="318" width="44" height="22" rx="5" fill="#14936a"/>
+    <rect x="174" y="326" width="32" height="5" rx="2" fill="#ffffff" opacity=".85"/>
+    <!-- 목 -->
+    <rect x="132" y="228" width="36" height="36" rx="10" fill="#f6cda4"/>
+    <!-- 귀 -->
+    <ellipse cx="72" cy="168" rx="14" ry="20" fill="#f6cda4"/>
+    <ellipse cx="228" cy="168" rx="14" ry="20" fill="#f6cda4"/>
+    <!-- 얼굴 -->
+    <ellipse cx="150" cy="166" rx="78" ry="82" fill="#ffdcb5"/>
+  </g>
+  <!-- 더벅머리: 울퉁불퉁 덮인 머리와 삐친 머리카락 -->
+  <g id="hair">
+    <path d="M 66 160
+             C 54 120, 62 86, 84 70
+             C 86 50, 108 38, 126 44
+             C 136 26, 166 24, 178 40
+             C 196 30, 222 42, 224 62
+             C 246 72, 252 104, 240 128
+             C 248 140, 244 156, 234 164
+             C 228 140, 222 124, 210 116
+             C 206 130, 196 136, 186 132
+             C 186 118, 178 110, 170 108
+             C 166 124, 152 130, 140 122
+             C 136 110, 128 106, 118 108
+             C 116 122, 104 130, 92 124
+             C 88 136, 80 148, 66 160 Z" fill="#3b2a20"/>
+    <path d="M 120 46 C 110 22, 96 16, 86 20 C 100 26, 106 36, 108 50 Z" fill="#3b2a20"/>
+    <path d="M 176 38 C 186 14, 204 8, 214 14 C 200 18, 192 28, 190 42 Z" fill="#3b2a20"/>
+    <path d="M 150 30 C 150 12, 158 2, 168 0 C 162 10, 162 20, 164 30 Z" fill="#3b2a20"/>
+    <path d="M 100 76 C 120 70, 140 74, 150 84" fill="none" stroke="#5a4232" stroke-width="5" stroke-linecap="round"/>
+    <path d="M 172 70 C 190 66, 206 72, 214 84" fill="none" stroke="#5a4232" stroke-width="5" stroke-linecap="round"/>
+  </g>
+  <!-- 눈썹: 짝짝이로 올라간 눈썹 -->
+  <g id="brows">
+    <path d="M 98 140 Q 114 130 130 138" fill="none" stroke="#3b2a20" stroke-width="6" stroke-linecap="round"/>
+    <path d="M 172 134 Q 188 124 204 132" fill="none" stroke="#3b2a20" stroke-width="6" stroke-linecap="round"/>
+  </g>
+  <!-- 눈: 졸린 듯 처진 눈꺼풀, 멍한 점 눈 -->
+  <g id="eyes">
+    <ellipse cx="114" cy="166" rx="14" ry="13" fill="#ffffff"/>
+    <ellipse cx="188" cy="166" rx="14" ry="13" fill="#ffffff"/>
+    <circle cx="116" cy="170" r="7" fill="#14213d"/>
+    <circle cx="186" cy="170" r="7" fill="#14213d"/>
+    <path d="M 99 163 Q 114 150 129 163 Z" fill="#ffdcb5"/>
+    <path d="M 173 163 Q 188 150 203 163 Z" fill="#ffdcb5"/>
+    <path d="M 99 163 Q 114 158 129 163" fill="none" stroke="#3b2a20" stroke-width="4" stroke-linecap="round"/>
+    <path d="M 173 163 Q 188 158 203 163" fill="none" stroke="#3b2a20" stroke-width="4" stroke-linecap="round"/>
+  </g>
+  <!-- 코와 볼 -->
+  <path d="M 150 176 Q 144 192 152 196" fill="none" stroke="#e0a77c" stroke-width="4" stroke-linecap="round"/>
+  <ellipse cx="98" cy="198" rx="12" ry="8" fill="#f6a99a" opacity=".55"/>
+  <ellipse cx="202" cy="198" rx="12" ry="8" fill="#f6a99a" opacity=".55"/>
+  <!-- 입: 평소엔 살짝 벌어진 삐뚤한 입, 말할 땐 동그랗게 -->
+  <g id="mouth-closed"><path d="M 134 214 Q 146 222 156 214 Q 162 210 168 216" fill="none" stroke="#14213d" stroke-width="5" stroke-linecap="round"/></g>
+  <g id="mouth-open" style="display:none"><ellipse cx="151" cy="217" rx="13" ry="11" fill="#5a2430"/><ellipse cx="151" cy="223" rx="8" ry="4" fill="#e9717a"/></g>
+  <!-- 팔: 손 들어 인사 -->
+  <g id="arm">
+    <path d="M 236 298 Q 270 270 272 222" fill="none" stroke="#ffffff" stroke-width="24" stroke-linecap="round"/>
+    <path d="M 236 298 Q 270 270 272 222" fill="none" stroke="#c9d3df" stroke-width="3" stroke-linecap="round" opacity=".7"/>
+    <circle cx="272" cy="212" r="15" fill="#ffdcb5" stroke="#f0bf92" stroke-width="3"/>
+  </g>
+</svg>
