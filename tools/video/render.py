@@ -14,7 +14,8 @@ FONTS = os.path.join(os.path.dirname(HERE), "fonts")
 FPS = 30
 SIZE = {"long": (1920, 1080), "short": (1080, 1920)}
 STAGE = {"long": (0, 0, 1920, 920), "short": (0, 300, 1080, 1150)}
-MAXCH = {"long": 26, "short": 18}
+MAXCH = {"long": 26, "short": 30}   # 쇼츠는 두 줄까지 한 화면에
+MAXLINES = {"long": 1, "short": 2}
 END_SEC = 2.2
 
 CSS = """
@@ -89,7 +90,8 @@ window.render = function (t) {
   }
   const ph = sc.phrases.find(p => lt >= p.start - .05 && lt < p.end + .25);
   const txt = ph ? ph.text : '';
-  if (sub.dataset.t !== txt) { sub.dataset.t = txt; sub.innerHTML = txt ? '<span></span>' : ''; if (txt) sub.firstChild.textContent = txt; }
+  if (sub.dataset.t !== txt) { sub.dataset.t = txt; sub.innerHTML = txt ? '<span></span>' : '';
+    if (txt) { const box = sub.firstChild; txt.split(' ').forEach((w, i) => { if (i) box.appendChild(document.createTextNode(' ')); const e = document.createElement('i'); e.textContent = w; e.style.fontStyle = 'normal'; box.appendChild(e); }); } }
 };
 window.overlaps = () => {
   const st = stage.getBoundingClientRect(), out = [];
@@ -105,6 +107,7 @@ window.overlaps = () => {
   }
   return out;
 };
+window.subLastLine = () => { const ws = [...sub.querySelectorAll('i')]; if (!ws.length) return 0; const tops = ws.map(w => Math.round(w.getBoundingClientRect().top)); const last = Math.max(...tops); return tops.filter(t => t === last).length; };
 window.subLines = () => { const s = sub.firstChild; if (!s) return 0; const r = s.getClientRects(); const lh = parseFloat(getComputedStyle(s).lineHeight); return Math.round((s.getBoundingClientRect().height - 28) / lh); };
 """
 
@@ -200,8 +203,10 @@ def main():
             if s and s != last_sub:
                 lines = pg.evaluate("subLines()")
                 report["subtitle_max_lines"] = max(report["subtitle_max_lines"], lines)
-                if lines > 1:
+                if lines > MAXLINES[a.layout]:
                     report["subtitle_over_1line"].append([round(tt, 2), s, lines])
+                if lines >= 2 and pg.evaluate("subLastLine()") <= 1:
+                    report.setdefault("subtitle_orphan", []).append([round(tt, 2), s])
                 last_sub = s
             pg.screenshot(path=os.path.join(work, "f", f"{i:05d}.jpg"), type="jpeg", quality=92)
             for sc in tl:

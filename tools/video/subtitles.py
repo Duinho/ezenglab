@@ -110,7 +110,7 @@ def _split_sentence(us, R, toks, max_chars):
         if parts == 1:
             L = length(i, n)
             ok = L <= max_chars and (L >= MIN_CHARS or i == 0)
-            inner = 6 * sum(1 for u in us[i:n - 1] if u["punct"] == ",") + 3 * _start_pen(us, i)
+            inner = 3 * sum(1 for u in us[i:n - 1] if u["punct"] == ",") + 3 * _start_pen(us, i)
             return (L * 0.3 + inner if ok else 999 + L, [n])
         res = None
         for j in range(i + 1, n - parts + 2):
@@ -119,7 +119,7 @@ def _split_sentence(us, R, toks, max_chars):
                 continue
             L = L * 0.3
             score, cuts = dp(j, parts - 1)
-            pen = _break_pen(us[j - 1]) + 2 * sum(1 for u in us[i:j - 1] if u["punct"] == ",") + _start_pen(us, i)
+            pen = _break_pen(us[j - 1]) + 1 * sum(1 for u in us[i:j - 1] if u["punct"] == ",") + _start_pen(us, i)
             cand = (score + pen * 3 + 4, [j] + cuts)
             if res is None or cand[0] < res[0]:
                 res = cand
@@ -169,4 +169,11 @@ def scene_phrases(info, max_chars):
     for a, b in zip(out, out[1:]):
         if b["start"] - a["end"] < 0.6:
             a["end"] = b["start"]
+    # 두 줄로 나뉠 때 한 글자 단어(그, 세, 두, 몇 …)가 줄 끝에 홀로 남지 않게 다음 단어와 붙임
+    DET = "그이저세두한네몇새옛각첫온전"          # 뒤 단어와 붙일 한 글자 관형어
+    BOUND = ("건", "것", "수", "적", "데", "줄", "때", "뿐", "만큼")   # 앞 단어와 붙일 의존 명사
+    for p in out:
+        t = re.sub(r"(?:(?<=\s)|^)([" + DET + r"]) ", "\\1\u00a0", p["text"])
+        t = re.sub(r" (" + "|".join(BOUND) + r")(?=[\s,.?!]|$)", "\u00a0\\1", t)
+        p["text"] = t
     return out
