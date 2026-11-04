@@ -34,8 +34,8 @@ const INTRO = {
     this.t = { join: ctx.at('눈바공', 1, 1.2) - .25, role: ctx.at('바닥', 1, 2.2) - .1 };
   },
   frame(ctx, t) {
-    show(this.wrap, E.prog(t, 0, .45), 20);
-    const hi = E.prog(t, .3, .4);                       // 세 글자 강조
+    show(this.wrap, E.prog(t, 0, .3), 20);
+    const hi = E.prog(t, .15, .35);                       // 세 글자 강조
     this.keys.forEach(k => k.style.setProperty('--hi', hi));
     const j = E.ease(E.prog(t, this.t.join, .7));        // 세 글자가 모임
     this.rest.forEach(n => n.style.opacity = 1 - E.clamp(j * 1.6));
