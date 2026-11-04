@@ -86,6 +86,11 @@ def _break_pen(u):
     return 7
 
 
+def _start_pen(us, i):
+    """구절 첫 단어가 앞 절의 끝(쉼표로 끝남)이면 앞 구절에 붙어야 할 말이 뒤로 밀린 것"""
+    return 10 if i > 0 and us[i]["punct"] == "," and i + 1 < len(us) else 0
+
+
 def _split_sentence(us, R, toks, max_chars):
     full = _sub(R, toks, us[0]["a"], us[-1]["end"])
     k = max(1, math.ceil(len(full) / max_chars))
@@ -105,7 +110,8 @@ def _split_sentence(us, R, toks, max_chars):
         if parts == 1:
             L = length(i, n)
             ok = L <= max_chars and (L >= MIN_CHARS or i == 0)
-            return (L * 0.3 if ok else 999 + L, [n])
+            inner = 6 * sum(1 for u in us[i:n - 1] if u["punct"] == ",") + 3 * _start_pen(us, i)
+            return (L * 0.3 + inner if ok else 999 + L, [n])
         res = None
         for j in range(i + 1, n - parts + 2):
             L = length(i, j)
@@ -113,7 +119,7 @@ def _split_sentence(us, R, toks, max_chars):
                 continue
             L = L * 0.3
             score, cuts = dp(j, parts - 1)
-            pen = _break_pen(us[j - 1])
+            pen = _break_pen(us[j - 1]) + 2 * sum(1 for u in us[i:j - 1] if u["punct"] == ",") + _start_pen(us, i)
             cand = (score + pen * 3 + 4, [j] + cuts)
             if res is None or cand[0] < res[0]:
                 res = cand
