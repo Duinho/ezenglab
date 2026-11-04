@@ -4,7 +4,7 @@
 - 같은 문장·설정은 캐시에서 다시 쓰고 크레딧을 쓰지 않는다.
 - 한 번 실행에 RUN_LIMIT 글자, 한 달에 MONTH_LIMIT 글자를 넘기면 멈춘다(자동 추가 결제 방지).
 """
-import base64, hashlib, io, json, os, sys, time, urllib.request, wave
+import base64, hashlib, io, json, os, shutil, subprocess, sys, time, urllib.request, wave
 sys.path.insert(0, os.path.dirname(__file__))
 from common import parse_scenes, parse_dict, segments, tokens, nospace
 
@@ -19,6 +19,7 @@ MONTH_LIMIT = 180000     # 라이트 20만 크레딧 중 여유분을 남김
 KEY_FILE = "/home/claude/secrets/typecast_api_key"
 CACHE = "/home/claude/build/tts_cache"
 LEDGER = "/home/claude/ezenglab-work/기록/tts_사용량.json"
+STORE = "/home/claude/ezenglab-work/음성"      # 장면별 확정 음성(flac+json) 보관. 작업 공간이 정리돼도 여기서 복원
 API = "https://api.typecast.ai"
 
 
@@ -101,6 +102,16 @@ def build(folder, outdir, only=None):
         if only and sc["id"] not in only:
             continue
         segs = segments(sc["reading"])
+        src = hashlib.sha256(json.dumps([VOICE_NAME, MODEL, SLOW_TEMPO, SLOW_GAP, SCENE_TAIL, LUFS, sc["reading"]],
+                                        ensure_ascii=False).encode()).hexdigest()[:16]
+        store = os.path.join(STORE, os.path.basename(folder.rstrip("/")))
+        sj, sf = os.path.join(store, sc["id"] + ".json"), os.path.join(store, sc["id"] + ".flac")
+        if os.path.exists(sj) and os.path.exists(sf) and json.load(open(sj)).get("src") == src:
+            # 저장소에 같은 문장의 확정 음성이 있으면 크레딧을 쓰지 않고 복원
+            subprocess.run(["ffmpeg", "-v", "error", "-y", "-i", sf, os.path.join(outdir, sc["id"] + ".wav")], check=True)
+            shutil.copy(sj, os.path.join(outdir, sc["id"] + ".json"))
+            print(sc["id"], "저장소에서 복원")
+            continue
         frames, params, t0, words = b"", None, 0.0, []
         for k, (seg, slow) in enumerate(segs):
             toks = tokens(seg, dic)
@@ -126,9 +137,12 @@ def build(folder, outdir, only=None):
         with wave.open(os.path.join(outdir, f"{sc['id']}.wav"), "wb") as w:
             w.setparams(params)
             w.writeframes(frames)
-        info = {"id": sc["id"], "duration": round(dur, 3), "words": words,
+        info = {"id": sc["id"], "src": src, "duration": round(dur, 3), "words": words,
                 "segments": [{"marked": s, "slow": sl, "tokens": tokens(s, dic)} for s, sl in segs]}
         json.dump(info, open(os.path.join(outdir, f"{sc['id']}.json"), "w"), ensure_ascii=False, indent=1)
+        os.makedirs(store, exist_ok=True)
+        subprocess.run(["ffmpeg", "-v", "error", "-y", "-i", os.path.join(outdir, f"{sc['id']}.wav"), "-c:a", "flac", sf], check=True)
+        shutil.copy(os.path.join(outdir, f"{sc['id']}.json"), sj)
         print(sc["id"], f"{dur:.2f}초", f"새로 만든 글자 {used}")
         for w0, w1, w2 in zip(words, words[1:], words[2:]):
             before, after = w1["start"] - w0["end"], w2["start"] - w1["end"]
