@@ -108,6 +108,7 @@ window.overlaps = () => {
   return out;
 };
 window.subLastLine = () => { const ws = [...sub.querySelectorAll('i')]; if (!ws.length) return 0; const tops = ws.map(w => Math.round(w.getBoundingClientRect().top)); const last = Math.max(...tops); return tops.filter(t => t === last).length; };
+window.stageEmpty = () => ![...stage.querySelectorAll('*')].some(n => { const r = n.getBoundingClientRect(); if (r.width < 4 || r.height < 4) return false; let e = n, o = 1; while (e && e !== stage) { const cs = getComputedStyle(e); if (cs.visibility === 'hidden' || cs.display === 'none') return false; o *= parseFloat(cs.opacity); e = e.parentElement; } return o > .3; });
 window.subLines = () => { const s = sub.firstChild; if (!s) return 0; const r = s.getClientRects(); const lh = parseFloat(getComputedStyle(s).lineHeight); return Math.round((s.getBoundingClientRect().height - 28) / lh); };
 """
 
@@ -201,6 +202,7 @@ def main():
         pg.wait_for_timeout(300)
         report["fonts"] = pg.evaluate("[...document.fonts].filter(f=>f.status==='loaded').map(f=>f.weight).join(',')")
         last_sub = None
+        run, empty_flagged = 0.0, False
         for i in range(n):
             tt = i / FPS
             pg.evaluate(f"render({tt})")
@@ -214,6 +216,13 @@ def main():
                     report.setdefault("subtitle_orphan", []).append([round(tt, 2), s])
                 last_sub = s
             pg.screenshot(path=os.path.join(work, "f", f"{i:05d}.jpg"), type="jpeg", quality=92)
+            if i % 6 == 0:                                   # 0.2초마다: 말하는데 화면이 비어 있는지
+                empty = pg.evaluate("stageEmpty()")
+                run = (run + 0.2) if empty and s else 0.0
+                if run >= 1.0 and not empty_flagged:
+                    report.setdefault("empty_stage", []).append(round(tt - 1.0, 2)); empty_flagged = True
+                if not empty:
+                    empty_flagged = False
             for sc in tl:
                 if abs(tt - (sc["start"] + sc["dur"] - 0.15)) < 0.5 / FPS:
                     ov = pg.evaluate("overlaps()")
