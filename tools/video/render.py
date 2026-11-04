@@ -95,7 +95,7 @@ window.render = function (t) {
 };
 window.overlaps = () => {
   const st = stage.getBoundingClientRect(), out = [];
-  const nodes = [...stage.children].filter(n => n.tagName.toLowerCase() !== 'svg' && !n.classList.contains('noqa') && parseFloat(getComputedStyle(n).opacity) > .3 && n.offsetWidth > 0);
+  const nodes = [...stage.children].filter(n => n.tagName.toLowerCase() !== 'svg' && !n.classList.contains('noqa') && getComputedStyle(n).visibility !== 'hidden' && parseFloat(getComputedStyle(n).opacity) > .3 && n.offsetWidth > 0);
   const R = nodes.map(n => { const r = n.getBoundingClientRect(); return { n, r, name: (n.className && n.className.baseVal === undefined ? n.className : '') + ':' + (n.textContent || '').trim().slice(0, 12) }; });
   for (const a of R) {
     if (a.r.left < st.left - 2 || a.r.right > st.right + 2 || a.r.top < st.top - 2 || a.r.bottom > st.bottom + 2) out.push(['밖', a.name]);
@@ -129,8 +129,13 @@ def main():
     md = open(os.path.join(a.folder, "장면표.md"), encoding="utf-8").read()
     scenes = parse_scenes(md)
     ids = [s["id"] for s in scenes]
-    lo, hi = (a.range.split("-") + [a.range])[:2]
-    sel = [s for s in scenes if ids.index(lo) <= ids.index(s["id"]) <= ids.index(hi)]
+    # 범위 표기: "L01-L06" 또는 "L03-L05,S1E"
+    want = []
+    for part in a.range.split(","):
+        lo, hi = (part.split("-") + [part])[:2]
+        want += ids[ids.index(lo):ids.index(hi) + 1]
+    byid = {s["id"]: s for s in scenes}
+    sel = [byid[i] for i in want]
 
     W, H = SIZE[a.layout]
     tl, t = [], 0.0

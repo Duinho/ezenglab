@@ -36,6 +36,7 @@ function makeCtx(scene, stage, layout) {
       console.warn('단어 없음', scene.id, text);
       return fallback;
     },
+    has(text) { return words.some(w => w.text.replace(/[^0-9A-Za-z가-힣]/g, '').includes(text)); },
     endOf(text, n = 1, fallback = 0) {
       let c = 0;
       for (const w of words) if (w.text.replace(/[^0-9A-Za-z가-힣]/g, '').includes(text)) { if (++c === n) return w.end; }

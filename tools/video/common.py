@@ -8,7 +8,7 @@ MARK_RE = re.compile(r"\[([^\[\]|]+)\|([^\[\]]+)\]")
 def parse_scenes(md):
     """장면표.md → [{id, title, reading, screen, motion}]"""
     out = []
-    for m in re.finditer(r"^### (L\d+) · (.*?)\n(.*?)(?=^### |^## |\Z)", md, re.S | re.M):
+    for m in re.finditer(r"^### ([LS]\d+[A-Z]?) · (.*?)\n(.*?)(?=^### |^## |\Z)", md, re.S | re.M):
         sid, title, body = m.groups()
         f = dict(re.findall(r"^- (읽기|화면|움직임|멈춤|앞멈춤): (.*)$", body, re.M))
         hold = float(re.sub(r"[^0-9.]", "", f.get("멈춤", "0")) or 0)

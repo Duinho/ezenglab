@@ -120,6 +120,10 @@ def _split_sentence(us, R, toks, max_chars):
             L = L * 0.3
             score, cuts = dp(j, parts - 1)
             pen = _break_pen(us[j - 1]) + 1 * sum(1 for u in us[i:j - 1] if u["punct"] == ",") + _start_pen(us, i)
+            if j < n and _clean(us[j]["w"]["text"]) in tuple("한그이저"):   # 다음 구절이 '한·그' 같은 관형어로 시작(…이기도 / 한 짬뽕)
+                pen += 8
+            if j < n and _clean(us[j]["w"]["text"]).startswith("하") and _clean(us[j - 1]["w"]["text"]).endswith(("도", "게", "지", "기")):
+                pen += 8                                         # 보조 용언 앞에서 끊지 않음(…이기도 / 하고)
             cand = (score + pen * 3 + 4, [j] + cuts)
             if res is None or cand[0] < res[0]:
                 res = cand

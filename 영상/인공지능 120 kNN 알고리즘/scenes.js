@@ -150,7 +150,7 @@ const SCENES = {
       this.rule.innerHTML = '답을 아는 것 중에서<br><b>가장 비슷한 것</b>을 찾아 판단';
       this.end = el('div', { class: 'abs center endnote', style: { left: 0, width: '100%', top: (L ? 805 : 1010) + 'px' } }, s);
       this.end.innerHTML = '= <b>kNN</b>의 출발점';
-      this.t = { sam: ctx.at('삼겹살', 1, 3), sim: ctx.at('비슷하네', 1, 4), a: ctx.at('그럼', 1, 5), rule: ctx.at('답을', 1, 7), end: ctx.at('출발점', 1, 11) - .4 };
+      this.t = { sam: ctx.at('삼겹살', 1, 3), sim: ctx.at('비슷하네', 1, 4), a: ctx.at('그럼', 1, 5), rule: ctx.at('답을', 1, 7), end: ctx.has('출발점') ? ctx.at('출발점') - .4 : 11 };
     },
     frame(ctx, t) {
       const p = this.pos, m = E.ease(E.prog(t, this.t.sam, 1.0));
@@ -166,5 +166,42 @@ const SCENES = {
       show(this.rule, E.prog(t, this.t.rule, .5), 30);
       show(this.end, E.prog(t, this.t.end, .5), 30);
     },
+  },
+};
+
+// 쇼츠 S1 마무리: L06 화면에 이어 "짬뽕은 누가 좋아할까요?"로 끝냄
+SCENES.S1E = {
+  init(ctx) {
+    SCENES.L06.init.call(this, ctx);
+    const L = ctx.long, s = ctx.stage;
+    this.end.innerHTML = '= 인공지능 기초 알고리즘<br><b>kNN</b>의 시작';
+    if (!L) { this.end.style.top = '968px'; this.end.style.fontSize = '64px'; }
+    this.under = [this.a, this.b, this.badge, this.who, this.rule, this.end];
+    this.t.end = ctx.at('인공지능', 1, 11) - .2;
+    this.t.q = ctx.at('짬뽕', 1, 14) - .5;
+    // 짬뽕 질문 화면(앞 화면을 덮음)
+    this.qbox = el('div', { class: 'abs', style: { left: 0, top: 0, width: ctx.W + 'px', height: ctx.H + 'px', background: COLOR.bg } }, s);
+    const cy = L ? 420 : 520, xs = L ? [560, 1360] : [210, 870];
+    const fb = el('div', { class: 'abs center', style: { left: (xs[0] - 90) + 'px', top: (cy - 120) + 'px', width: '180px' } }, this.qbox);
+    fb.innerHTML = personSVG(COLOR.orange, 'B', 170) + `<div class="list" style="font-size:30px;color:${COLOR.orange}">매운 음식</div>`;
+    const fc = el('div', { class: 'abs center', style: { left: (xs[1] - 90) + 'px', top: (cy - 120) + 'px', width: '180px' } }, this.qbox);
+    fc.innerHTML = personSVG(COLOR.blue, 'C', 170) + `<div class="list" style="font-size:30px;color:${COLOR.blue}">면 요리</div>`;
+    this.svg2 = el('svg', { class: 'abs', width: ctx.W, height: ctx.H, style: { left: 0, top: 0 } }, this.qbox);
+    const cx = ctx.W / 2, cw = L ? 360 : 300;
+    this.l1 = el('line', { x1: cx - cw / 2, y1: cy + 30, x2: xs[0] + 100, y2: cy + 30, stroke: COLOR.orange, 'stroke-width': 7, 'stroke-dasharray': '14 12', 'stroke-linecap': 'round' }, this.svg2);
+    this.l2 = el('line', { x1: cx + cw / 2, y1: cy + 30, x2: xs[1] - 100, y2: cy + 30, stroke: COLOR.blue, 'stroke-width': 7, 'stroke-dasharray': '14 12', 'stroke-linecap': 'round' }, this.svg2);
+    this.jj = card(this.qbox, cx - cw / 2, cy - 45, cw, 150, { size: 60, color: COLOR.ink, text: '짬뽕' });
+    this.tags = el('div', { class: 'abs center', style: { left: (cx - 260) + 'px', width: '520px', top: (cy + 125) + 'px', fontSize: '34px', fontWeight: 600, color: COLOR.sub } }, this.qbox);
+    this.tags.innerHTML = `<span style="color:${COLOR.orange}">매운 음식</span> + <span style="color:${COLOR.blue}">면 요리</span>`;
+    this.big = el('div', { class: 'abs center', style: { left: 0, width: '100%', top: (cy + 200) + 'px', fontSize: (L ? 120 : 140) + 'px', fontWeight: 800, color: COLOR.orange } }, this.qbox);
+    this.big.textContent = '누가?';
+  },
+  frame(ctx, t) {
+    SCENES.L06.frame.call(this, ctx, t);
+    const q = E.prog(t, this.t.q, .45);
+    this.qbox.style.opacity = q;
+    this.under.forEach(n => n.style.visibility = q > .98 ? 'hidden' : 'visible');
+    this.jj.style.transform = `translateX(${Math.sin(t * 3.2) * 14 * q}px)`;
+    pop(this.big, E.prog(t, this.t.q + .9, .5), .6);
   },
 };
