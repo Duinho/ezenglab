@@ -10,7 +10,7 @@ folder, mp4 = sys.argv[1], sys.argv[2]
 rng = sys.argv[3] if len(sys.argv) > 3 else None
 md = open(os.path.join(folder, "장면표.md"), encoding="utf-8").read()
 scenes = parse_scenes(md); ids = [s["id"] for s in scenes]; byid = {s["id"]: s for s in scenes}
-want = ids
+want = [i for i in ids if not i.startswith("S")]   # 범위를 안 주면 롱폼(쇼츠 전용 장면 S… 제외)
 if rng:
     want = []
     for part in rng.split(","):
