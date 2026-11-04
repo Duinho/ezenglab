@@ -205,8 +205,8 @@ SCENES.S1E = {
     fc.innerHTML = personSVG(COLOR.blue, 'C', 170) + `<div class="list" style="font-size:30px;color:${COLOR.blue}">면 요리</div>`;
     this.svg2 = el('svg', { class: 'abs', width: ctx.W, height: ctx.H, style: { left: 0, top: 0 } }, this.qbox);
     const cx = ctx.W / 2, cw = L ? 360 : 300;
-    this.l1 = el('line', { x1: cx - cw / 2, y1: cy + 30, x2: xs[0] + 100, y2: cy + 30, stroke: COLOR.orange, 'stroke-width': 7, 'stroke-dasharray': '14 12', 'stroke-linecap': 'round' }, this.svg2);
-    this.l2 = el('line', { x1: cx + cw / 2, y1: cy + 30, x2: xs[1] - 100, y2: cy + 30, stroke: COLOR.blue, 'stroke-width': 7, 'stroke-dasharray': '14 12', 'stroke-linecap': 'round' }, this.svg2);
+    this.l1 = el('line', { x1: cx - cw / 2 - 24, y1: cy + 30, x2: xs[0] + 100, y2: cy + 30, stroke: COLOR.orange, 'stroke-width': 7, 'stroke-dasharray': '14 12', 'stroke-linecap': 'round' }, this.svg2);
+    this.l2 = el('line', { x1: cx + cw / 2 + 24, y1: cy + 30, x2: xs[1] - 100, y2: cy + 30, stroke: COLOR.blue, 'stroke-width': 7, 'stroke-dasharray': '14 12', 'stroke-linecap': 'round' }, this.svg2);
     this.jj = card(this.qbox, cx - cw / 2, cy - 45, cw, 150, { size: 60, color: COLOR.ink, text: '짬뽕' });
     this.tags = el('div', { class: 'abs center', style: { left: (cx - 260) + 'px', width: '520px', top: (cy + 125) + 'px', fontSize: '34px', fontWeight: 600, color: COLOR.sub } }, this.qbox);
     this.tags.innerHTML = `<span style="color:${COLOR.orange}">매운 음식</span> + <span style="color:${COLOR.blue}">면 요리</span>`;
@@ -252,7 +252,7 @@ function makePlot(ctx, parent, box, dom) {
   P.py = v => box.y + box.h - (v - Y0) / (Y1 - Y0) * box.h;
   P.sx = box.w / (X1 - X0); P.sy = box.h / (Y1 - Y0);
   P.svg = el('svg', { class: 'abs', width: ctx.W, height: ctx.H, style: { left: 0, top: 0 } }, parent);
-  P.grid = el('g', { opacity: .9 }, P.svg);
+  P.grid = el('g', { opacity: .9, class: 'grid' }, P.svg);
   const step = dom ? .5 : 1;
   for (let v = Math.ceil(X0 / step) * step; v <= X1; v += step) el('line', { x1: P.px(v), y1: box.y, x2: P.px(v), y2: box.y + box.h, stroke: '#e1e8ef', 'stroke-width': 2 }, P.grid);
   for (let v = Math.ceil(Y0 / step) * step; v <= Y1; v += step) el('line', { x1: box.x, y1: P.py(v), x2: box.x + box.w, y2: P.py(v), stroke: '#e1e8ef', 'stroke-width': 2 }, P.grid);
@@ -327,8 +327,8 @@ SCENES.L07 = {
     this.fc = el('div', { class: 'abs center', style: { left: (xs[1] - 100) + 'px', top: (cy - 130) + 'px', width: '200px' } }, s);
     this.fc.innerHTML = personSVG(COLOR.blue, 'C', 180) + `<div class="list" style="font-size:32px;color:${COLOR.blue}">면 요리</div>`;
     this.svg = el('svg', { class: 'abs', width: ctx.W, height: ctx.H, style: { left: 0, top: 0 } }, s);
-    this.dB = arrow(this.svg, cx - cw / 2 - 10, cy + 40, xs[0] + 110, cy + 40, COLOR.orange, 7);
-    this.dC = arrow(this.svg, cx + cw / 2 + 10, cy + 40, xs[1] - 110, cy + 40, COLOR.blue, 7);
+    this.dB = arrow(this.svg, cx - cw / 2 - 26, cy + 40, xs[0] + 110, cy + 40, COLOR.orange, 7);
+    this.dC = arrow(this.svg, cx + cw / 2 + 26, cy + 40, xs[1] - 110, cy + 40, COLOR.blue, 7);
     this.jj = card(s, cx - cw / 2, cy - 35, cw, 150, { size: 64, color: COLOR.ink, text: '짬뽕' });
     this.ban = el('div', { class: 'abs center rule', style: { left: (cx - (L ? 640 : 470)) + 'px', width: (L ? 1280 : 940) + 'px', top: (L ? 620 : 860) + 'px' } }, s);
     this.ban.innerHTML = '얼마나 비슷한지 재는 <b>기준</b>이 필요해요';
@@ -967,7 +967,7 @@ SCENES.S3E = {
   init(ctx) {
     SCENES.L20.init.call(this, ctx);
     const L = ctx.long;
-    this.qq = el('div', { class: 'abs center', style: { left: 0, width: '100%', top: (L ? 380 : 790) + 'px', fontSize: (L ? 76 : 68) + 'px', fontWeight: 800, color: COLOR.orange, lineHeight: 1.2, ...(L ? { background: COLOR.bg, padding: '20px 0' } : {}) } }, ctx.stage);
+    this.qq = el('div', { class: 'abs center', style: { left: 0, width: '100%', top: (L ? 380 : 220) + 'px', fontSize: (L ? 76 : 68) + 'px', fontWeight: 800, color: COLOR.orange, lineHeight: 1.2, ...(L ? { background: COLOR.bg, padding: '20px 0' } : {}) } }, ctx.stage);
     this.qq.innerHTML = '단위가 다르면<br>어떻게 맞출까?';
     this.t.q = ctx.eq('그럼') - .1;
   },

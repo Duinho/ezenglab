@@ -136,7 +136,8 @@ window.overlaps = () => {
   });
   stage.querySelectorAll('svg path, svg line').forEach(n => {     // 축·선은 여백 검사만
     if (n.closest('defs') || noqa(n) || vis(n) <= .3) return;
-    const r = cut(n.getBoundingClientRect(), clipOf(n)); if (r) items.push({ n, r, k: 'line', name: nm(n) });
+    const b0 = n.getBoundingClientRect(), w = (parseFloat(n.getAttribute('stroke-width')) || 2) / 2;   // 선 굵기만큼 넓혀 잼(높이 0인 가로선 대비)
+    const r = cut({ left: b0.left - w, top: b0.top - w, right: b0.right + w, bottom: b0.bottom + w }, clipOf(n)); if (r) items.push({ n, r, k: 'line', name: nm(n) });
   });
   const host = document.getElementById('host'), hr = host && getComputedStyle(host).display !== 'none' ? host.getBoundingClientRect() : null;
   const ov = (a, b, pad = 0) => Math.min(a.right, b.right) - Math.max(a.left, b.left) > pad && Math.min(a.bottom, b.bottom) - Math.max(a.top, b.top) > pad;
@@ -149,7 +150,14 @@ window.overlaps = () => {
   for (let i = 0; i < items.length; i++) for (let j = i + 1; j < items.length; j++) {
     const A = items[i], B = items[j];
     if (vis(A.n) < .6 || vis(B.n) < .6) continue;                   // 장면 안에서 바뀌는 순간(사라지는 중·나타나는 중)은 겹침에서 뺌
-    if (A.k === 'line' || B.k === 'line') continue;
+    if (A.k === 'line' || B.k === 'line') {   // 가로·세로 선(축, 기준선)이 글자나 상자를 지나가면 겹침. 격자와 사선은 뺌
+      const L = A.k === 'line' ? A : B, O = A.k === 'line' ? B : A;
+      if (L.k === O.k || O.k === 'shape' || L.n.closest('.grid') || O.n.contains(L.n)) continue;
+      if (O.k === 'text' && items.some(X => X.k === 'shape' && O.r.left >= X.r.left - 2 && O.r.right <= X.r.right + 2 && O.r.top >= X.r.top - 2 && O.r.bottom <= X.r.bottom + 2)) continue;   // 점 위 이름표는 점에 이어진 선과 겹쳐도 됨
+      const thin = (L.r.right - L.r.left) < 10 || (L.r.bottom - L.r.top) < 10;
+      if (thin && ov(L.r, O.r, 1)) out.push(['선 겹침', O.name, L.name]);
+      continue;
+    }
     if (A.k === 'shape' && B.k === 'shape') continue;                 // 과일 점끼리 겹치는 건 그래프 내용
     if (A.n.contains(B.n) || B.n.contains(A.n)) continue;             // 상자 안의 글자
     if (A.k === 'box' && B.k === 'box') { if (ov(A.r, B.r, 4)) out.push(['겹침', A.name, B.name]); continue; }
