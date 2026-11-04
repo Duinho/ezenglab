@@ -12,7 +12,7 @@ const COLOR = { bg: '#f2f8f5', green: '#14936a', ink: '#14213d', sub: '#445066',
   red: '#d24a5a', blue: '#3b6fb6', line: '#cfd8e3', card: '#ffffff', teal: '#0f7c80' };
 
 function el(tag, attrs = {}, parent) {
-  const svgTags = ['svg', 'g', 'path', 'rect', 'circle', 'ellipse', 'line', 'text', 'polygon', 'polyline', 'defs', 'marker'];
+  const svgTags = ['svg', 'g', 'path', 'rect', 'circle', 'ellipse', 'line', 'text', 'polygon', 'polyline', 'defs', 'marker', 'clipPath', 'tspan', 'linearGradient', 'radialGradient', 'stop', 'mask', 'use'];  // clipPath가 빠져 있어 그래프 자르기가 안 됐었음
   const n = svgTags.includes(tag) ? document.createElementNS('http://www.w3.org/2000/svg', tag) : document.createElement(tag);
   for (const [k, v] of Object.entries(attrs)) {
     if (k === 'text') n.textContent = v;

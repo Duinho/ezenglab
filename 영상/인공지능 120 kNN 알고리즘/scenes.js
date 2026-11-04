@@ -18,11 +18,11 @@ function G(ctx) {
   return {
     xs: L ? [480, 960, 1440] : [180, 540, 900], boxW: L ? 400 : 330,
     top: L ? 40 : 40,
-    bubbleW: L ? 400 : 320, bubbleH: L ? 250 : 300, bubbleY: L ? 60 : 170,
+    bubbleW: L ? 400 : 290, bubbleH: L ? 250 : 300, bubbleY: L ? 60 : 170,
     personSize: L ? 220 : 230, personY: L ? 380 : 560,
     smallSize: L ? 120 : 150, smallY: L ? 40 : 90,
     listY: L ? 190 : 175, listSize: L ? 30 : 26,
-    cardY: L ? 560 : 820, cardW: L ? 380 : 310, cardH: L ? 130 : 150, cardSize: L ? 46 : 44,
+    cardY: L ? 560 : 820, cardW: L ? 380 : 290, cardH: L ? 130 : 150, cardSize: L ? 46 : 44,
   };
 }
 
@@ -101,7 +101,7 @@ const SCENES = {
       this.ask.textContent = '각각 누가 좋아할까요?';
       this.tAsk = ctx.at('누가', 1, 4) - .1;
       this.tName = ['에이', '비', '씨'].map((w, i) => ctx.at(w, 1, .2 + i * .2));
-      this.count = el('div', { class: 'abs center count', style: { left: (ctx.W / 2 - 150) + 'px', width: '300px', top: (ctx.long ? 705 : 1000) + 'px', fontSize: (ctx.long ? 150 : 130) + 'px', lineHeight: 1.1 } }, s);
+      this.count = el('div', { class: 'abs center count', style: { left: (ctx.W / 2 - 150) + 'px', width: '300px', top: (ctx.long ? 730 : 985) + 'px', fontSize: (ctx.long ? 120 : 100) + 'px', lineHeight: 1.1 } }, s);
     },
     frame(ctx, t) {
       // "A, B, C가 말하지 않은": 이름이 불릴 때 친구가 살짝 튀어 오름
@@ -160,9 +160,9 @@ const SCENES = {
       this.badge.textContent = '비슷!';
       this.who = el('div', { class: 'abs center', style: { left: (cx - 80) + 'px', top: (y + 190) + 'px', width: '160px' } }, s);
       this.who.innerHTML = personSVG(COLOR.red, 'A', 150);
-      this.rule = el('div', { class: 'abs center rule', style: { left: (L ? 260 : 60) + 'px', width: (L ? 1400 : 960) + 'px', top: (L ? 540 : 720) + 'px' } }, s);
+      this.rule = el('div', { class: 'abs center rule', style: { left: (L ? 260 : 60) + 'px', width: (L ? 1400 : 960) + 'px', top: (L ? 515 : 720) + 'px' } }, s);
       this.rule.innerHTML = '답을 아는 것 중에서<br><b>가장 비슷한 것</b>을 찾아 판단';
-      this.end = el('div', { class: 'abs center endnote', style: { left: 0, width: '100%', top: (L ? 805 : 1010) + 'px' } }, s);
+      this.end = el('div', { class: 'abs center endnote', style: { left: 0, width: '100%', top: (L ? 785 : 1010) + 'px' } }, s);
       this.end.innerHTML = '= <b>kNN</b>의 출발점';
       this.t = { so: ctx.at('소불고기', 1, 2.8) - .1, sam: ctx.at('삼겹살', 1, 3), sim: ctx.at('비슷하네', 1, 4), a: ctx.at('그럼', 1, 5), rule: ctx.at('답을', 1, 7), end: ctx.has('출발점') ? ctx.at('출발점') - .4 : 11 };
     },
@@ -245,7 +245,7 @@ const byDist = q => FRUITS.map(f => [Math.hypot(f[1] - q[0], f[2] - q[1]), f]).s
 const ZOOM = { x0: 4.8, x1: 7.0, y0: 10.2, y1: 12.9 };   // 애매한 별 주변 확대
 function makePlot(ctx, parent, box, dom) {
   const L = ctx.long;
-  box = box || (L ? { x: 90, y: 30, w: 1050, h: 840 } : { x: 70, y: 60, w: 940, h: 820 });
+  box = box || (L ? { x: 130, y: 100, w: 1000, h: 700 } : { x: 110, y: 110, w: 880, h: 660 });   // 위아래·옆 여백을 남김(팀장님 2026-11-04)
   const X0 = dom ? dom.x0 : 4.6, X1 = dom ? dom.x1 : 9.0, Y0 = dom ? dom.y0 : 9.6, Y1 = dom ? dom.y1 : 15.0;
   const P = { box, nodes: {}, labels: {} };
   P.px = v => box.x + (v - X0) / (X1 - X0) * box.w;
@@ -403,7 +403,7 @@ SCENES.L10 = {
   init(ctx) {
     const P = this.P = makePlot(ctx, ctx.stage, undefined, ZOOM);
     this.star = P.star(STAR_Y); this.ring = P.ring(STAR_Y);
-    this.q = el('text', { x: P.px(STAR_Y[0]) + 40, y: P.py(STAR_Y[1]) - 40, 'font-family': 'P', 'font-weight': 800, 'font-size': 64, fill: COLOR.orange, opacity: 0, text: '?' }, P.svg);
+    this.q = el('text', { x: P.px(STAR_Y[0]) - 60, y: P.py(STAR_Y[1]) - 40, 'text-anchor': 'end', 'font-family': 'P', 'font-weight': 800, 'font-size': 64, fill: COLOR.orange, opacity: 0, text: '?' }, P.svg);
     this.c = chip(ctx.stage, ctx.long ? 1220 : 300, ctx.long ? 160 : 930, '거리를 <b>숫자로</b> 재 보자', { size: 44 });
     this.t = { s: ctx.w('별은') - .1, a: ctx.w('사과도') - .1, b: ctx.w('귤도') - .1, hard: ctx.w('정하기') - .1, n: ctx.w('숫자로') - .1 };
   },
@@ -469,12 +469,12 @@ SCENES.L12 = {
     this.nb = [['사과6', '0.28', APPLE], ['귤4', '0.32', '#c27c00'], ['귤6', '0.54', '#c27c00']].map(([n, d, c], i) => {
       const [x, y] = P.pt(n);
       const ln = el('line', { x1: sx, y1: sy, x2: sx, y2: sy, stroke: c, 'stroke-width': 6, 'stroke-linecap': 'round' }, P.layer);
-      const lab = el('text', { x: x + (n === '귤6' ? -70 : 34), y: y + (n === '사과6' ? -24 : 46), 'font-family': 'P', 'font-weight': 800, 'font-size': 36, fill: c, opacity: 0, text: d }, P.svg);
-      const tag = P.tag(n, n, c, n === '귤4' ? 56 : -36);
+      const lab = el('text', { x: x + (n === '귤6' ? -52 : 50), y: y + (n === '사과6' ? -30 : 56), 'text-anchor': n === '귤6' ? 'end' : 'start', 'font-family': 'P', 'font-weight': 800, 'font-size': 36, fill: c, opacity: 0, text: d }, P.svg);
+      const tag = P.tag(n, n, c, n === '귤4' ? 74 : -58);
       return { n, x, y, ln, lab, tag };
     });
     this.sxy = [sx, sy];
-    this.board = makeBoard(ctx, ctx.stage, L ? 1220 : 260, L ? 200 : 900, L ? 560 : 560);
+    this.board = makeBoard(ctx, ctx.stage, L ? 1220 : 200, L ? 200 : 780, L ? 560 : 560);
     this.t = { n: [ctx.eq('사과') - .1, ctx.eq('귤', 1) - .1, ctx.eq('귤', 2) - .1], d: [ctx.w('이팔') - .1, ctx.w('삼이') - .1, ctx.w('오사') - .1],
       g: ctx.w('귤이') - .1, a: ctx.w('사과가') - .1, res: ctx.w('귤이라고') - .1, b: ctx.w('거리는') - .1 };
   },
@@ -590,10 +590,10 @@ const K_R = { 1: .30, 3: .62, 5: 1.2 };     // 별에서 k번째 이웃까지 �
 function kNear(k) { return byDist(STAR_Y).slice(0, k).map(x => x[1][0]); }
 SCENES.L16 = {
   init(ctx) {
-    const L = ctx.long, P = this.P = makePlot(ctx, ctx.stage, L ? undefined : { x: 70, y: 40, w: 940, h: 760 }, ZOOM);
+    const L = ctx.long, P = this.P = makePlot(ctx, ctx.stage, L ? undefined : { x: 100, y: 90, w: 880, h: 720 }, ZOOM);
     this.star = P.star(STAR_Y); this.star.place(STAR_Y, 1, 1);
     this.ring = P.ring(STAR_Y);
-    this.list = el('div', { class: 'abs klist', style: { left: (L ? 1210 : 90) + 'px', top: (L ? 160 : 860) + 'px', width: (L ? 600 : 900) + 'px' } }, ctx.stage);
+    this.list = el('div', { class: 'abs klist', style: { left: (L ? 1210 : 90) + 'px', top: (L ? 160 : 885) + 'px', width: (L ? 600 : 900) + 'px' } }, ctx.stage);
     if (!L) this.list.classList.add('row');
     this.list.innerHTML = [[1, '사과', APPLE], [3, '귤', '#c27c00'], [5, '귤', '#c27c00']].map(([k, r, c]) => `<div class="kr"><span class="kk">k = ${k}</span><span class="kv" style="color:${c}">${r}</span></div>`).join('');
     this.rows = [...this.list.querySelectorAll('.kr')];
@@ -615,7 +615,7 @@ SCENES.L16 = {
 // ───────────── L17 왜 달라졌을까 ─────────────
 SCENES.L17 = {
   init(ctx) {
-    const L = ctx.long, P = this.P = makePlot(ctx, ctx.stage, L ? undefined : { x: 70, y: 40, w: 940, h: 760 }, ZOOM);
+    const L = ctx.long, P = this.P = makePlot(ctx, ctx.stage, L ? undefined : { x: 100, y: 90, w: 880, h: 720 }, ZOOM);
     this.star = P.star(STAR_Y); this.star.place(STAR_Y, 1, 1);
     this.ring = P.ring(STAR_Y);
     this.tag = el('div', { class: 'abs center tagx', style: { left: (P.pt('사과6')[0] - 170) + 'px', top: (P.pt('사과6')[1] - 130) + 'px', width: '340px' } }, ctx.stage);
@@ -952,7 +952,7 @@ SCENES.L27 = {
 // ───────────── 쇼츠 마무리 S2E, S3E ─────────────
 SCENES.S2E = {
   init(ctx) {
-    const L = ctx.long, P = this.P = makePlot(ctx, ctx.stage, L ? undefined : { x: 70, y: 40, w: 940, h: 760 });
+    const L = ctx.long, P = this.P = makePlot(ctx, ctx.stage, L ? undefined : { x: 100, y: 90, w: 880, h: 720 });
     this.star = P.star(STAR_Y); this.star.place(STAR_Y, 1, 1); this.ring = P.ring(STAR_Y);
     this.q = el('div', { class: 'abs center', style: { left: 0, width: '100%', top: (L ? 380 : 860) + 'px', fontSize: (L ? 80 : 72) + 'px', fontWeight: 800, color: COLOR.orange, lineHeight: 1.2 } }, ctx.stage);
     this.q.innerHTML = 'k를 키울수록<br>더 정확해질까?';
@@ -967,7 +967,7 @@ SCENES.S3E = {
   init(ctx) {
     SCENES.L20.init.call(this, ctx);
     const L = ctx.long;
-    this.qq = el('div', { class: 'abs center', style: { left: 0, width: '100%', top: (L ? 380 : 860) + 'px', fontSize: (L ? 76 : 68) + 'px', fontWeight: 800, color: COLOR.orange, lineHeight: 1.2, background: COLOR.bg, padding: '20px 0' } }, ctx.stage);
+    this.qq = el('div', { class: 'abs center', style: { left: 0, width: '100%', top: (L ? 380 : 790) + 'px', fontSize: (L ? 76 : 68) + 'px', fontWeight: 800, color: COLOR.orange, lineHeight: 1.2, ...(L ? { background: COLOR.bg, padding: '20px 0' } : {}) } }, ctx.stage);
     this.qq.innerHTML = '단위가 다르면<br>어떻게 맞출까?';
     this.t.q = ctx.eq('그럼') - .1;
   },

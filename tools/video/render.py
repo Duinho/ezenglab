@@ -90,8 +90,13 @@ window.render = function (t) {
     const mo = host.querySelector('#mouth-open'), mc = host.querySelector('#mouth-closed');
     if (mo) { mo.style.display = open ? '' : 'none'; mc.style.display = open ? 'none' : ''; }
     const eyes = host.querySelector('#eyes');
-    if (eyes) eyes.style.transform = (t % 3.7) < .13 ? 'scaleY(.12)' : '';
-    host.style.transform = `translateY(${speaking ? Math.sin(t * 6) * 2 : 0}px)`;
+    // 인사("안녕하세요"): 눈을 감고 살짝 앞으로 숙였다가 돌아옴(팀장님 2026-11-04)
+    const hi = sc.words.find(w => w.text.startsWith('안녕하세요'));
+    let bow = 0;
+    if (hi) { const a = hi.start - .05, b = hi.end + .35; if (lt > a && lt < b) bow = Math.sin(Math.PI * (lt - a) / (b - a)); }
+    if (eyes) eyes.style.transform = (bow > .15 || (t % 3.7) < .13) ? 'scaleY(.12)' : '';
+    host.style.transformOrigin = '50% 95%';
+    host.style.transform = bow > 0 ? `translateY(${bow * 14}px) perspective(600px) rotateX(${-bow * 22}deg)` : `translateY(${speaking ? Math.sin(t * 6) * 2 : 0}px)`;
   }
   const ph = sc.phrases.find(p => lt >= p.start - .05 && lt < p.end + .25);
   const txt = ph ? ph.text : '';
@@ -99,16 +104,58 @@ window.render = function (t) {
     if (txt) { const box = sub.firstChild; txt.split(' ').forEach((w, i) => { if (i) box.appendChild(document.createTextNode(' ')); const e = document.createElement('i'); e.textContent = w; e.style.fontStyle = 'normal'; box.appendChild(e); }); } }
 };
 window.overlaps = () => {
-  const st = stage.getBoundingClientRect(), out = [];
-  const nodes = [...stage.children].filter(n => n.tagName.toLowerCase() !== 'svg' && !n.classList.contains('noqa') && getComputedStyle(n).visibility !== 'hidden' && parseFloat(getComputedStyle(n).opacity) > .3 && n.offsetWidth > 0);
-  const R = nodes.map(n => { const r = n.getBoundingClientRect(); return { n, r, name: (n.className && n.className.baseVal === undefined ? n.className : '') + ':' + (n.textContent || '').trim().slice(0, 12) }; });
-  for (const a of R) {
-    if (a.r.left < st.left - 2 || a.r.right > st.right + 2 || a.r.top < st.top - 2 || a.r.bottom > st.bottom + 2) out.push(['밖', a.name]);
+  // 글·그림·상자가 서로 겹치는지, 화면 가장자리 여백(MARGIN)을 지키는지, 진행자 얼굴을 가리는지 검사
+  const st = stage.getBoundingClientRect(), out = [], M = 30;   // 화면 가장자리 여백(px)
+  const vis = n => { let e = n, o = 1; while (e && e !== stage) { const cs = getComputedStyle(e); if (cs.visibility === 'hidden' || cs.display === 'none') return 0; o *= parseFloat(cs.opacity); const a = e.getAttribute && e.getAttribute('opacity'); if (a !== null && a !== undefined && a !== '') o *= parseFloat(a); e = e.parentElement; } return o; };
+  const noqa = n => { let e = n; while (e && e !== stage) { if (e.classList && e.classList.contains('noqa')) return true; e = e.parentElement; } return false; };
+  const clipOf = n => { let e = n; while (e && e !== stage) { const c = e.getAttribute && e.getAttribute('clip-path'); if (c) { const id = c.match(/#([^)]+)/); const r = id && document.getElementById(id[1]); if (r && r.firstElementChild) { const q = r.firstElementChild, sv = q.ownerSVGElement.getBoundingClientRect(), x = +q.getAttribute('x') + sv.left, y = +q.getAttribute('y') + sv.top; return { left: x, top: y, right: x + +q.getAttribute('width'), bottom: y + +q.getAttribute('height') }; } } e = e.parentElement; } return null; };
+  const cut = (r, c) => { if (!c) return r; const l = Math.max(r.left, c.left), t = Math.max(r.top, c.top), rr = Math.min(r.right, c.right), b = Math.min(r.bottom, c.bottom); return (rr - l > 1 && b - t > 1) ? { left: l, top: t, right: rr, bottom: b } : null; };
+  const nm = n => (n.tagName.toLowerCase() === 'text' ? 'T' : n.tagName.toLowerCase()) + ':' + ((n.textContent || '').trim().slice(0, 12) || (n.getAttribute && (n.getAttribute('class') || '')) || '');
+  const items = [];
+  const tops = [];   // 화면 전체를 덮는 바탕 상자(앞 화면 가림막)는 상자 대신 그 안의 요소를 검사
+  const isCover = n => { const r = n.getBoundingClientRect(); return r.width >= st.width - 4 && r.height >= st.height - 4 && n.tagName.toLowerCase() !== 'svg'; };
+  for (const n of stage.children) { if (isCover(n)) tops.push(...n.children); else tops.push(n); }
+  for (const n of tops) {
+    if (n.tagName.toLowerCase() === 'svg' || noqa(n) || n.offsetWidth === 0 || vis(n) <= .3) continue;
+    const cs = getComputedStyle(n), framed = (cs.backgroundColor !== 'rgba(0, 0, 0, 0)' && cs.backgroundColor !== 'transparent') || parseFloat(cs.borderTopWidth) > 0 || cs.boxShadow !== 'none';
+    let r = n.getBoundingClientRect();
+    if (!framed) {   // 테두리 없는 상자는 실제 글자·그림이 차지한 크기로 잰다
+      let u = null; const add = c => { if (c.width < 1 || c.height < 1) return; u = u ? { left: Math.min(u.left, c.left), top: Math.min(u.top, c.top), right: Math.max(u.right, c.right), bottom: Math.max(u.bottom, c.bottom) } : { left: c.left, top: c.top, right: c.right, bottom: c.bottom }; };
+      const w = document.createTreeWalker(n, NodeFilter.SHOW_TEXT); let t;
+      while ((t = w.nextNode())) { if (!t.textContent.trim()) continue; const rg = document.createRange(); rg.selectNodeContents(t); for (const c of rg.getClientRects()) add(c); }
+      n.querySelectorAll('img,canvas,svg text,svg circle,svg polygon,svg rect,svg path,svg line,svg ellipse').forEach(e => { if (!e.closest('defs')) add(e.getBoundingClientRect()); });
+      n.querySelectorAll('*').forEach(e => { const c = getComputedStyle(e); if ((c.backgroundColor !== 'rgba(0, 0, 0, 0)' && c.backgroundColor !== 'transparent') || parseFloat(c.borderTopWidth) > 0) add(e.getBoundingClientRect()); });
+      if (u) r = u;
+    }
+    items.push({ n, r, k: 'box', name: nm(n) });
   }
-  for (let i = 0; i < R.length; i++) for (let j = i + 1; j < R.length; j++) {
-    const a = R[i].r, b = R[j].r;
-    const w = Math.min(a.right, b.right) - Math.max(a.left, b.left), h = Math.min(a.bottom, b.bottom) - Math.max(a.top, b.top);
-    if (w > 4 && h > 4) out.push(['겹침', R[i].name, R[j].name, Math.round(w), Math.round(h)]);
+  stage.querySelectorAll('svg text, svg circle, svg polygon').forEach(n => {
+    if (n.closest('defs') || noqa(n) || vis(n) <= .3) return;
+    const r = cut(n.getBoundingClientRect(), clipOf(n)); if (!r || r.right - r.left < 3) return;
+    items.push({ n, r, k: n.tagName.toLowerCase() === 'text' ? 'text' : 'shape', name: nm(n) });
+  });
+  stage.querySelectorAll('svg path, svg line').forEach(n => {     // 축·선은 여백 검사만
+    if (n.closest('defs') || noqa(n) || vis(n) <= .3) return;
+    const r = cut(n.getBoundingClientRect(), clipOf(n)); if (r) items.push({ n, r, k: 'line', name: nm(n) });
+  });
+  const host = document.getElementById('host'), hr = host && getComputedStyle(host).display !== 'none' ? host.getBoundingClientRect() : null;
+  const ov = (a, b, pad = 0) => Math.min(a.right, b.right) - Math.max(a.left, b.left) > pad && Math.min(a.bottom, b.bottom) - Math.max(a.top, b.top) > pad;
+  for (const a of items) {
+    const r = a.r;
+    if (r.left < st.left - 2 || r.right > st.right + 2 || r.top < st.top - 2 || r.bottom > st.bottom + 2) out.push(['밖', a.name]);
+    else if (r.left < st.left + M || r.right > st.right - M || r.top < st.top + M || r.bottom > st.bottom - M) out.push(['여백', a.name, Math.round(Math.min(r.left - st.left, st.right - r.right, r.top - st.top, st.bottom - r.bottom))]);
+    if (hr && a.k !== 'line' && ov(r, hr, 4)) out.push(['진행자', a.name]);
+  }
+  for (let i = 0; i < items.length; i++) for (let j = i + 1; j < items.length; j++) {
+    const A = items[i], B = items[j];
+    if (vis(A.n) < .6 || vis(B.n) < .6) continue;                   // 장면 안에서 바뀌는 순간(사라지는 중·나타나는 중)은 겹침에서 뺌
+    if (A.k === 'line' || B.k === 'line') continue;
+    if (A.k === 'shape' && B.k === 'shape') continue;                 // 과일 점끼리 겹치는 건 그래프 내용
+    if (A.n.contains(B.n) || B.n.contains(A.n)) continue;             // 상자 안의 글자
+    if (A.k === 'box' && B.k === 'box') { if (ov(A.r, B.r, 4)) out.push(['겹침', A.name, B.name]); continue; }
+    const inside = (a, b) => a.left >= b.left - 2 && a.right <= b.right + 2 && a.top >= b.top - 2 && a.bottom <= b.bottom + 2;
+    if ((A.k === 'text' && B.k === 'shape' && inside(A.r, B.r)) || (B.k === 'text' && A.k === 'shape' && inside(B.r, A.r))) continue;   // 점 위에 쓴 이름표(A·B 등)
+    if (ov(A.r, B.r, 2)) out.push(['겹침', A.name, B.name]);
   }
   return out;
 };
@@ -228,6 +275,7 @@ def main():
         report["fonts"] = pg.evaluate("[...document.fonts].filter(f=>f.status==='loaded').map(f=>f.weight).join(',')")
         last_sub = None
         run, empty_flagged = 0.0, False
+        seen_issue = set()
         for i in range(n):
             tt = i / FPS
             pg.evaluate(f"render({tt})")
@@ -249,11 +297,12 @@ def main():
                     report.setdefault("empty_stage", []).append(round(tt - 1.0, 2)); empty_flagged = True
                 if not empty:
                     empty_flagged = False
-            for sc in tl:
-                if abs(tt - (sc["start"] + sc["dur"] - 0.15)) < 0.5 / FPS:
-                    ov = pg.evaluate("overlaps()")
-                    if ov:
-                        report.setdefault("layout_issues", []).append([sc["id"], ov])
+            if i % 15 == 0:                                  # 0.5초마다: 겹침·여백·진행자 가림
+                cur_id = next((sc["id"] for sc in tl if sc["start"] <= tt < sc["start"] + sc["dur"]), "끝")
+                for o in pg.evaluate("overlaps()"):
+                    key = json.dumps([cur_id] + o[:3], ensure_ascii=False)
+                    if key not in seen_issue:
+                        seen_issue.add(key); report.setdefault("layout_issues", []).append([cur_id, round(tt, 1)] + o)
         b.close()
     json.dump({"timeline": [{k: v for k, v in s.items() if k != "words"} for s in tl], "report": report},
               open(os.path.join(work, "report.json"), "w"), ensure_ascii=False, indent=1)
