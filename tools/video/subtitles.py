@@ -192,7 +192,7 @@ def forced_phrases(info, max_chars, subs):
     """장면표의 '자막:' 줄(구절을 ' / '로 나눔)대로 자막을 끊는다.
     시간은 자동으로 나눈 구절의 글자 위치로 찾고, 가장 가까운 단어 시작·끝에 맞춘다."""
     base = scene_phrases(info, max_chars)
-    ns = lambda x: re.sub(r"[\s\u00a0\u2060]", "", x)
+    ns = lambda x: re.sub(r"[\s\u00a0\u2060]|(?<!\d)\.(?!\d)", "", x)   # 마침표는 자막에서 빼므로 비교에서도 뺌
     full = "".join(ns(p["text"]) for p in base)
     if ns("".join(subs)) != full:
         raise SystemExit(f"'자막:' 줄이 읽기 줄과 글자가 다름\n  읽기: {full}\n  자막: {ns(''.join(subs))}")

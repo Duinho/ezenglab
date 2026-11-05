@@ -114,6 +114,7 @@ window.overlaps = () => {
   const vis = n => { let e = n, o = 1; while (e && e !== stage) { const cs = getComputedStyle(e); if (cs.visibility === 'hidden' || cs.display === 'none') return 0; o *= parseFloat(cs.opacity); const a = e.getAttribute && e.getAttribute('opacity'); if (a !== null && a !== undefined && a !== '') o *= parseFloat(a); e = e.parentElement; } return o; };
   const noqa = n => { let e = n; while (e && e !== stage) { if (e.classList && e.classList.contains('noqa')) return true; e = e.parentElement; } return false; };
   const clipOf = n => { let e = n; while (e && e !== stage) { const c = e.getAttribute && e.getAttribute('clip-path'); if (c) { const id = c.match(/#([^)]+)/); const r = id && document.getElementById(id[1]); if (r && r.firstElementChild) { const q = r.firstElementChild, sv = q.ownerSVGElement.getBoundingClientRect(), x = +q.getAttribute('x') + sv.left, y = +q.getAttribute('y') + sv.top; return { left: x, top: y, right: x + +q.getAttribute('width'), bottom: y + +q.getAttribute('height') }; } } e = e.parentElement; } return null; };
+  const ovf = n => { let e = n.parentElement; while (e && e !== stage) { if (e.nodeType === 1 && getComputedStyle(e).overflow === 'hidden') return e.getBoundingClientRect(); e = e.parentElement; } return null; };
   const cut = (r, c) => { if (!c) return r; const l = Math.max(r.left, c.left), t = Math.max(r.top, c.top), rr = Math.min(r.right, c.right), b = Math.min(r.bottom, c.bottom); return (rr - l > 1 && b - t > 1) ? { left: l, top: t, right: rr, bottom: b } : null; };
   const nm = n => (n.tagName.toLowerCase() === 'text' ? 'T' : n.tagName.toLowerCase()) + ':' + ((n.textContent || '').trim().slice(0, 12) || (n.getAttribute && (n.getAttribute('class') || '')) || '');
   const items = [];
@@ -136,7 +137,7 @@ window.overlaps = () => {
   }
   stage.querySelectorAll('svg text, svg circle, svg polygon').forEach(n => {
     if (n.closest('defs') || noqa(n) || vis(n) <= .3) return;
-    const r = cut(n.getBoundingClientRect(), clipOf(n)); if (!r || r.right - r.left < 3) return;
+    let r = cut(n.getBoundingClientRect(), clipOf(n)); if (r) r = cut(r, ovf(n)); if (!r || r.right - r.left < 3) return;   // 사진 상자(overflow:hidden) 밖으로 나간 부분은 안 보이므로 잘라서 잼
     items.push({ n, r, k: n.tagName.toLowerCase() === 'text' ? 'text' : 'shape', name: nm(n) });
   });
   stage.querySelectorAll('svg path, svg line').forEach(n => {     // 축·선은 여백 검사만
@@ -284,7 +285,7 @@ def main():
 <div id="stage"></div>{hook}<div id="host">{host_svg}</div><div id="sub"></div>
 <div id="endcard"><div class="a">{endtext}</div><div class="b">눈높이가 바닥에 있는 공학 연구소</div></div>
 <script>const TL={json.dumps({"layout": a.layout, "scenes": tl, "endAt": end_at}, ensure_ascii=False)};</script>
-<script>{lib}</script><script>{scn}</script><script>{RUNTIME}</script></body></html>"""
+<script>const FOLDER={json.dumps(os.path.abspath(a.folder), ensure_ascii=False)};</script><script>{lib}</script><script>{scn}</script><script>{RUNTIME}</script></body></html>"""
     page_path = os.path.join(work, "page.html")
     open(page_path, "w", encoding="utf-8").write(html)
 
@@ -368,6 +369,7 @@ def main():
         pg.on("pageerror", lambda e: report["console"].append("pageerror: " + str(e)))
         pg.goto("file://" + page_path)
         pg.evaluate("document.fonts.ready")
+        pg.evaluate("window.PRELOAD ? Promise.all(window.PRELOAD) : 0")   # 장면에서 쓰는 사진을 미리 읽어 둠(첫 장면 사진이 비지 않게)
         pg.wait_for_timeout(300)
         report["fonts"] = pg.evaluate("[...document.fonts].filter(f=>f.status==='loaded').map(f=>f.weight).join(',')")
         for sid, f0, f1 in segs:                         # 미리 한 번씩 그려 글꼴·그림을 준비(첫 장면 지문이 흔들리지 않게)
