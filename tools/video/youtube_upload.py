@@ -4,6 +4,7 @@
 - 업로드표.json: {"영상": [{"키": "long", "파일": "...mp4", "제목": "...", "설명": "...", "태그": [...]}, ...]}
   설명 안의 {long} 같은 표시는 앞서 올린 영상 주소로 바뀐다(쇼츠 설명에 롱폼 주소 넣기).
 - 결과(영상 ID·주소)는 같은 파일의 "결과"에 적는다. 이미 올린 키는 다시 올리지 않는다.
+- "설명"을 고치고 다시 돌리면 올린 영상의 설명만 바뀐다. "댓글"이 있으면 영상마다 한 번 댓글을 단다(고정은 스튜디오에서 직접).
 - 토큰: /home/claude/youtube/token.json (작업 공간 전용, 600). client: /home/claude/youtube/client.json
 """
 import json, os, sys, time, urllib.parse, urllib.request
@@ -52,6 +53,36 @@ def upload(path, title, desc, tags):
             raise SystemExit(f"업로드 실패 {e.code}: {msg}")
 
 
+def api(method, path, body=None):
+    r = urllib.request.Request("https://www.googleapis.com/youtube/v3/" + path, method=method,
+                               data=json.dumps(body).encode() if body is not None else None,
+                               headers={"Authorization": "Bearer " + access_token(), "Content-Type": "application/json; charset=UTF-8"})
+    try:
+        return json.load(urllib.request.urlopen(r, timeout=60))
+    except urllib.error.HTTPError as e:
+        raise SystemExit(f"{method} {path.split('?')[0]} 실패 {e.code}: {e.read()[:300].decode(errors='ignore')}")
+
+
+def fill(text, res):
+    for kk, rr in res.items():
+        text = text.replace("{" + kk + "}", rr["주소"])
+    return text
+
+
+def update_desc(vid, desc):
+    """제목·범주는 그대로 두고 설명만 바꿈(videos.update는 snippet 전체를 다시 보내야 함)"""
+    cur = api("GET", f"videos?part=snippet&id={vid}")["items"][0]["snippet"]
+    sn = {k: cur[k] for k in ("title", "categoryId", "tags", "defaultLanguage", "defaultAudioLanguage") if k in cur}
+    sn["description"] = desc
+    return api("PUT", "videos?part=snippet", {"id": vid, "snippet": sn})
+
+
+def comment(vid, text):
+    """영상에 댓글을 단다(고정은 API에 없어서 팀장님이 직접 함)"""
+    j = api("POST", "commentThreads?part=snippet", {"snippet": {"videoId": vid, "topLevelComment": {"snippet": {"textOriginal": text}}}})
+    return j["id"]
+
+
 def main():
     plan_path = sys.argv[1]
     plan = json.load(open(plan_path, encoding="utf-8"))
@@ -66,11 +97,24 @@ def main():
         if "{" in desc and "}" in desc and any("{" + x["키"] + "}" in desc for x in plan["영상"]):
             raise SystemExit(f"{k}: 설명에 아직 안 올린 영상 주소가 있음")
         j = upload(v["파일"], v["제목"], desc, v.get("태그", []))
+        st0 = desc
         st = j.get("status", {})
         res[k] = {"id": j["id"], "주소": f"https://youtu.be/{j['id']}", "공개 상태": st.get("privacyStatus"),
-                  "업로드 상태": st.get("uploadStatus"), "시각": time.strftime("%Y-%m-%d %H:%M")}
+                  "업로드 상태": st.get("uploadStatus"), "시각": time.strftime("%Y-%m-%d %H:%M"), "설명": st0}
         json.dump(plan, open(plan_path, "w", encoding="utf-8"), ensure_ascii=False, indent=1)
         print(k, "올림:", res[k])
+    # 설명 고치기(업로드표의 설명이 바뀌었을 때)와 고정용 댓글
+    for v in plan["영상"]:
+        k = v["키"]; r = res[k]
+        want = fill(v["설명"], res)
+        if r.get("설명") != want:
+            update_desc(r["id"], want); r["설명"] = want; print(k, "설명 고침")
+        if v.get("댓글") and not r.get("댓글 id"):
+            priv = api("GET", f"videos?part=status&id={r['id']}")["items"][0]["status"]["privacyStatus"]
+            if priv == "private":                         # 비공개 영상에는 댓글을 달 수 없음(403). 공개(또는 일부 공개) 뒤 다시 실행
+                print(k, "비공개라 댓글은 공개 뒤에 담"); continue
+            r["댓글 id"] = comment(r["id"], fill(v["댓글"], res)); print(k, "댓글 달음(고정은 팀장님)")
+        json.dump(plan, open(plan_path, "w", encoding="utf-8"), ensure_ascii=False, indent=1)
 
 
 if __name__ == "__main__":
