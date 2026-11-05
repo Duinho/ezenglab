@@ -4,6 +4,7 @@
 - 업로드표.json: {"영상": [{"키": "long", "파일": "...mp4", "제목": "...", "설명": "...", "태그": [...]}, ...]}
   설명 안의 {long} 같은 표시는 앞서 올린 영상 주소로 바뀐다(쇼츠 설명에 롱폼 주소 넣기).
 - 결과(영상 ID·주소)는 같은 파일의 "결과"에 적는다. 이미 올린 키는 다시 올리지 않는다.
+- "썸네일": jpg 경로를 주면 롱폼에 넣는다(채널 인증 필요, 2MB 이하).
 - "재생목록": 강좌 폴더 이름을 주면 과목 재생목록(예: 인공지능)에 강좌 번호 순서로 넣는다(롱폼만).
 - "설명"을 고치고 다시 돌리면 올린 영상의 설명만 바뀐다. "댓글"이 있으면 영상마다 한 번 댓글을 단다(고정은 스튜디오에서 직접).
 - 토큰: /home/claude/youtube/token.json (작업 공간 전용, 600). client: /home/claude/youtube/client.json
@@ -145,6 +146,15 @@ def main():
         if r.get("설명") != want:
             update_desc(r["id"], want); r["설명"] = want; print(k, "설명 고침")
             json.dump(plan, open(plan_path, "w", encoding="utf-8"), ensure_ascii=False, indent=1)   # 아래에서 건너뛰어도 기록은 남게
+        if v.get("썸네일") and not r.get("썸네일"):          # 직접 만든 썸네일(롱폼). 채널 인증이 있어야 함. 쇼츠는 API로 못 넣음
+            img = open(v["썸네일"], "rb").read()
+            q = urllib.request.Request(f"https://www.googleapis.com/upload/youtube/v3/thumbnails/set?videoId={r['id']}", data=img, method="POST",
+                                       headers={"Authorization": "Bearer " + access_token(), "Content-Type": "image/jpeg"})
+            try:
+                urllib.request.urlopen(q, timeout=60); r["썸네일"] = v["썸네일"]; print(k, "썸네일 넣음")
+            except urllib.error.HTTPError as e:
+                print(k, f"썸네일 실패 {e.code}(채널 인증 확인)")
+            json.dump(plan, open(plan_path, "w", encoding="utf-8"), ensure_ascii=False, indent=1)
         if v.get("재생목록") and not r.get("재생목록"):      # 과목 재생목록에 강좌 번호 순서로 넣기
             pid, pos = playlist_place(v["재생목록"], r["id"])
             r["재생목록"] = pid; print(k, f"재생목록에 넣음(자리 {pos})")
