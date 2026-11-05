@@ -6,6 +6,7 @@
 - 키를 주면 그 키만 올린다(유튜브 쇼츠 공개 시각에 맞춰 올릴 때). 이미 올린 키는 다시 올리지 않는다.
 - 인스타 API에는 예약 게시가 없어서, 시각을 맞출 때는 예약 작업이 그 시각에 이 도구를 실행한다.
 - AI 표시: 컨테이너를 만들 때 is_ai_generated=true(합성 음성·AI 그림 사용).
+- "댓글"이 있으면 게시 뒤 한 번 댓글을 단다({long} 같은 표시는 유튜브 주소로). 고정은 앱에서 팀장님이.
 - 결과(미디어 ID·주소)는 같은 파일의 "인스타 결과"에 적는다.
 - 토큰: /home/claude/instagram/token.json {"access_token": "...", "ig_user_id": "..."} (작업 공간 전용, 600).
   원본은 ezenglab-work/secrets/instagram/. 토큰 값은 화면·로그에 출력하지 않는다.
@@ -70,6 +71,11 @@ def post_reel(path, caption):
     return {"id": p["id"], "주소": m.get("permalink"), "시각": m.get("timestamp")}
 
 
+def comment(mid, text):
+    """릴스에 댓글(고정은 API에 없어 팀장님이 앱에서 직접)"""
+    return call("POST", f"{GRAPH}/{mid}/comments", data={"message": text})["id"]
+
+
 def main():
     plan_path = sys.argv[1]
     only = set(sys.argv[2:])
@@ -94,6 +100,17 @@ def main():
                 print(k, "파일 보내기 실패, 1분 뒤 다시 시도"); time.sleep(60)
         json.dump(plan, open(plan_path, "w", encoding="utf-8"), ensure_ascii=False, indent=1)
         print(k, "인스타 올림:", res[k]["주소"])
+    for v in plan.get("인스타", []):                # 고정용 댓글(유튜브 주소·블로그). 한 번만
+        k = v["키"]
+        if k in res and v.get("댓글") and not res[k].get("댓글 id") and (not only or k in only):
+            t = v["댓글"]
+            for kk, rr in yt.items():
+                t = t.replace("{" + kk + "}", rr["주소"])
+            if "{" in t:
+                print(k, "댓글에 아직 없는 주소가 있어 건너뜀"); continue
+            res[k]["댓글 id"] = comment(res[k]["id"], t)
+            json.dump(plan, open(plan_path, "w", encoding="utf-8"), ensure_ascii=False, indent=1)
+            print(k, "인스타 댓글 달음(고정은 팀장님)")
 
 
 if __name__ == "__main__":
