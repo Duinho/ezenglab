@@ -142,7 +142,11 @@ def main():
             desc = desc.replace("{" + kk + "}", rr["주소"])
         if "{" in desc and "}" in desc and any("{" + x["키"] + "}" in desc for x in plan["영상"]):
             raise SystemExit(f"{k}: 설명에 아직 안 올린 영상 주소가 있음")
-        j = upload(v["파일"], v["제목"], desc, v.get("태그", []), v.get("공개"))
+        try:
+            j = upload(v["파일"], v["제목"], desc, v.get("태그", []), v.get("공개"))
+        except (urllib.error.HTTPError, SystemExit) as e:   # 하루 업로드 한도(uploadLimitExceeded) 등: 남은 건 다음에 다시 실행
+            msg = e.read()[:300].decode(errors="ignore") if hasattr(e, "read") else str(e)
+            print(k, "업로드 못 함:", "하루 업로드 한도 초과" if "uploadLimitExceeded" in msg else msg); break
         st0 = desc
         st = j.get("status", {})
         res[k] = {"id": j["id"], "주소": f"https://youtu.be/{j['id']}", "공개 상태": st.get("privacyStatus"),
@@ -151,7 +155,10 @@ def main():
         print(k, "올림:", res[k])
     # 설명 고치기(업로드표의 설명이 바뀌었을 때)와 고정용 댓글
     for v in plan["영상"]:
-        k = v["키"]; r = res[k]
+        k = v["키"]
+        if k not in res:
+            continue
+        r = res[k]
         want = fill(v["설명"], res)
         if r.get("설명") != want:
             update_desc(r["id"], want); r["설명"] = want; print(k, "설명 고침")
