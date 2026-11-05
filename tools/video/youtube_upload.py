@@ -109,6 +109,7 @@ def main():
         want = fill(v["설명"], res)
         if r.get("설명") != want:
             update_desc(r["id"], want); r["설명"] = want; print(k, "설명 고침")
+            json.dump(plan, open(plan_path, "w", encoding="utf-8"), ensure_ascii=False, indent=1)   # 아래에서 건너뛰어도 기록은 남게
         if v.get("댓글") and not r.get("댓글 id"):
             priv = api("GET", f"videos?part=status&id={r['id']}")["items"][0]["status"]["privacyStatus"]
             if priv == "private":                         # 비공개 영상에는 댓글을 달 수 없음(403). 공개(또는 일부 공개) 뒤 다시 실행
