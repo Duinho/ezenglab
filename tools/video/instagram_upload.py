@@ -85,7 +85,13 @@ def main():
         cap = v["캡션"]
         for kk, rr in yt.items():
             cap = cap.replace("{" + kk + "}", rr["주소"])
-        res[k] = post_reel(v["파일"], cap)
+        for i in range(4):                    # 파일 보내기가 가끔 ProcessingFailedError로 실패함(같은 파일로 다시 하면 됨, 2026-11-05 확인)
+            try:
+                res[k] = post_reel(v["파일"], cap); break
+            except SystemExit as e:
+                if "ProcessingFailedError" not in str(e) or i == 3:
+                    raise
+                print(k, "파일 보내기 실패, 1분 뒤 다시 시도"); time.sleep(60)
         json.dump(plan, open(plan_path, "w", encoding="utf-8"), ensure_ascii=False, indent=1)
         print(k, "인스타 올림:", res[k]["주소"])
 
