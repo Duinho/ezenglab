@@ -949,6 +949,51 @@ SCENES.L27 = {
   },
 };
 
+// ───────────── 쇼츠 도입 S2A, S3A (처음 보는 사람을 위해 그래프와 kNN을 먼저 소개) ─────────────
+SCENES.S2A = {
+  init(ctx) {
+    const L = ctx.long, P = this.P = makePlot(ctx, ctx.stage, L ? undefined : { x: 100, y: 90, w: 880, h: 720 }, ZOOM);
+    this.star = P.star(STAR_Y); this.ring = P.ring(STAR_Y);
+    this.rule = chip(ctx.stage, L ? 1220 : 90, L ? 200 : 885, '가까운 <b>k개</b> 중<br>많은 쪽 = <b>답</b>', { size: L ? 48 : 44 });
+    this.t = { ap: ctx.w('빨간') - .1, tg: ctx.w('노란') - .1, s: ctx.w('파란') - .1, near: ctx.w('가장') - .2, rule: ctx.w('많은') - .2 };
+  },
+  frame(ctx, t) {
+    const P = this.P;
+    const ap = E.prog(t, this.t.ap, .35), tg = E.prog(t, this.t.tg, .35), bump = u => 1 + .3 * Math.sin(Math.PI * E.clamp(u));
+    const near = kNear(3), n = E.prog(t, this.t.near, .6);
+    FRUITS.forEach(f => P.set(f[0], { s: f[3] === '사과' ? bump(E.prog(t, this.t.ap, .6)) : bump(E.prog(t, this.t.tg, .6)), o: n > 0 && !near.includes(f[0]) ? 1 - .5 * n : 1 }));
+    const u = E.prog(t, this.t.s, .4);
+    this.star.place(STAR_Y, E.lerp(.4, 1, E.back(u)), E.clamp(u * 2));
+    P.setRing(this.ring, K_R[3] * E.ease(n));
+    show(this.rule, E.prog(t, this.t.rule, .4), 20);
+  },
+};
+SCENES.S3A = {
+  init(ctx) {
+    const L = ctx.long, P = this.P = makePlot(ctx, ctx.stage, L ? undefined : { x: 100, y: 90, w: 880, h: 720 }, ZOOM);   // 확대 그래프라 화살표가 잘 보임
+    this.star = P.star(STAR_Y);
+    const nb = byDist(STAR_Y)[0][1][0];                       // 별에서 가장 가까운 과일(사과6)
+    const [sx, sy] = [P.px(STAR_Y[0]), P.py(STAR_Y[1])], [nx, ny] = P.pt(nb);
+    this.nb = nb;
+    this.ring = P.ring(STAR_Y, COLOR.green);                   // 별 둘레 원이 가장 가까운 과일까지 커짐(별과 과일이 가까워 화살표는 너무 짧음)
+    this.tag = el('div', { class: 'abs center tagx', style: { left: (nx - 170) + 'px', top: (ny - 120) + 'px', width: '340px' } }, ctx.stage);
+    this.tag.innerHTML = '가장 가까운 과일';
+    this.two = chip(ctx.stage, L ? 1220 : 90, L ? 180 : 885, '크기·당도<br><b>숫자 두 개</b>', { size: L ? 46 : 42 });
+    this.rule = chip(ctx.stage, L ? 1220 : 450, L ? 420 : 885, '거리가 <b>짧을수록</b><br>가까움', { size: L ? 46 : 42 });
+    this.t = { two: ctx.w('두') - .1, s: ctx.eq('새') - .1, near: ctx.w('가장') - .2, rule: ctx.w('거리가') - .2 };
+  },
+  frame(ctx, t) {
+    const P = this.P, u = E.prog(t, this.t.s, .4);
+    show(this.two, E.prog(t, this.t.two, .4), 20);
+    this.star.place(STAR_Y, E.lerp(.4, 1, E.back(u)), E.clamp(u * 2));
+    const n = E.prog(t, this.t.near, .3);
+    FRUITS.forEach(f => P.set(f[0], { s: f[0] === this.nb ? 1 + .35 * n : 1, o: n > 0 && f[0] !== this.nb ? 1 - .45 * n : 1 }));
+    P.setRing(this.ring, .29 * E.ease(E.prog(t, this.t.near, .6)));   // 사과6(0.28)까지만, 귤4(0.32)는 밖
+    pop(this.tag, E.prog(t, this.t.near + .5, .4), .7);
+    show(this.rule, E.prog(t, this.t.rule, .4), 20);
+  },
+};
+
 // ───────────── 쇼츠 마무리 S2E, S3E ─────────────
 SCENES.S2E = {
   init(ctx) {

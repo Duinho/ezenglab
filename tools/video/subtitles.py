@@ -127,6 +127,8 @@ def _split_sentence(us, R, toks, max_chars):
                 pen += 8
             if j < n and _clean(us[j]["w"]["text"]).startswith("하") and _clean(us[j - 1]["w"]["text"]).endswith(("도", "게", "지", "기")):
                 pen += 8                                         # 보조 용언 앞에서 끊지 않음(…이기도 / 하고)
+            if j < n and re.match(r"^개(?:[을를이가은는도의만와과]|$)", _clean(us[j]["w"]["text"])):
+                pen += 12                                        # 수 뒤의 '개'를 떼지 않음(k / 개를)
             cand = (score + pen * 3 + 4, [j] + cuts)
             if res is None or cand[0] < res[0]:
                 res = cand
