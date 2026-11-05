@@ -407,7 +407,7 @@ Object.assign(SCENES, {
       const s = ctx.stage, L = ctx.long;
       this.p = photo(s, 'look', L ? 260 : 290, L ? 60 : 40, L ? 520 : 500, L ? 520 : 500);
       this.bub = el('div', { class: 'abs think bad', style: { left: (L ? 840 : 150) + 'px', top: (L ? 140 : 580) + 'px', width: (L ? 620 : 780) + 'px' } }, s);
-      this.bub.innerHTML = '인공지능: “<b>별꼭지 열매</b>예요!”<div class="nx">✕ 틀린 답</div>'; this.bub.style.opacity = 0;
+      this.bub.innerHTML = '인공지능:<br>“<b>별꼭지 열매</b>예요!”<div class="nx">✕ 틀린 답</div>'; this.bub.style.opacity = 0;
       this.end = chip(s, 0, L ? 650 : 870, '좋은 데이터 + 정확한 라벨 = <b>좋은 인공지능</b>', { size: L ? 54 : 40 });
       this.end.style.left = '50%'; this.end.dataset.base = 'translateX(-50%)';
       this.t = { b: ctx.w('답하게') - .6, e: ctx.eq('좋은') - .1 };
@@ -479,7 +479,7 @@ Object.assign(SCENES, {
         '<svg viewBox="0 0 240 110" width="240" height="110"><rect x="10" y="20" width="100" height="70" rx="12" fill="#fff" stroke="#14213d" stroke-width="5"/><text x="60" y="64" text-anchor="middle" font-family="P" font-weight="800" font-size="26" fill="#14213d">해 보기</text><line x1="120" y1="55" x2="150" y2="55" stroke="#445066" stroke-width="5"/><rect x="155" y="32" width="80" height="46" rx="10" fill="#d24a5a"/><text x="195" y="64" text-anchor="middle" font-family="P" font-weight="800" font-size="28" fill="#fff">+10</text></svg>'];
       const cs = [['지도 학습', '정답이 붙은<br>데이터로 배움'], ['비지도 학습', '정답 없이<br>비슷한 것끼리 묶음'], ['강화 학습', '해 보고 받은<br>점수로 배움']];
       this.cs = cs.map(([h, b], i) => { const x = L ? 150 + i * 560 : 90, y = L ? 140 : 40 + i * 315, w = L ? 500 : 900, hh = L ? 540 : 290; const f = flowBox(s, x, y, w, hh, h, ic[i] + '<div class="fb2">' + b + '</div>', [COLOR.green, COLOR.blue, COLOR.red][i]); f.classList.add('tall', 'ic'); if (!L) f.classList.add('row'); return f; });
-      this.t = ctx.has('지도학습') ? [ctx.w('지도학습') - .3, ctx.w('비지도학습') - .3, ctx.w('강화학습') - .3] : [ctx.eq('지도') - .3, ctx.eq('비지도') - .3, ctx.eq('강화') - .3];
+      this.t = [ctx.eq('정답이') - .3, ctx.eq('정답') - .3, ctx.eq('마지막으로') - .3];   // 각 문장이 시작될 때 카드가 나옴(설명이 이름보다 먼저 나오므로)
       this.hd = big(s, L ? 30 : 1000, '배우는 방식 세 가지', L ? 56 : 46); if (!L) this.hd.style.width = '800px';
     },
     frame(ctx, t) { show(this.hd, E.prog(t, 0, .4), 20); this.cs.forEach((c, i) => pop(c, E.prog(t, this.t[i], .4), .85)); },
@@ -559,8 +559,8 @@ Object.assign(SCENES, {
       const s = ctx.stage, L = ctx.long;
       this.qt = big(s, L ? 30 : 30, '<span class="qtag">퀴즈</span>', 50);
       this.p = photo(s, 'hidden', L ? 300 : 340, L ? 140 : 140, L ? 520 : 400, L ? 520 : 400);
-      this.q = el('div', { class: 'abs quizq', style: { left: (L ? 900 : 60) + 'px', top: (L ? 220 : 590) + 'px', width: (L ? 760 : 960) + 'px' } }, s);
-      this.q.innerHTML = '인공지능: “별꼭지 열매일<br>확률 <b>70%</b>”<div class="qq">무슨 뜻일까요?</div>'; this.q.style.opacity = 0;
+      this.q = el('div', { class: 'abs quizq', style: { left: (L ? 860 : 60) + 'px', top: (L ? 200 : 590) + 'px', width: (L ? 880 : 960) + 'px' } }, s);
+      this.q.innerHTML = '인공지능:<br>“별꼭지 열매일 확률 <b>70%</b>”<div class="qq">무슨 뜻일까요?</div>'; this.q.style.opacity = 0;
       this.cd = countdown(ctx, s, L ? 1280 : 540, L ? 600 : 880, L ? 150 : 120);
       this.t = { p: ctx.w('인공지능이') - .2, q: ctx.eq('칠십') - .3, qq: ctx.w('무슨') - .1 };
     },
@@ -631,8 +631,8 @@ Object.assign(SCENES, {
     init(ctx) {
       const s = ctx.stage, L = ctx.long;
       this.p = photo(s, 'hidden', L ? 300 : 290, L ? 60 : 60, L ? 520 : 500, L ? 520 : 500);
-      this.q = el('div', { class: 'abs quizq', style: { left: (L ? 900 : 60) + 'px', top: (L ? 200 : 620) + 'px', width: (L ? 760 : 960) + 'px' } }, s);
-      this.q.innerHTML = '“별꼭지 열매일<br>확률 <b>70%</b>”<div class="qq" style="opacity:1">무슨 뜻일까?</div>'; this.q.style.opacity = 0;
+      this.q = el('div', { class: 'abs quizq', style: { left: (L ? 860 : 60) + 'px', top: (L ? 200 : 620) + 'px', width: (L ? 880 : 960) + 'px' } }, s);
+      this.q.innerHTML = '인공지능:<br>“별꼭지 열매일 확률 <b>70%</b>”<div class="qq" style="opacity:1">무슨 뜻일까?</div>'; this.q.style.opacity = 0;
       this.t = { p: 0, q: ctx.eq('칠십') - .3 };
     },
     frame(ctx, t) { pop(this.p, E.prog(t, 0, .4), .9); pop(this.q, E.prog(t, this.t.q, .4), .85); },

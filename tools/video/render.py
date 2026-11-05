@@ -228,7 +228,7 @@ def main():
         words = [dict(w, start=round(w["start"] + lead, 3), end=round(w["end"] + lead, 3)) for w in info["words"]]
         phs = forced_phrases(info, MAXCH[a.layout], s["subs"]) if s.get("subs") else scene_phrases(info, MAXCH[a.layout])
         phrases = [dict(p, start=round(p["start"] + lead, 3), end=round(p["end"] + lead, 3),
-                        text=re.sub(r"(?<!\d)\.(?!\d)", "", p["text"]).rstrip()) for p in phs]   # 자막에는 마침표를 쓰지 않음(팀장님 2026-11-05)
+                        text=re.sub(r"(?<!\d)\.(?!\d)", "", p["text"]).rstrip().rstrip(",").rstrip()) for p in phs]   # 자막에는 마침표를 쓰지 않고, 줄 끝 쉼표도 뺌(팀장님 2026-11-05). 줄 가운데 쉼표는 둠
         tl.append({"id": s["id"], "start": round(t, 4), "dur": round(dur, 4), "audioDur": round(lead + info["duration"], 3),
                    "words": words, "phrases": phrases, "hold": s["hold"], "lead": lead})
         t += dur

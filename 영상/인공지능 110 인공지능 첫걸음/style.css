@@ -61,13 +61,14 @@
 .arow.sm{grid-template-columns:60px 320px 1fr;height:96px}.arow.sm .ak{font-size:40px}.arow.sm .ad{font-size:32px}
 .sum{font-weight:600;font-size:66px;line-height:1.5}.sum b{color:#14936a;font-weight:800}.sum span{opacity:0}
 .qtag{display:inline-block;background:#e0701b;color:#fff;font-weight:800;font-size:50px;border-radius:999px;padding:8px 40px}
-.quizq{background:#fff;border:5px solid #e0701b;border-radius:30px;padding:30px;font-weight:600;font-size:56px;line-height:1.35;text-align:center}
+.quizq{background:#fff;border:5px solid #e0701b;border-radius:30px;padding:30px;font-weight:600;font-size:52px;line-height:1.35;text-align:center}
 .quizq b{color:#0f7c80;font-weight:800}.quizq .qq{font-weight:800;color:#e0701b;margin-top:16px;opacity:0}
 .blogc{background:#fff;border:5px solid #14936a;border-radius:30px;padding:30px 36px}
 .blogc .bh{font-weight:800;font-size:34px;color:#14936a}.blogc .bt2{font-weight:800;font-size:54px;line-height:1.25;margin:16px 0}
 .blogc .bl{font-weight:600;font-size:38px;line-height:1.5;color:#445066}.blogc .bd{margin-top:20px;font-weight:800;font-size:40px;color:#e0701b}
 .blogc.nx{border-color:#3b6fb6}.blogc.nx .bh{color:#3b6fb6}
-.chipx,.sum,.defn,.big{text-wrap:balance}
+.sum,.defn,.big{text-wrap:balance}
+.chipx{text-wrap-style:balance}
 .qmark{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:260px;color:#fff;opacity:0}
 .xmark{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:300px;color:#d24a5a;opacity:0}
 .wrongl{font-weight:800;font-size:40px;color:#667085;text-align:center}
