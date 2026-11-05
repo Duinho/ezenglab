@@ -1,4 +1,4 @@
-"""유튜브 업로드(비공개). 공개 전환은 팀장님이 스튜디오에서 직접 한다.
+"""유튜브 업로드. 팀장님이 컨펌한 영상만 "공개" 값대로 올린다(지금/예약/비공개).
 
 사용: python3 tools/video/youtube_upload.py 업로드표.json
 - 업로드표.json: {"영상": [{"키": "long", "파일": "...mp4", "제목": "...", "설명": "...", "태그": [...]}, ...]}
@@ -8,6 +8,7 @@
 - "재생목록": 강좌 폴더 이름을 주면 과목 재생목록(예: 인공지능)에 강좌 번호 순서로 넣는다(롱폼만).
 - "설명"을 고치고 다시 돌리면 올린 영상의 설명만 바뀐다. "댓글"이 있으면 영상마다 한 번 댓글을 단다(고정은 스튜디오에서 직접).
 - AI 사용 표시(containsSyntheticMedia)는 업로드 때 켠다. GET 응답에는 이 값이 안 나오므로, 나중에 status를 PUT할 때는 반드시 containsSyntheticMedia: true를 함께 보낸다(빠뜨리면 꺼질 수 있음).
+- "공개": "지금"이면 올리자마자 공개, "2026-11-06T10:00:00Z" 같은 시각이면 그때 공개되게 예약, 없으면 비공개.
 - 토큰: /home/claude/youtube/token.json (작업 공간 전용, 600). client: /home/claude/youtube/client.json
 """
 import json, os, sys, time, urllib.parse, urllib.request
@@ -32,10 +33,16 @@ def access_token():
     return t["access_token"]
 
 
-def upload(path, title, desc, tags):
+def upload(path, title, desc, tags, when=None):
+    """when: None=비공개, "지금"=바로 공개, "2026-11-06T10:00:00Z"=그 시각 예약 공개(팀장님이 컨펌한 영상만)"""
+    st = {"privacyStatus": "private"}
+    if when == "지금":
+        st = {"privacyStatus": "public"}
+    elif when:
+        st = {"privacyStatus": "private", "publishAt": when}
     meta = {"snippet": {"title": title, "description": desc, "tags": tags, "categoryId": "27",   # 27 = 교육
                         "defaultLanguage": "ko", "defaultAudioLanguage": "ko"},
-            "status": {"privacyStatus": "private", "selfDeclaredMadeForKids": False, "embeddable": True,
+            "status": {**st, "selfDeclaredMadeForKids": False, "embeddable": True,
                        "publicStatsViewable": True, "license": "youtube",
                        "containsSyntheticMedia": True}}   # AI 음성·AI 그림을 쓰므로 'AI 사용: 예' 표시(유튜브 정책)
     body = json.dumps(meta).encode()
@@ -135,11 +142,11 @@ def main():
             desc = desc.replace("{" + kk + "}", rr["주소"])
         if "{" in desc and "}" in desc and any("{" + x["키"] + "}" in desc for x in plan["영상"]):
             raise SystemExit(f"{k}: 설명에 아직 안 올린 영상 주소가 있음")
-        j = upload(v["파일"], v["제목"], desc, v.get("태그", []))
+        j = upload(v["파일"], v["제목"], desc, v.get("태그", []), v.get("공개"))
         st0 = desc
         st = j.get("status", {})
         res[k] = {"id": j["id"], "주소": f"https://youtu.be/{j['id']}", "공개 상태": st.get("privacyStatus"),
-                  "업로드 상태": st.get("uploadStatus"), "시각": time.strftime("%Y-%m-%d %H:%M"), "설명": st0}
+                  "업로드 상태": st.get("uploadStatus"), "예약": st.get("publishAt"), "시각": time.strftime("%Y-%m-%d %H:%M"), "설명": st0}
         json.dump(plan, open(plan_path, "w", encoding="utf-8"), ensure_ascii=False, indent=1)
         print(k, "올림:", res[k])
     # 설명 고치기(업로드표의 설명이 바뀌었을 때)와 고정용 댓글
