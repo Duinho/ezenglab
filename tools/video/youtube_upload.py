@@ -7,6 +7,7 @@
 - "썸네일": jpg 경로를 주면 롱폼에 넣는다(채널 인증 필요, 2MB 이하).
 - "재생목록": 강좌 폴더 이름을 주면 과목 재생목록(예: 인공지능)에 강좌 번호 순서로 넣는다(롱폼만).
 - "설명"을 고치고 다시 돌리면 올린 영상의 설명만 바뀐다. "댓글"이 있으면 영상마다 한 번 댓글을 단다(고정은 스튜디오에서 직접).
+- AI 사용 표시(containsSyntheticMedia)는 업로드 때 켠다. GET 응답에는 이 값이 안 나오므로, 나중에 status를 PUT할 때는 반드시 containsSyntheticMedia: true를 함께 보낸다(빠뜨리면 꺼질 수 있음).
 - 토큰: /home/claude/youtube/token.json (작업 공간 전용, 600). client: /home/claude/youtube/client.json
 """
 import json, os, sys, time, urllib.parse, urllib.request
@@ -34,7 +35,9 @@ def access_token():
 def upload(path, title, desc, tags):
     meta = {"snippet": {"title": title, "description": desc, "tags": tags, "categoryId": "27",   # 27 = 교육
                         "defaultLanguage": "ko", "defaultAudioLanguage": "ko"},
-            "status": {"privacyStatus": "private", "selfDeclaredMadeForKids": False, "embeddable": True}}
+            "status": {"privacyStatus": "private", "selfDeclaredMadeForKids": False, "embeddable": True,
+                       "publicStatsViewable": True, "license": "youtube",
+                       "containsSyntheticMedia": True}}   # AI 음성·AI 그림을 쓰므로 'AI 사용: 예' 표시(유튜브 정책)
     body = json.dumps(meta).encode()
     size = os.path.getsize(path)
     r = urllib.request.Request("https://www.googleapis.com/upload/youtube/v3/videos?uploadType=resumable&part=snippet,status",
