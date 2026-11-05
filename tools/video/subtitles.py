@@ -186,3 +186,29 @@ def scene_phrases(info, max_chars):
         t = re.sub(r" (" + "|".join(BOUND) + r")(?=[\s,.?!]|$)", "\u00a0\\1", t)
         p["text"] = t
     return out
+
+
+def forced_phrases(info, max_chars, subs):
+    """장면표의 '자막:' 줄(구절을 ' / '로 나눔)대로 자막을 끊는다.
+    시간은 자동으로 나눈 구절의 글자 위치로 찾고, 가장 가까운 단어 시작·끝에 맞춘다."""
+    base = scene_phrases(info, max_chars)
+    ns = lambda x: re.sub(r"[\s\u00a0\u2060]", "", x)
+    full = "".join(ns(p["text"]) for p in base)
+    if ns("".join(subs)) != full:
+        raise SystemExit(f"'자막:' 줄이 읽기 줄과 글자가 다름\n  읽기: {full}\n  자막: {ns(''.join(subs))}")
+    times = []                                     # 글자마다 대략의 시각
+    for p in base:
+        n = len(ns(p["text"]))
+        times += [p["start"] + (p["end"] - p["start"]) * (i + .5) / n for i in range(n)]
+    ws = info["words"]
+    out, pos = [], 0
+    for t in subs:
+        n = len(ns(t)); a, b = times[pos], times[pos + n - 1]; pos += n
+        st = min(ws, key=lambda w: abs(w["start"] - a))["start"]
+        en = min(ws, key=lambda w: abs(w["end"] - b))["end"]
+        out.append({"text": t, "start": st, "end": en})
+    out[0]["start"] = base[0]["start"]; out[-1]["end"] = base[-1]["end"]
+    for x, y in zip(out, out[1:]):
+        if y["start"] - x["end"] < 0.6:
+            x["end"] = y["start"]
+    return out

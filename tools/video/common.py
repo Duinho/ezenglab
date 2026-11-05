@@ -10,11 +10,12 @@ def parse_scenes(md):
     out = []
     for m in re.finditer(r"^### ([LS]\d+[A-Z]?) · (.*?)\n(.*?)(?=^### |^## |\Z)", md, re.S | re.M):
         sid, title, body = m.groups()
-        f = dict(re.findall(r"^- (읽기|화면|움직임|멈춤|앞멈춤): (.*)$", body, re.M))
+        f = dict(re.findall(r"^- (읽기|화면|움직임|멈춤|앞멈춤|자막): (.*)$", body, re.M))
         hold = float(re.sub(r"[^0-9.]", "", f.get("멈춤", "0")) or 0)
         lead = float(re.sub(r"[^0-9.]", "", f.get("앞멈춤", "0")) or 0)
         out.append(dict(id=sid, title=title.strip(), reading=f.get("읽기", ""),
-                        screen=f.get("화면", ""), motion=f.get("움직임", ""), hold=hold, lead=lead))
+                        screen=f.get("화면", ""), motion=f.get("움직임", ""), hold=hold, lead=lead,
+                        subs=[x.strip() for x in f["자막"].split(" / ")] if f.get("자막") else None))   # 자막 끊는 자리를 직접 정할 때
     return out
 
 

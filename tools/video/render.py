@@ -7,7 +7,7 @@
 import argparse, hashlib, json, math, os, re, shutil, subprocess, sys, wave
 sys.path.insert(0, os.path.dirname(__file__))
 from common import parse_scenes
-from subtitles import scene_phrases
+from subtitles import scene_phrases, forced_phrases
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 FONTS = os.path.join(os.path.dirname(HERE), "fonts")
@@ -223,7 +223,8 @@ def main():
         lead = s.get("lead", 0)
         dur = math.ceil(round((lead + info["duration"] + s["hold"]) * FPS, 6)) / FPS   # 프레임 단위로 맞춤(장면별 재사용을 위해)
         words = [dict(w, start=round(w["start"] + lead, 3), end=round(w["end"] + lead, 3)) for w in info["words"]]
-        phrases = [dict(p, start=round(p["start"] + lead, 3), end=round(p["end"] + lead, 3)) for p in scene_phrases(info, MAXCH[a.layout])]
+        phs = forced_phrases(info, MAXCH[a.layout], s["subs"]) if s.get("subs") else scene_phrases(info, MAXCH[a.layout])
+        phrases = [dict(p, start=round(p["start"] + lead, 3), end=round(p["end"] + lead, 3)) for p in phs]
         tl.append({"id": s["id"], "start": round(t, 4), "dur": round(dur, 4), "audioDur": round(lead + info["duration"], 3),
                    "words": words, "phrases": phrases, "hold": s["hold"], "lead": lead})
         t += dur
