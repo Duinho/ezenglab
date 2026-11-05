@@ -70,6 +70,7 @@ html,body{margin:0;width:%(W)dpx;height:%(H)dpx;overflow:hidden;background:#f2f8
 RUNTIME = """
 let cur = null, ctx = null;
 const stage = document.getElementById('stage'), sub = document.getElementById('sub');
+const SUB_LEAD = 0.25;   // 자막이 말보다 먼저 뜨는 시간(초)
 window.resetScene = () => { cur = null; };   // 다음 render에서 장면을 처음부터 다시 그림(지문을 앞 상태와 무관하게)
 window.render = function (t) {
   let sc = TL.scenes.find(s => t >= s.start && t < s.start + s.dur);
@@ -101,7 +102,8 @@ window.render = function (t) {
     host.style.transformOrigin = '50% 95%';
     host.style.transform = bow > 0 ? `translateY(${bow * 14}px) perspective(600px) rotateX(${-bow * 22}deg)` : `translateY(${speaking ? Math.sin(lt * 6) * 2 : 0}px)`;
   }
-  const ph = sc.phrases.find(p => lt >= p.start - .05 && lt < p.end + .25);
+  // 자막은 말보다 먼저 뜬다(팀장님 2026-11-05: 자막이 나오고 음성이 나와야 함). 겹치는 순간에는 뒤 구절을 보여 줌
+  let ph = null; for (const p of sc.phrases) if (lt >= p.start - SUB_LEAD && lt < p.end + .25) ph = p;
   const txt = ph ? ph.text : '';
   if (sub.dataset.t !== txt) { sub.dataset.t = txt; sub.innerHTML = txt ? '<span></span>' : '';
     if (txt) { const box = sub.firstChild; txt.split(' ').forEach((w, i) => { if (i) box.appendChild(document.createTextNode(' ')); const e = document.createElement('i'); e.textContent = w; e.style.fontStyle = 'normal'; box.appendChild(e); }); } }
@@ -224,7 +226,8 @@ def main():
         dur = math.ceil(round((lead + info["duration"] + s["hold"]) * FPS, 6)) / FPS   # 프레임 단위로 맞춤(장면별 재사용을 위해)
         words = [dict(w, start=round(w["start"] + lead, 3), end=round(w["end"] + lead, 3)) for w in info["words"]]
         phs = forced_phrases(info, MAXCH[a.layout], s["subs"]) if s.get("subs") else scene_phrases(info, MAXCH[a.layout])
-        phrases = [dict(p, start=round(p["start"] + lead, 3), end=round(p["end"] + lead, 3)) for p in phs]
+        phrases = [dict(p, start=round(p["start"] + lead, 3), end=round(p["end"] + lead, 3),
+                        text=re.sub(r"(?<!\d)\.(?!\d)", "", p["text"]).rstrip()) for p in phs]   # 자막에는 마침표를 쓰지 않음(팀장님 2026-11-05)
         tl.append({"id": s["id"], "start": round(t, 4), "dur": round(dur, 4), "audioDur": round(lead + info["duration"], 3),
                    "words": words, "phrases": phrases, "hold": s["hold"], "lead": lead})
         t += dur
