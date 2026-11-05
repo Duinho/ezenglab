@@ -4,6 +4,7 @@
 - 업로드표.json: {"영상": [{"키": "long", "파일": "...mp4", "제목": "...", "설명": "...", "태그": [...]}, ...]}
   설명 안의 {long} 같은 표시는 앞서 올린 영상 주소로 바뀐다(쇼츠 설명에 롱폼 주소 넣기).
 - 결과(영상 ID·주소)는 같은 파일의 "결과"에 적는다. 이미 올린 키는 다시 올리지 않는다.
+- "재생목록": 강좌 폴더 이름을 주면 과목 재생목록(예: 인공지능)에 강좌 번호 순서로 넣는다(롱폼만).
 - "설명"을 고치고 다시 돌리면 올린 영상의 설명만 바뀐다. "댓글"이 있으면 영상마다 한 번 댓글을 단다(고정은 스튜디오에서 직접).
 - 토큰: /home/claude/youtube/token.json (작업 공간 전용, 600). client: /home/claude/youtube/client.json
 """
@@ -83,6 +84,40 @@ def comment(vid, text):
     return j["id"]
 
 
+PL_REG = "/home/claude/ezenglab-work/업로드/재생목록.json"   # 과목별 재생목록 ID와 들어 있는 강좌 번호
+
+
+def playlist_place(folder_name, vid):
+    """강좌 폴더 이름(예: '인공지능 120 kNN 알고리즘')으로 과목 재생목록을 찾거나 만들고,
+    강좌 번호 순서에 맞는 자리에 영상을 넣는다. 새 재생목록은 비공개로 만든다(공개는 팀장님 확인 뒤)."""
+    import re
+    m = re.match(r"^(.+?) (\d+) ", folder_name)
+    if not m:
+        raise SystemExit(f"폴더 이름에서 과목·번호를 못 찾음: {folder_name}")
+    subj, num = m.group(1), int(m.group(2))
+    reg = json.load(open(PL_REG, encoding="utf-8")) if os.path.exists(PL_REG) else {}
+    pl = reg.get(subj)
+    if not pl:
+        j = api("POST", "playlists?part=snippet,status", {"snippet": {"title": subj, "description": f"눈바공 연구소 {subj} 강좌를 공부 순서대로 모았어요.", "defaultLanguage": "ko"},
+                                                          "status": {"privacyStatus": "private"}})
+        pl = reg[subj] = {"id": j["id"], "강좌": []}
+        json.dump(reg, open(PL_REG, "w", encoding="utf-8"), ensure_ascii=False, indent=1)   # 아래가 실패해도 재생목록이 두 번 생기지 않게
+    if any(x["videoId"] == vid for x in pl["강좌"]):
+        return pl["id"], None
+    pos = sum(1 for x in pl["강좌"] if x["번호"] < num)            # 번호가 작은 강좌 뒤에 넣음
+    body = {"snippet": {"playlistId": pl["id"], "position": pos, "resourceId": {"kind": "youtube#video", "videoId": vid}}}
+    for i in range(4):                                  # 막 만든 재생목록은 잠깐 409(SERVICE_UNAVAILABLE)가 날 수 있어 기다렸다 다시 함
+        try:
+            api("POST", "playlistItems?part=snippet", body); break
+        except SystemExit as e:
+            if "409" not in str(e) or i == 3:
+                raise
+            time.sleep(5 * (i + 1))
+    pl["강좌"].append({"번호": num, "videoId": vid, "폴더": folder_name}); pl["강좌"].sort(key=lambda x: x["번호"])
+    json.dump(reg, open(PL_REG, "w", encoding="utf-8"), ensure_ascii=False, indent=1)
+    return pl["id"], pos
+
+
 def main():
     plan_path = sys.argv[1]
     plan = json.load(open(plan_path, encoding="utf-8"))
@@ -110,6 +145,10 @@ def main():
         if r.get("설명") != want:
             update_desc(r["id"], want); r["설명"] = want; print(k, "설명 고침")
             json.dump(plan, open(plan_path, "w", encoding="utf-8"), ensure_ascii=False, indent=1)   # 아래에서 건너뛰어도 기록은 남게
+        if v.get("재생목록") and not r.get("재생목록"):      # 과목 재생목록에 강좌 번호 순서로 넣기
+            pid, pos = playlist_place(v["재생목록"], r["id"])
+            r["재생목록"] = pid; print(k, f"재생목록에 넣음(자리 {pos})")
+            json.dump(plan, open(plan_path, "w", encoding="utf-8"), ensure_ascii=False, indent=1)
         if v.get("댓글") and not r.get("댓글 id"):
             priv = api("GET", f"videos?part=status&id={r['id']}")["items"][0]["status"]["privacyStatus"]
             if priv == "private":                         # 비공개 영상에는 댓글을 달 수 없음(403). 공개(또는 일부 공개) 뒤 다시 실행
