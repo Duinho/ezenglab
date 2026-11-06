@@ -16,6 +16,7 @@ SIZE = {"long": (1920, 1080), "short": (1080, 1920)}
 # 쇼츠 배치 2판(팀장님 2026-11-06): 유튜브·인스타 버튼에 가리지 않게 내용을 x 60~920, y 470~1150에 모음.
 # 위 0~220·오른쪽 940~·아래 1380~은 앱 버튼·제목이 덮는 곳. 훅은 y 270부터, 자막은 1160~1340, 진행자는 왼쪽 아래(자막 위).
 SHORT_LAYOUT = 2
+START_LEAD = 1.0   # 영상 첫 장면 앞 쉼(초)
 STAGE = {"long": (0, 0, 1920, 920), "short": (60, 470, 860, 680)}
 MAXCH = {"long": 26, "short": 26}   # 쇼츠는 두 줄까지 한 화면에(폭 860이라 한 줄 13자 안팎)
 MAXLINES = {"long": 1, "short": 2}
@@ -220,7 +221,9 @@ def main():
         lo, hi = (part.split("-") + [part])[:2]
         want += ids[ids.index(lo):ids.index(hi) + 1]
     byid = {s["id"]: s for s in scenes}
-    sel = [byid[i] for i in want]
+    sel = [dict(byid[i]) for i in want]
+    # 영상 맨 앞은 1초 기다렸다가 말을 시작한다(첫 말을 놓치지 않게, 팀장님 2026-11-06). 롱폼·쇼츠 모두
+    sel[0]["lead"] = sel[0].get("lead", 0) + START_LEAD
 
     W, H = SIZE[a.layout]
     tl, t = [], 0.0
