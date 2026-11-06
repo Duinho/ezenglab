@@ -202,7 +202,10 @@ def main():
             priv = api("GET", f"videos?part=status&id={r['id']}")["items"][0]["status"]["privacyStatus"]
             if priv == "private":                         # 비공개 영상에는 댓글을 달 수 없음(403). 공개(또는 일부 공개) 뒤 다시 실행
                 print(k, "비공개라 댓글은 공개 뒤에 담"); continue
-            r["댓글 id"] = comment(r["id"], fill(v["댓글"], res)); print(k, "댓글 달음(고정은 팀장님)")
+            t = v["댓글"]
+            for kk, rr in res.items():             # 댓글에는 링크 꼬리를 붙이지 않음(설명에만)
+                t = t.replace("{" + kk + "}", rr["주소"])
+            r["댓글 id"] = comment(r["id"], t); print(k, "댓글 달음(고정은 팀장님)")
         json.dump(plan, open(plan_path, "w", encoding="utf-8"), ensure_ascii=False, indent=1)
 
 
