@@ -75,10 +75,24 @@ def api(method, path, body=None):
         raise SystemExit(f"{method} {path.split('?')[0]} 실패 {e.code}: {e.read()[:300].decode(errors='ignore')}")
 
 
+LINKS = json.load(open(os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "채널링크.json"), encoding="utf-8"))
+
+
+def with_links(text):
+    """설명 끝(해시태그 앞)에 블로그·인스타 링크를 붙인다. 세 곳이 서로 이어지게(팀장님 2026-11-06)"""
+    foot = f"인스타그램: {LINKS['인스타그램']}\n블로그: {LINKS['블로그']}"
+    if LINKS["인스타그램"] in text:
+        return text
+    lines = text.rstrip().split("\n")
+    if lines and lines[-1].startswith("#"):
+        return "\n".join(lines[:-1]).rstrip() + "\n\n" + foot + "\n\n" + lines[-1]
+    return text.rstrip() + "\n\n" + foot
+
+
 def fill(text, res):
     for kk, rr in res.items():
         text = text.replace("{" + kk + "}", rr["주소"])
-    return text
+    return with_links(text)
 
 
 def update_desc(vid, desc):
@@ -137,9 +151,7 @@ def main():
         k = v["키"]
         if k in res:
             print(k, "이미 올림:", res[k]["주소"]); continue
-        desc = v["설명"]
-        for kk, rr in res.items():
-            desc = desc.replace("{" + kk + "}", rr["주소"])
+        desc = fill(v["설명"], res)
         if "{" in desc and "}" in desc and any("{" + x["키"] + "}" in desc for x in plan["영상"]):
             raise SystemExit(f"{k}: 설명에 아직 안 올린 영상 주소가 있음")
         try:
@@ -176,6 +188,8 @@ def main():
             pid, pos = playlist_place(v["재생목록"], r["id"])
             r["재생목록"] = pid; print(k, f"재생목록에 넣음(자리 {pos})")
             json.dump(plan, open(plan_path, "w", encoding="utf-8"), ensure_ascii=False, indent=1)
+            import subprocess                              # 블로그 글 끝에 이 영상 링크 넣기(세 곳 연결)
+            subprocess.run([sys.executable, os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "blogger.py"), "links", v["재생목록"]])
         if v.get("댓글") and not r.get("댓글 id"):
             priv = api("GET", f"videos?part=status&id={r['id']}")["items"][0]["status"]["privacyStatus"]
             if priv == "private":                         # 비공개 영상에는 댓글을 달 수 없음(403). 공개(또는 일부 공개) 뒤 다시 실행

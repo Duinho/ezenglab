@@ -4,6 +4,7 @@
   python3 tools/blogger.py html  <폴더>          # HTML 미리 만들기(build/<폴더>.html)
   python3 tools/blogger.py draft <폴더>          # 블로거 임시저장 글 만들기/고치기
   python3 tools/blogger.py publish <폴더>        # 게시
+  python3 tools/blogger.py links <폴더>          # 글 끝 링크 상자(영상·유튜브·인스타)만 새로 고침
 
 인증 파일은 저장소 밖(BLOGGER_AUTH_DIR, 기본 /home/claude/blogger)에 둔다.
 """
@@ -195,8 +196,29 @@ def to_html(folder, sha=None):
     if os.path.exists(os.path.join(ROOT, folder, "cover.png")):  # 표지 = 본문 첫 그림 = 블로거 썸네일
         out = (f'<figure class="cover"><img src="{img_base}cover.png" alt="{html.escape(meta.get("title", ""))}"/></figure>'
                + out)
+    out += links_html(folder, meta)
     extra = MATHJAX if "\\[" in out else ""
     return meta, f'{STYLE}{extra}<div class="ezl">{out}</div>'
+
+
+VIDEO_REG = "/home/claude/ezenglab-work/업로드/재생목록.json"   # 강좌 폴더 → 유튜브 롱폼(있을 때만)
+
+
+def links_html(folder, meta):
+    """글 끝 상자: 이 강좌 영상(있으면) + 유튜브·인스타 채널 링크. 세 곳이 서로 이어지게(팀장님 2026-11-06)"""
+    L = json.load(open(os.path.join(ROOT, "tools", "채널링크.json"), encoding="utf-8"))
+    vid = None
+    if os.path.exists(VIDEO_REG):
+        for subj in json.load(open(VIDEO_REG, encoding="utf-8")).values():
+            for x in subj.get("강좌", []):
+                if x.get("폴더") == folder:
+                    vid = x["videoId"]
+    rows = []
+    if vid:
+        rows.append(f'<p>▶ 이 강좌를 영상으로 보기: <a href="https://youtu.be/{vid}" target="_blank" rel="noopener">유튜브 「{html.escape(meta.get("title", ""))}」</a></p>')
+    rows.append(f'<p>{html.escape(L["이름"])} 유튜브 <a href="{L["유튜브"]}" target="_blank" rel="noopener">@ezenglab</a>'
+                f' · 인스타그램 <a href="{L["인스타그램"]}" target="_blank" rel="noopener">@ezenglab</a></p>')
+    return '<div class="callout ezlinks">' + "".join(rows) + "</div>"
 
 
 def token():
@@ -250,6 +272,25 @@ def publish(folder, when=None):
     print(folder, r.get("status"), r.get("url"))
 
 
+def refresh_links(folder):
+    """게시된 글의 끝 링크 상자만 새로 고친다. 본문이 게시본과 다르면(아직 안 올린 수정이 있으면) 건드리지 않는다."""
+    posts = load_posts()
+    info = posts.get(folder)
+    if not info or info.get("status") != "LIVE":
+        print(folder, "게시된 글 없음"); return False
+    def norm(c):
+        c = re.sub(r"<style>.*?</style>", "", c, flags=re.S)
+        c = re.sub(r'<div class="callout ezlinks">.*?</div>(?=</div>$)', "", c, flags=re.S)
+        return re.sub(r"cdn\.jsdelivr\.net/gh/Duinho/ezenglab@[0-9a-f]+/", "CDN/", c)
+    live = api("GET", f"/posts/{info['id']}", params={"fields": "content"})["content"]
+    _, new = to_html(folder)
+    if norm(live) != norm(new):
+        print(folder, "본문이 게시본과 달라 링크만 고치지 않음(먼저 확인 필요)"); return False
+    if live == new:
+        print(folder, "링크 그대로"); return True
+    draft(folder); return True
+
+
 if __name__ == "__main__":
     cmd, folder = sys.argv[1], sys.argv[2].strip("/")
     if cmd == "html":
@@ -260,5 +301,7 @@ if __name__ == "__main__":
         print(p)
     elif cmd == "draft":
         draft(folder)
+    elif cmd == "links":
+        refresh_links(folder)
     elif cmd == "publish":
         publish(folder, sys.argv[3] if len(sys.argv) > 3 else None)
