@@ -21,3 +21,4 @@
 .flow{background:#fff;border:6px solid #3b6fb6;border-radius:34px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;text-align:center}
 .flow .ft{font-weight:800;font-size:62px;color:#3b6fb6}.flow .fb{font-weight:600;font-size:38px;color:#445066}
 .flow.row{gap:6px}.flow.row .ft{font-size:48px}.flow.row .fb{font-size:32px}
+.stp2 .sp{font-weight:600;font-size:.7em;color:#445066}

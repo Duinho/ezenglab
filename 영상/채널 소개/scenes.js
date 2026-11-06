@@ -61,6 +61,20 @@ function cake(parent, x, y, cw, gap) {
   };
 }
 
+// 밤길 가로등(「전자 부품 지도」 2-1). set(on): 0~1 불빛
+function lamp(parent, x, y, w, h) {
+  const sv = el('svg', { class: 'abs', width: w, height: h, viewBox: '0 0 300 420', style: { left: x + 'px', top: y + 'px' } }, parent);
+  el('rect', { x: 0, y: 0, width: 300, height: 420, rx: 34, fill: '#2d3e66' }, sv);
+  el('path', { d: 'M 236 40 a 26 26 0 1 0 22 44 a 32 32 0 0 1 -22 -44 Z', fill: '#fdeeb5' }, sv);   // 달
+  el('rect', { x: 20, y: 372, width: 260, height: 14, rx: 7, fill: '#55658c' }, sv);                   // 길
+  const cone = el('path', { d: 'M 168 128 L 214 128 L 262 372 L 120 372 Z', fill: '#ffe9a8' }, sv);
+  el('rect', { x: 76, y: 86, width: 14, height: 290, fill: '#c3cad6' }, sv);                           // 기둥
+  el('rect', { x: 76, y: 86, width: 120, height: 14, fill: '#c3cad6' }, sv);                           // 팔
+  el('path', { d: 'M 160 100 L 222 100 Q 222 132 191 132 Q 160 132 160 100 Z', fill: '#8a93a3' }, sv);
+  const bulb = el('ellipse', { cx: 191, cy: 124, rx: 22, ry: 9, fill: '#8a93a3' }, sv);
+  return { sv, set(on) { cone.setAttribute('opacity', on * .85); bulb.setAttribute('fill', on > .5 ? '#ffd54a' : '#8a93a3'); } };
+}
+
 const SCENES = {
   // L01 · 공감: 수식이 쏟아지고 물음표
   L01: {
@@ -83,7 +97,7 @@ const SCENES = {
       this.f = formulas(ctx); this.f.forEach(f => f.style.opacity = 1);
       this.floor = el('div', { class: 'abs intro-floor', style: { left: (L ? 260 : 200) + 'px', width: (L ? 1400 : 630) + 'px', top: (L ? 720 : 560) + 'px' } }, s);
       this.ph = photo(s, 'new', L ? 470 : 230, L ? 420 : 360, L ? 280 : 180, L ? 280 : 180);
-      this.ck = cake(s, L ? 860 : 440, L ? 600 : 470, L ? 70 : 34, L ? 12 : 6); this.ck.set(5, 0); this.ck.sv.style.opacity = 0;
+      this.ck = lamp(s, L ? 1000 : 470, L ? 420 : 360, L ? 210 : 135, L ? 294 : 189); this.ck.set(1); this.ck.sv.style.opacity = 0;
       this.t = { drop: ctx.w('바닥까지') - .2, show: ctx.w('낮췄어요') - .1 };
     },
     frame(ctx, t) {
@@ -103,7 +117,7 @@ const SCENES = {
       this.a = el('div', { class: 'abs fbox2 hard', style: { left: a[0] + 'px', top: a[1] + 'px', width: a[2] + 'px', height: a[3] + 'px' } }, s);
       this.a.innerHTML = `<div class="ft">어려운 개념</div><div class="fb">${FORMULAS[1]}</div>`;
       this.b = el('div', { class: 'abs fbox2 easy', style: { left: b[0] + 'px', top: b[1] + 'px', width: b[2] + 'px', height: b[3] + 'px' } }, s);
-      this.b.innerHTML = '<div class="ft">쉬운 예시 먼저</div><div class="fb">열매 · 롤케이크 · 친구들의 음식</div>';
+      this.b.innerHTML = '<div class="ft">쉬운 예시 먼저</div><div class="fb">열매 · 가로등 · 친구들의 음식</div>';
       const sv = el('svg', { class: 'abs', width: ctx.W, height: ctx.H, style: { left: 0, top: 0 } }, s);
       this.ar = L ? arrow(sv, 840, 430, 1100, 430, COLOR.green, 10, { from: 20, to: 24 }) : arrow(sv, 500, 270, 500, 410, COLOR.green, 9, { from: 12, to: 14 });
       [this.a, this.b].forEach(n => n.style.opacity = 0);
@@ -133,25 +147,27 @@ const SCENES = {
       pop(this.lb, E.prog(t, this.t.lb, .45), .7);
     },
   },
-  // L06 · 예시 2 — 가변저항의 롤케이크(칼 자리 3 → 5 → 8칸, 내 몫 30% → 50% → 80%)
+  // L06 · 예시 2 — 전자 부품 지도의 가로등(알아채기 → 판단하기 → 켜기)
   L06: {
     init(ctx) {
       const L = ctx.long, s = ctx.stage;
-      this.tg = tag(s, L ? 760 : 230, L ? 40 : 34, 400, '가변저항');
-      this.ck = cake(s, L ? 290 : 40, L ? 360 : 260, L ? 122 : 70, L ? 14 : 8); this.ck.sv.style.opacity = 0;
-      this.lb = chip(s, L ? 610 : 180, L ? 600 : 420, L ? 700 : 630, '', { size: L ? 54 : 44, color: COLOR.teal });
-      this.t = { tg: ctx.w('가변저항') - .1, ck: ctx.w('롤케이크') - .1, kn: ctx.eq('칼') - .1, mv: ctx.w('옮겨') - .1, end: ctx.audioDur };
+      this.tg = tag(s, L ? 760 : 230, L ? 40 : 34, 400, '전자 부품 지도');
+      this.lp = L ? lamp(s, 300, 170, 500, 700) : lamp(s, 40, 130, 310, 434); this.lp.set(0); this.lp.sv.style.opacity = 0;
+      const ST = [['알아채기', '조도 센서'], ['판단하기', 'MCU'], ['켜기', 'LED 전등']];
+      this.st = ST.map((x, i) => {
+        const r = L ? [920, 200 + i * 230, 700, 180] : [380, 136 + i * 160, 440, 136];
+        const b = el('div', { class: 'abs stp2', style: { left: r[0] + 'px', top: r[1] + 'px', width: r[2] + 'px', height: r[3] + 'px', fontSize: (L ? 58 : 42) + 'px' } }, s);
+        b.innerHTML = `<span class="sn">${i + 1}</span>${x[0]}<span class="sp">${x[1]}</span>`; b.style.opacity = 0; return b;
+      });
+      this.t = { tg: ctx.w('부품은') - .3, lp: ctx.w('가로등') - .1, mv: ctx.w('뜯어') - .1, end: ctx.audioDur };
     },
     frame(ctx, t) {
       pop(this.tg, E.prog(t, this.t.tg, .4), .7);
-      this.ck.sv.style.opacity = E.ease(E.prog(t, this.t.ck, .45));
-      const span = Math.max(1.2, this.t.end - this.t.mv);       // 옮겨부터 끝까지 3 → 5 → 8
-      const u = E.prog(t, this.t.mv, span);
-      const k = u < .45 ? E.lerp(3, 5, E.ease(u / .45)) : E.lerp(5, 8, E.ease((u - .55) / .45));
-      this.ck.set(t < this.t.mv ? 3 : k, E.prog(t, this.t.kn, .3));
-      const cells = Math.round(t < this.t.mv ? 3 : k);
-      this.lb.innerHTML = `칼 자리를 옮기면 내 몫 <b>${cells * 10}%</b>`;
-      pop(this.lb, E.prog(t, this.t.kn + .2, .4), .7);
+      show(this.lp.sv, E.prog(t, this.t.lp, .45), 30);
+      const st0 = this.t.lp + .5, step = Math.max(.45, (this.t.end - .6 - st0) / 2);   // 가로등 뒤부터 세 칸, 끝나기 전에 불이 켜짐
+      const at = [0, 1, 2].map(i => st0 + i * step);
+      this.st.forEach((b, i) => { pop(b, E.prog(t, at[i], .4), .7); b.classList.toggle('on', t >= at[i] && (i === 2 || t < at[i + 1])); });
+      this.lp.set(E.ease(E.prog(t, at[2], .35)));
     },
   },
   // L07 · 예시 → 원리 → 계산, 한 단계씩
@@ -171,7 +187,7 @@ const SCENES = {
   L08: {
     init(ctx) {
       const L = ctx.long, s = ctx.stage;
-      const subj = [['인공지능', 'kNN · 선형 회귀 · 로지스틱 회귀'], ['전자공학', '옴의 법칙 · 키르히호프 · 전압 분배'], ['전자 부품', '저항 · 가변저항']];
+      const subj = [['인공지능', 'kNN · 선형 회귀 · 로지스틱 회귀'], ['전자공학', '옴의 법칙 · 키르히호프 · 전압 분배'], ['전자 부품', '부품 지도 · 저항 · 가변저항']];
       this.c = subj.map((x, i) => {
         const r = L ? [170 + i * 540, 150, 500, 300] : [200, 34 + i * 148, 600, 128];
         const b = el('div', { class: 'abs subj', style: { left: r[0] + 'px', top: r[1] + 'px', width: r[2] + 'px', height: r[3] + 'px' } }, s);
