@@ -28,12 +28,12 @@ const FORMULAS = [
 ];
 // 수식 자리 [x, y, 기울기]. 롱폼은 가운데 물음표 둘레 여섯 자리, 쇼츠는 위아래 네 자리
 const FPOS_L = [[150, 90, -4], [1110, 70, 3], [120, 380, 2], [1230, 400, -3], [260, 680, 3], [1080, 690, -2]];
-const FPOS_S = [[40, 40, -3], [450, 70, 3], [40, 470, 2], [430, 430, -3]];
+const FPOS_S = [[40, 40, -3, 0], [470, 70, 3, 2], [200, 420, 2, 5], [470, 470, -3, 3]];   // [x, y, 기울기, 식 번호]
 function formulas(ctx) {
   const L = ctx.long, pos = L ? FPOS_L : FPOS_S;
   return pos.map((p, i) => {
     const f = el('div', { class: 'abs fml', style: { left: p[0] + 'px', top: p[1] + 'px', fontSize: (L ? 60 : 40) + 'px' } }, ctx.stage);
-    f.innerHTML = FORMULAS[i]; f.dataset.base = `rotate(${p[2]}deg)`; f.style.opacity = 0; return f;
+    f.innerHTML = FORMULAS[L ? i : p[3]]; f.dataset.base = `rotate(${p[2]}deg)`; f.style.opacity = 0; return f;
   });
 }
 // 10칸 롤케이크(가변저항 강좌 2-2 그림을 코드로). 칼 자리 k(0~10)
@@ -99,7 +99,7 @@ const SCENES = {
   L04: {
     init(ctx) {
       const L = ctx.long, s = ctx.stage;
-      const a = L ? [180, 250, 640, 360] : [200, 30, 600, 230], b = L ? [1100, 250, 640, 360] : [200, 420, 600, 230];
+      const a = L ? [180, 250, 640, 360] : [200, 30, 600, 230], b = L ? [1100, 250, 640, 360] : [200, 420, 600, 220];
       this.a = el('div', { class: 'abs fbox2 hard', style: { left: a[0] + 'px', top: a[1] + 'px', width: a[2] + 'px', height: a[3] + 'px' } }, s);
       this.a.innerHTML = `<div class="ft">어려운 개념</div><div class="fb">${FORMULAS[1]}</div>`;
       this.b = el('div', { class: 'abs fbox2 easy', style: { left: b[0] + 'px', top: b[1] + 'px', width: b[2] + 'px', height: b[3] + 'px' } }, s);
@@ -119,11 +119,11 @@ const SCENES = {
   L05: {
     init(ctx) {
       const L = ctx.long, s = ctx.stage;
-      this.tg = tag(s, L ? 760 : 230, L ? 40 : 10, 400, '인공지능 첫걸음');
-      this.ph = photo(s, 'new', L ? 735 : 255, L ? 140 : 100, L ? 450 : 350, L ? 450 : 350);
-      this.qm = el('div', { class: 'abs center qmk', style: { left: (L ? 1135 : 555) + 'px', top: (L ? 110 : 75) + 'px', fontSize: (L ? 80 : 64) + 'px', width: (L ? 110 : 90) + 'px', height: (L ? 110 : 90) + 'px', lineHeight: (L ? 110 : 90) + 'px' } }, s);
+      this.tg = tag(s, L ? 760 : 230, L ? 40 : 34, 400, '인공지능 첫걸음');
+      this.ph = photo(s, 'new', L ? 735 : 240, L ? 140 : 120, L ? 450 : 340, L ? 450 : 340);
+      this.qm = el('div', { class: 'abs center qmk', style: { left: (L ? 1205 : 600) + 'px', top: (L ? 150 : 130) + 'px', fontSize: (L ? 80 : 64) + 'px', width: (L ? 110 : 90) + 'px', height: (L ? 110 : 90) + 'px', lineHeight: (L ? 110 : 90) + 'px' } }, s);
       this.qm.textContent = '?'; this.qm.style.opacity = 0;
-      this.lb = chip(s, L ? 660 : 200, L ? 640 : 490, L ? 600 : 600, '이 열매의 이름은? <b>별꼭지 열매</b>', { size: L ? 50 : 42 });
+      this.lb = chip(s, L ? 560 : 190, L ? 640 : 500, L ? 800 : 630, '이 열매의 이름은? <b>별꼭지 열매</b>', { size: L ? 50 : 40 });
       this.t = { tg: ctx.w('인공지능') - .1, ph: ctx.w('열매') - .1, lb: ctx.w('맞혀') - .1 };
     },
     frame(ctx, t) {
@@ -137,7 +137,7 @@ const SCENES = {
   L06: {
     init(ctx) {
       const L = ctx.long, s = ctx.stage;
-      this.tg = tag(s, L ? 760 : 230, L ? 40 : 10, 400, '가변저항');
+      this.tg = tag(s, L ? 760 : 230, L ? 40 : 34, 400, '가변저항');
       this.ck = cake(s, L ? 290 : 40, L ? 360 : 260, L ? 122 : 70, L ? 14 : 8); this.ck.sv.style.opacity = 0;
       this.lb = chip(s, L ? 610 : 180, L ? 600 : 420, L ? 700 : 630, '', { size: L ? 54 : 44, color: COLOR.teal });
       this.t = { tg: ctx.w('가변저항') - .1, ck: ctx.w('롤케이크') - .1, kn: ctx.eq('칼') - .1, mv: ctx.w('옮겨') - .1, end: ctx.audioDur };
@@ -158,7 +158,7 @@ const SCENES = {
   L07: {
     init(ctx) {
       const L = ctx.long, s = ctx.stage;
-      const P = L ? [[300, 560], [800, 400], [1300, 240]] : [[190, 450], [410, 300], [630, 150]], w = L ? 340 : 210, h = L ? 170 : 130;
+      const P = L ? [[300, 560], [800, 400], [1300, 240]] : [[180, 450], [400, 300], [620, 150]], w = L ? 340 : 200, h = L ? 170 : 130;
       this.st = ['예시', '원리', '계산'].map((x, i) => {
         const b = el('div', { class: 'abs stp2', style: { left: P[i][0] + 'px', top: P[i][1] + 'px', width: w + 'px', height: h + 'px', fontSize: (L ? 60 : 46) + 'px' } }, s);
         b.innerHTML = `<span class="sn">${i + 1}</span>${x}`; b.style.opacity = 0; return b;
@@ -173,7 +173,7 @@ const SCENES = {
       const L = ctx.long, s = ctx.stage;
       const subj = [['인공지능', 'kNN · 선형 회귀 · 로지스틱 회귀'], ['전자공학', '옴의 법칙 · 키르히호프 · 전압 분배'], ['전자 부품', '저항 · 가변저항']];
       this.c = subj.map((x, i) => {
-        const r = L ? [170 + i * 540, 150, 500, 300] : [200, 10 + i * 150, 600, 130];
+        const r = L ? [170 + i * 540, 150, 500, 300] : [200, 34 + i * 148, 600, 128];
         const b = el('div', { class: 'abs subj', style: { left: r[0] + 'px', top: r[1] + 'px', width: r[2] + 'px', height: r[3] + 'px' } }, s);
         b.innerHTML = `<div class="ft">${x[0]}</div><div class="fb">${x[1]}</div>`; b.style.opacity = 0; return b;
       });
@@ -187,7 +187,7 @@ const SCENES = {
   L09: {
     init(ctx) {
       const L = ctx.long, s = ctx.stage;
-      const R = L ? [[130, 260, 460, 300], [730, 260, 460, 300], [1330, 260, 460, 300]] : [[200, 10, 600, 150], [200, 260, 600, 150], [200, 510, 600, 150]];
+      const R = L ? [[130, 260, 460, 300], [730, 260, 460, 300], [1330, 260, 460, 300]] : [[200, 34, 600, 146], [200, 267, 600, 146], [200, 500, 600, 146]];
       const txt = [['쇼츠', '짧게 맛보기'], ['전체 강의', '재생목록 순서대로'], ['블로그', '계산 과정 이어 보기']];
       this.b = R.map((r, i) => {
         const b = el('div', { class: 'abs flow' + (L ? '' : ' row'), style: { left: r[0] + 'px', top: r[1] + 'px', width: r[2] + 'px', height: r[3] + 'px' } }, s);
@@ -195,7 +195,7 @@ const SCENES = {
       });
       const sv = el('svg', { class: 'abs', width: ctx.W, height: ctx.H, style: { left: 0, top: 0 } }, s);
       this.ar = L ? [arrow(sv, 590, 410, 730, 410, COLOR.green, 9, { from: 14, to: 18 }), arrow(sv, 1190, 410, 1330, 410, COLOR.green, 9, { from: 14, to: 18 })]
-        : [arrow(sv, 500, 160, 500, 260, COLOR.green, 8, { from: 10, to: 14 }), arrow(sv, 500, 410, 500, 510, COLOR.green, 8, { from: 10, to: 14 })];
+        : [arrow(sv, 500, 180, 500, 267, COLOR.green, 8, { from: 8, to: 12 }), arrow(sv, 500, 413, 500, 500, COLOR.green, 8, { from: 8, to: 12 })];
       this.t = { b: [ctx.w('쇼츠로') - .1, ctx.w('전체') - .1, ctx.w('계산') - .1] };
     },
     frame(ctx, t) {
@@ -207,7 +207,7 @@ const SCENES = {
   L10: {
     init(ctx) {
       const L = ctx.long, s = ctx.stage;
-      this.logo = el('div', { class: 'abs center intro-target', style: { left: 0, width: '100%', top: (L ? 100 : 20) + 'px', fontSize: (L ? 150 : 118) + 'px' } }, s);
+      this.logo = el('div', { class: 'abs center intro-target', style: { left: 0, width: '100%', top: (L ? 100 : 40) + 'px', fontSize: (L ? 150 : 112) + 'px' } }, s);
       this.logo.innerHTML = '눈바공<span class="lab"> 연구소</span>';
       this.role = el('div', { class: 'abs center', style: { left: 0, width: '100%', top: (L ? 310 : 200) + 'px' } }, s);
       this.role.innerHTML = '<span class="intro-role">바닥 연구소장</span>';
