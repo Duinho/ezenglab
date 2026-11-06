@@ -14,8 +14,9 @@ FONTS = os.path.join(os.path.dirname(HERE), "fonts")
 FPS = 30
 SIZE = {"long": (1920, 1080), "short": (1080, 1920)}
 # 쇼츠 배치 3판(팀장님 2026-11-06 23:55): 2판은 자막·진행자를 너무 위로 올렸다는 지적.
-# 무대는 가로 가운데(x 110~970, y 470~1150), 훅도 가운데. 진행자는 왼쪽(x 110, y 1340), 자막은 그 아래 y 1510부터(두 줄이면 ~1680).
-SHORT_LAYOUT = 3
+# 무대는 가로 가운데(x 110~970, y 470~1150), 훅도 가운데. 자막은 y 1510부터(두 줄이면 ~1680), 가운데 x 160~920(오른쪽 버튼 x 935~ 피함).
+# 4판(00:08): 진행자를 오른쪽, 인스타 버튼(영상 x 935~) 바로 왼쪽 x 750~910, y 1340. 인스타는 화면에 맞추려 영상 좌우를 약 30px씩 자름.
+SHORT_LAYOUT = 4
 START_LEAD = 1.0   # 영상 첫 장면 앞 쉼(초)
 STAGE = {"long": (0, 0, 1920, 920), "short": (110, 470, 860, 680)}
 MAXCH = {"long": 26, "short": 26}   # 쇼츠는 두 줄까지 한 화면에(폭 860이라 한 줄 13자 안팎)
@@ -275,10 +276,10 @@ def main():
 
     sx, sy, sw, sh = STAGE[a.layout]
     css = CSS % dict(f=FONTS, W=W, H=H, sx=sx, sy=sy, sw=sw, sh=sh,
-                     subx=80 if a.layout == "long" else 110, subw=W - 160 if a.layout == "long" else 860,
+                     subx=80 if a.layout == "long" else 160, subw=W - 160 if a.layout == "long" else 760,
                      suby=935 if a.layout == "long" else 1510, subf=52 if a.layout == "long" else 52,
                      endf=72 if a.layout == "short" else 80,
-                     hs=190 if a.layout == "long" else 160, hx=1700 if a.layout == "long" else 110,
+                     hs=190 if a.layout == "long" else 160, hx=1700 if a.layout == "long" else 750,
                      hy=880 if a.layout == "long" else 1340)
     hook = f'<div id="hook">{a.hook}</div>' if a.layout == "short" else ""   # 아래 채널 문구는 댓글 칸에 가려 뺌(2판)
     endtext = a.endtext or "전체 설명은<br>관련 동영상에서"

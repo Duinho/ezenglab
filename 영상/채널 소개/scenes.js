@@ -28,7 +28,7 @@ const FORMULAS = [
 ];
 // 수식 자리 [x, y, 기울기]. 롱폼은 가운데 물음표 둘레 여섯 자리, 쇼츠는 위아래 네 자리
 const FPOS_L = [[150, 90, -4], [1110, 70, 3], [120, 380, 2], [1230, 400, -3], [260, 680, 3], [1080, 690, -2]];
-const FPOS_S = [[40, 40, -3, 0], [470, 70, 3, 2], [200, 420, 2, 5], [470, 470, -3, 3]];   // [x, y, 기울기, 식 번호]
+const FPOS_S = [[90, 40, -3, 0], [520, 70, 3, 2], [180, 420, 2, 5], [470, 470, -3, 3]];   // [x, y, 기울기, 식 번호]
 function formulas(ctx) {
   const L = ctx.long, pos = L ? FPOS_L : FPOS_S;
   return pos.map((p, i) => {
@@ -95,9 +95,9 @@ const SCENES = {
     init(ctx) {
       const L = ctx.long, s = ctx.stage;
       this.f = formulas(ctx); this.f.forEach(f => f.style.opacity = 1);
-      this.floor = el('div', { class: 'abs intro-floor', style: { left: (L ? 260 : 200) + 'px', width: (L ? 1400 : 630) + 'px', top: (L ? 720 : 560) + 'px' } }, s);
-      this.ph = photo(s, 'new', L ? 470 : 230, L ? 420 : 360, L ? 280 : 180, L ? 280 : 180);
-      this.ck = lamp(s, L ? 1000 : 470, L ? 420 : 360, L ? 210 : 135, L ? 294 : 189); this.ck.set(1); this.ck.sv.style.opacity = 0;
+      this.floor = el('div', { class: 'abs intro-floor', style: { left: (L ? 260 : 115) + 'px', width: (L ? 1400 : 630) + 'px', top: (L ? 720 : 560) + 'px' } }, s);
+      this.ph = photo(s, 'new', L ? 470 : 243, L ? 420 : 360, L ? 280 : 180, L ? 280 : 180);
+      this.ck = lamp(s, L ? 1000 : 483, L ? 420 : 360, L ? 210 : 135, L ? 294 : 189); this.ck.set(1); this.ck.sv.style.opacity = 0;
       this.t = { drop: ctx.w('바닥까지') - .2, show: ctx.w('낮췄어요') - .1 };
     },
     frame(ctx, t) {
@@ -113,13 +113,13 @@ const SCENES = {
   L04: {
     init(ctx) {
       const L = ctx.long, s = ctx.stage;
-      const a = L ? [180, 250, 640, 360] : [200, 30, 600, 230], b = L ? [1100, 250, 640, 360] : [200, 420, 600, 220];
+      const a = L ? [180, 250, 640, 360] : [130, 30, 600, 230], b = L ? [1100, 250, 640, 360] : [130, 420, 600, 220];
       this.a = el('div', { class: 'abs fbox2 hard', style: { left: a[0] + 'px', top: a[1] + 'px', width: a[2] + 'px', height: a[3] + 'px' } }, s);
       this.a.innerHTML = `<div class="ft">어려운 개념</div><div class="fb">${FORMULAS[1]}</div>`;
       this.b = el('div', { class: 'abs fbox2 easy', style: { left: b[0] + 'px', top: b[1] + 'px', width: b[2] + 'px', height: b[3] + 'px' } }, s);
       this.b.innerHTML = '<div class="ft">쉬운 예시 먼저</div><div class="fb">열매 · 가로등 · 친구들의 음식</div>';
       const sv = el('svg', { class: 'abs', width: ctx.W, height: ctx.H, style: { left: 0, top: 0 } }, s);
-      this.ar = L ? arrow(sv, 840, 430, 1100, 430, COLOR.green, 10, { from: 20, to: 24 }) : arrow(sv, 500, 270, 500, 410, COLOR.green, 9, { from: 12, to: 14 });
+      this.ar = L ? arrow(sv, 840, 430, 1100, 430, COLOR.green, 10, { from: 20, to: 24 }) : arrow(sv, 430, 270, 430, 410, COLOR.green, 9, { from: 12, to: 14 });
       [this.a, this.b].forEach(n => n.style.opacity = 0);
       this.t = { a: ctx.w('어려운') - .1, b: ctx.w('쉬운') - .1 };
     },
@@ -134,10 +134,10 @@ const SCENES = {
     init(ctx) {
       const L = ctx.long, s = ctx.stage;
       this.tg = tag(s, L ? 760 : 230, L ? 40 : 34, 400, '인공지능 첫걸음');
-      this.ph = photo(s, 'new', L ? 735 : 240, L ? 140 : 120, L ? 450 : 340, L ? 450 : 340);
-      this.qm = el('div', { class: 'abs center qmk', style: { left: (L ? 1205 : 600) + 'px', top: (L ? 150 : 130) + 'px', fontSize: (L ? 80 : 64) + 'px', width: (L ? 110 : 90) + 'px', height: (L ? 110 : 90) + 'px', lineHeight: (L ? 110 : 90) + 'px' } }, s);
+      this.ph = photo(s, 'new', L ? 735 : 260, L ? 140 : 120, L ? 450 : 340, L ? 450 : 340);
+      this.qm = el('div', { class: 'abs center qmk', style: { left: (L ? 1205 : 620) + 'px', top: (L ? 150 : 130) + 'px', fontSize: (L ? 80 : 64) + 'px', width: (L ? 110 : 90) + 'px', height: (L ? 110 : 90) + 'px', lineHeight: (L ? 110 : 90) + 'px' } }, s);
       this.qm.textContent = '?'; this.qm.style.opacity = 0;
-      this.lb = chip(s, L ? 560 : 190, L ? 640 : 500, L ? 800 : 630, '이 열매의 이름은? <b>별꼭지 열매</b>', { size: L ? 50 : 40 });
+      this.lb = chip(s, L ? 560 : 115, L ? 640 : 500, L ? 800 : 630, '이 열매의 이름은? <b>별꼭지 열매</b>', { size: L ? 50 : 40 });
       this.t = { tg: ctx.w('인공지능') - .1, ph: ctx.w('열매') - .1, lb: ctx.w('맞혀') - .1 };
     },
     frame(ctx, t) {
@@ -174,7 +174,7 @@ const SCENES = {
   L07: {
     init(ctx) {
       const L = ctx.long, s = ctx.stage;
-      const x0 = L ? 330 : 200, bw = L ? 420 : 210, base = L ? 860 : 650, sh = L ? 160 : 130, fs = L ? 60 : 44;
+      const x0 = L ? 330 : 115, bw = L ? 420 : 210, base = L ? 860 : 650, sh = L ? 160 : 130, fs = L ? 60 : 44;
       this.sv = el('svg', { class: 'abs', width: ctx.W, height: ctx.H, style: { left: 0, top: 0 } }, s);
       this.k = { x0, bw, base, sh, r: L ? 34 : 26 };
       const C = [COLOR.green, COLOR.teal, COLOR.orange];
@@ -186,7 +186,7 @@ const SCENES = {
         return { g, h };
       });
       this.ball = el('circle', { r: this.k.r, fill: '#ffd54a', stroke: COLOR.ink, 'stroke-width': 5, opacity: 0 }, this.sv);
-      this.tg = tag(s, L ? 330 : 200, L ? 330 : 40, L ? 520 : 400, '계단식 교육', COLOR.orange);
+      this.tg = tag(s, L ? 330 : 230, L ? 330 : 40, L ? 520 : 400, '계단식 교육', COLOR.orange);
       this.t = { a: [ctx.w('예시로') - .1, ctx.w('원리와') - .1, ctx.w('계산까지') - .1], tg: ctx.w('계단식') - .1 };
     },
     frame(ctx, t) {
@@ -214,12 +214,12 @@ const SCENES = {
       const L = ctx.long, s = ctx.stage;
       const subj = [['인공지능', 'kNN · 선형 회귀 · 로지스틱 회귀'], ['전자공학', '옴의 법칙 · 키르히호프 · 전압 분배'], ['전자 부품', '부품 지도 · 센서 · 액추에이터']];
       this.c = subj.map((x, i) => {
-        const r = L ? [170 + i * 540, 150, 500, 300] : [200, 34 + i * 148, 600, 128];
+        const r = L ? [170 + i * 540, 150, 500, 300] : [130, 34 + i * 148, 600, 128];
         const b = el('div', { class: 'abs subj', style: { left: r[0] + 'px', top: r[1] + 'px', width: r[2] + 'px', height: r[3] + 'px' } }, s);
         b.innerHTML = `<div class="ft">${x[0]}</div><div class="fb">${x[1]}</div>`; b.style.opacity = 0; return b;
       });
       if (!L) this.c.forEach(b => b.classList.add('row'));
-      this.ch = chip(s, L ? 610 : 200, L ? 560 : 500, L ? 700 : 600, '<b>꾸준히</b> 새 강의가 올라와요', { size: L ? 54 : 44 });
+      this.ch = chip(s, L ? 610 : 130, L ? 560 : 500, L ? 700 : 600, '<b>꾸준히</b> 새 강의가 올라와요', { size: L ? 54 : 44 });
       this.t = { c: [ctx.w('인공지능') - .1, ctx.w('전자공학') - .1, ctx.w('전자') - .1 > ctx.w('전자공학') ? ctx.w('전자', 2) - .1 : ctx.w('전자', 2) - .1], ch: ctx.w('꾸준히') - .1 };
     },
     frame(ctx, t) { this.c.forEach((b, i) => pop(b, E.prog(t, this.t.c[i], .4), .75)); pop(this.ch, E.prog(t, this.t.ch, .45), .7); },
@@ -228,7 +228,7 @@ const SCENES = {
   L09: {
     init(ctx) {
       const L = ctx.long, s = ctx.stage;
-      const R = L ? [[130, 260, 460, 300], [730, 260, 460, 300], [1330, 260, 460, 300]] : [[200, 34, 600, 146], [200, 267, 600, 146], [200, 500, 600, 146]];
+      const R = L ? [[130, 260, 460, 300], [730, 260, 460, 300], [1330, 260, 460, 300]] : [[130, 34, 600, 146], [130, 267, 600, 146], [130, 500, 600, 146]];
       const txt = [['쇼츠', '짧게 맛보기'], ['전체 강의', '재생목록 순서대로'], ['블로그', '계산 과정 이어 보기']];
       this.b = R.map((r, i) => {
         const b = el('div', { class: 'abs flow' + (L ? '' : ' row'), style: { left: r[0] + 'px', top: r[1] + 'px', width: r[2] + 'px', height: r[3] + 'px' } }, s);
@@ -236,7 +236,7 @@ const SCENES = {
       });
       const sv = el('svg', { class: 'abs', width: ctx.W, height: ctx.H, style: { left: 0, top: 0 } }, s);
       this.ar = L ? [arrow(sv, 590, 410, 730, 410, COLOR.green, 9, { from: 14, to: 18 }), arrow(sv, 1190, 410, 1330, 410, COLOR.green, 9, { from: 14, to: 18 })]
-        : [arrow(sv, 500, 180, 500, 267, COLOR.green, 8, { from: 8, to: 12 }), arrow(sv, 500, 413, 500, 500, COLOR.green, 8, { from: 8, to: 12 })];
+        : [arrow(sv, 430, 180, 430, 267, COLOR.green, 8, { from: 8, to: 12 }), arrow(sv, 430, 413, 430, 500, COLOR.green, 8, { from: 8, to: 12 })];
       this.t = { b: [ctx.w('쇼츠로') - .1, ctx.w('전체') - .1, ctx.w('계산') - .1] };
     },
     frame(ctx, t) {
@@ -255,7 +255,7 @@ const SCENES = {
       this.btns = el('div', { class: 'abs center outro-btns', style: { left: 0, width: '100%', top: (L ? 480 : 340) + 'px' } }, s);
       this.btns.innerHTML = '<span class="ob sub"><svg viewBox="0 0 24 24" width="1em" height="1em"><path d="M12 3a6 6 0 0 0-6 6v4l-2 3h16l-2-3V9a6 6 0 0 0-6-6zm-2 15a2 2 0 0 0 4 0z" fill="currentColor"/></svg>구독</span>';
       this.sub = this.btns.querySelector('.ob');
-      this.go = el('div', { class: 'abs center outro-bye', style: { left: (L ? 0 : 180) + 'px', width: (L ? 1920 : 650) + 'px', top: (L ? 690 : 500) + 'px', fontSize: (L ? 64 : 50) + 'px' } }, s);
+      this.go = el('div', { class: 'abs center outro-bye', style: { left: (L ? 0 : 105) + 'px', width: (L ? 1920 : 650) + 'px', top: (L ? 690 : 500) + 'px', fontSize: (L ? 64 : 50) + 'px' } }, s);
       this.go.textContent = '첫 강의부터 시작해 보세요';
       [this.logo, this.role, this.sub, this.go].forEach(n => n.style.opacity = 0);
       this.t = { logo: ctx.w('바닥부터') - .1, sub: ctx.w('구독하고') - .1, go: ctx.eq('첫') - .1 };
