@@ -170,24 +170,49 @@ const SCENES = {
       this.lp.set(E.ease(E.prog(t, at[2], .35)));
     },
   },
-  // L07 · 예시 → 원리 → 계산, 한 단계씩
+  // L07 · 계단식 교육: 실제 계단 세 칸, 공이 한 칸씩 올라감
   L07: {
     init(ctx) {
       const L = ctx.long, s = ctx.stage;
-      const P = L ? [[300, 560], [800, 400], [1300, 240]] : [[180, 450], [400, 300], [620, 150]], w = L ? 340 : 200, h = L ? 170 : 130;
+      const x0 = L ? 330 : 200, bw = L ? 420 : 210, base = L ? 860 : 650, sh = L ? 160 : 130, fs = L ? 60 : 44;
+      this.sv = el('svg', { class: 'abs', width: ctx.W, height: ctx.H, style: { left: 0, top: 0 } }, s);
+      this.k = { x0, bw, base, sh, r: L ? 34 : 26 };
+      const C = [COLOR.green, COLOR.teal, COLOR.orange];
       this.st = ['예시', '원리', '계산'].map((x, i) => {
-        const b = el('div', { class: 'abs stp2', style: { left: P[i][0] + 'px', top: P[i][1] + 'px', width: w + 'px', height: h + 'px', fontSize: (L ? 60 : 46) + 'px' } }, s);
-        b.innerHTML = `<span class="sn">${i + 1}</span>${x}`; b.style.opacity = 0; return b;
+        const g = el('g', {}, this.sv), h = sh * (i + 1);
+        el('rect', { x: x0 + i * bw, y: base - h, width: bw - 8, height: h, rx: 18, fill: C[i], opacity: .92 }, g);
+        const t = el('text', { x: x0 + i * bw + (bw - 8) / 2, y: base - h + sh * .62, 'text-anchor': 'middle', fill: '#fff', 'font-size': fs, 'font-weight': 800 }, g);
+        t.textContent = `${i + 1} ${x}`;
+        return { g, h };
       });
-      this.t = { a: [ctx.w('예시') - .1, ctx.w('원리') - .1, ctx.w('계산') - .1] };
+      this.ball = el('circle', { r: this.k.r, fill: '#ffd54a', stroke: COLOR.ink, 'stroke-width': 5, opacity: 0 }, this.sv);
+      this.tg = tag(s, L ? 330 : 200, L ? 330 : 40, L ? 520 : 400, '계단식 교육', COLOR.orange);
+      this.t = { a: [ctx.w('예시로') - .1, ctx.w('원리와') - .1, ctx.w('계산까지') - .1], tg: ctx.w('계단식') - .1 };
     },
-    frame(ctx, t) { this.st.forEach((b, i) => { pop(b, E.prog(t, this.t.a[i], .4), .7); b.classList.toggle('on', t >= this.t.a[i] && (i === 2 || t < this.t.a[i + 1])); }); },
+    frame(ctx, t) {
+      const k = this.k;
+      this.st.forEach((o, i) => {                                  // 계단이 아래에서 솟아오름
+        const u = E.ease(E.prog(t, this.t.a[i], .45));
+        o.g.setAttribute('opacity', E.clamp(u * 2));
+        o.g.setAttribute('transform', `translate(0 ${(1 - u) * 60})`);
+      });
+      let p = -1;                                                   // 공 위치: 칸 사이를 포물선으로 뛰어오름
+      this.t.a.forEach((a, i) => { if (t >= a) p = i - 1 + E.ease(E.prog(t, a, .5)); });
+      if (p < 0) { this.ball.setAttribute('opacity', 0); }
+      else {
+        const i0 = Math.floor(p), f = p - i0, i1 = Math.min(2, i0 + 1);
+        const cx = i => k.x0 + i * k.bw + (k.bw - 8) / 2, top = i => k.base - k.sh * (i + 1) - k.r - 4;
+        const x = i0 < 0 ? cx(0) : E.lerp(cx(i0), cx(i1), f), y = i0 < 0 ? top(0) : E.lerp(top(i0), top(i1), f) - Math.sin(Math.PI * f) * k.sh * .8;
+        this.ball.setAttribute('cx', x); this.ball.setAttribute('cy', y); this.ball.setAttribute('opacity', 1);
+      }
+      pop(this.tg, E.prog(t, this.t.tg, .4), .7);
+    },
   },
   // L08 · 다루는 과목 세 갈래 + 꾸준히 새 강의
   L08: {
     init(ctx) {
       const L = ctx.long, s = ctx.stage;
-      const subj = [['인공지능', 'kNN · 선형 회귀 · 로지스틱 회귀'], ['전자공학', '옴의 법칙 · 키르히호프 · 전압 분배'], ['전자 부품', '부품 지도 · 저항 · 가변저항']];
+      const subj = [['인공지능', 'kNN · 선형 회귀 · 로지스틱 회귀'], ['전자공학', '옴의 법칙 · 키르히호프 · 전압 분배'], ['전자 부품', '부품 지도 · 센서 · 액추에이터']];
       this.c = subj.map((x, i) => {
         const r = L ? [170 + i * 540, 150, 500, 300] : [200, 34 + i * 148, 600, 128];
         const b = el('div', { class: 'abs subj', style: { left: r[0] + 'px', top: r[1] + 'px', width: r[2] + 'px', height: r[3] + 'px' } }, s);
