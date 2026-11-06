@@ -175,12 +175,20 @@ def main():
         if r.get("설명") != want:
             update_desc(r["id"], want); r["설명"] = want; print(k, "설명 고침")
             json.dump(plan, open(plan_path, "w", encoding="utf-8"), ensure_ascii=False, indent=1)   # 아래에서 건너뛰어도 기록은 남게
-        if v.get("썸네일") and not r.get("썸네일"):          # 직접 만든 썸네일(롱폼). 채널 인증이 있어야 함. 쇼츠는 API로 못 넣음
+        if v.get("썸네일") and not r.get("썸네일") and api("GET", f"videos?part=status&id={r['id']}")["items"][0]["status"].get("uploadStatus") != "processed":
+            print(k, "아직 처리 중이라 썸네일은 다음 실행 때 넣음")   # 처리 전에 넣으면 쇼츠 화면에 반영되지 않음(2026-11-06 확인)
+        elif v.get("썸네일") and not r.get("썸네일"):          # 직접 만든 썸네일(롱폼·쇼츠). 중급 기능(전화 인증) 필요
             img = open(v["썸네일"], "rb").read()
             q = urllib.request.Request(f"https://www.googleapis.com/upload/youtube/v3/thumbnails/set?videoId={r['id']}", data=img, method="POST",
                                        headers={"Authorization": "Bearer " + access_token(), "Content-Type": "image/jpeg"})
             try:
-                urllib.request.urlopen(q, timeout=60); r["썸네일"] = v["썸네일"]; print(k, "썸네일 넣음")
+                urllib.request.urlopen(q, timeout=60)
+                time.sleep(5)
+                th = api("GET", f"videos?part=snippet&id={r['id']}")["items"][0]["snippet"]["thumbnails"]
+                if "쇼츠" in k.upper() or k.upper().startswith("S"):
+                    if "shortsAspectRatio" not in th:
+                        print(k, "썸네일은 들어갔지만 쇼츠 모양이 아직 없음 — 다음 실행 때 다시"); raise urllib.error.HTTPError(q.full_url, 0, "쇼츠 모양 없음", {}, None)
+                r["썸네일"] = v["썸네일"]; print(k, "썸네일 넣음")
             except urllib.error.HTTPError as e:
                 print(k, f"썸네일 실패 {e.code}(채널 인증 확인)")
             json.dump(plan, open(plan_path, "w", encoding="utf-8"), ensure_ascii=False, indent=1)
