@@ -1,3 +1,4 @@
+// 쇼츠 위치는 쇼츠 배치 2판(무대 860×680) 기준(2026-11-06)
 // 공통 인트로: "안녕하세요, 눈바공 연구소 바닥 연구소장입니다."
 // 채널 전체 이름에서 눈·바·공 세 글자를 강조했다가, 세 글자가 모여 "눈바공 연구소"가 된다.
 // 모든 강좌 영상에서 같은 장면을 쓴다(장면표에서 이 장면 이름을 INTRO로 연결).
@@ -6,7 +7,7 @@ const INTRO = {
     const L = ctx.long, s = ctx.stage;
     const full = L ? '눈높이가 바닥에 있는 공학 연구소' : '눈높이가 바닥에 있는|공학 연구소';
     const keyIdx = { '눈': 0, '바': 0, '공': 0 };
-    this.wrap = el('div', { class: 'abs center intro-full', style: { left: 0, width: '100%', top: (L ? 250 : 330) + 'px', fontSize: (L ? 92 : 84) + 'px' } }, s);
+    this.wrap = el('div', { class: 'abs center intro-full', style: { left: 0, width: '100%', top: (L ? 250 : 60) + 'px', fontSize: (L ? 92 : 76) + 'px' } }, s);
     this.keys = [];
     this.rest = [];
     for (const line of full.split('|')) {
@@ -18,7 +19,7 @@ const INTRO = {
       }
     }
     // 모였을 때의 "눈바공 연구소" 자리(보이지 않는 글자로 자리만 잡음)
-    this.target = el('div', { class: 'abs center intro-target noqa', style: { left: 0, width: '100%', top: (L ? 230 : 380) + 'px', fontSize: (L ? 170 : 150) + 'px' } }, s);
+    this.target = el('div', { class: 'abs center intro-target noqa', style: { left: 0, width: '100%', top: (L ? 230 : 90) + 'px', fontSize: (L ? 170 : 130) + 'px' } }, s);
     this.target.innerHTML = '<span class="k">눈</span><span class="k">바</span><span class="k">공</span><span class="lab"> 연구소</span>';
     this.lab = this.target.querySelector('.lab');
     const tk = [...this.target.querySelectorAll('.k')];
@@ -28,9 +29,9 @@ const INTRO = {
       return { dx: (b.left + b.width / 2) - (a.left + a.width / 2), dy: (b.top + b.height / 2) - (a.top + a.height / 2), sc: b.height / a.height };
     });
     tk.forEach(n => n.style.visibility = 'hidden');
-    this.role = el('div', { class: 'abs center', style: { left: 0, width: '100%', top: (L ? 520 : 700) + 'px' } }, s);
+    this.role = el('div', { class: 'abs center', style: { left: 0, width: '100%', top: (L ? 520 : 340) + 'px' } }, s);
     this.role.innerHTML = `<span class="intro-role">바닥 연구소장</span>`;
-    this.floor = el('div', { class: 'abs intro-floor', style: { left: (ctx.W / 2 - (L ? 520 : 420)) + 'px', width: (L ? 1040 : 840) + 'px', top: (L ? 680 : 860) + 'px' } }, s);
+    this.floor = el('div', { class: 'abs intro-floor', style: { left: (ctx.W / 2 - (L ? 520 : 380)) + 'px', width: (L ? 1040 : 760) + 'px', top: (L ? 680 : 500) + 'px' } }, s);
     this.t = { join: ctx.at('눈바공', 1, 1.2) - .25, role: ctx.at('바닥', 1, 2.2) - .1 };
   },
   frame(ctx, t) {
@@ -54,15 +55,15 @@ const INTRO = {
 const OUTRO = {
   init(ctx) {
     const L = ctx.long, s = ctx.stage;
-    this.logo = el('div', { class: 'abs center intro-target', style: { left: 0, width: '100%', top: (L ? 90 : 120) + 'px', fontSize: (L ? 150 : 130) + 'px' } }, s);
+    this.logo = el('div', { class: 'abs center intro-target', style: { left: 0, width: '100%', top: (L ? 90 : 30) + 'px', fontSize: (L ? 150 : 120) + 'px' } }, s);
     this.logo.innerHTML = '눈바공<span class="lab"> 연구소</span>';
-    this.role = el('div', { class: 'abs center', style: { left: 0, width: '100%', top: (L ? 300 : 320) + 'px' } }, s);
+    this.role = el('div', { class: 'abs center', style: { left: 0, width: '100%', top: (L ? 300 : 220) + 'px' } }, s);
     this.role.innerHTML = '<span class="intro-role">바닥 연구소장</span>';
-    this.btns = el('div', { class: 'abs center outro-btns', style: { left: 0, width: '100%', top: (L ? 480 : 560) + 'px' } }, s);
+    this.btns = el('div', { class: 'abs center outro-btns', style: { left: 0, width: '100%', top: (L ? 480 : 370) + 'px' } }, s);
     this.btns.innerHTML = '<span class="ob sub"><svg viewBox="0 0 24 24" width="1em" height="1em"><path d="M12 3a6 6 0 0 0-6 6v4l-2 3h16l-2-3V9a6 6 0 0 0-6-6zm-2 15a2 2 0 0 0 4 0z" fill="currentColor"/></svg>구독</span>'
       + '<span class="ob like"><svg viewBox="0 0 24 24" width="1em" height="1em"><path d="M2 10h4v11H2zm6 11h9.5a2 2 0 0 0 2-1.6l1.4-7A2 2 0 0 0 19 10h-5.5l.8-4a2 2 0 0 0-3.6-1.4L8 9z" fill="currentColor"/></svg>좋아요</span>';
     [this.sub, this.like] = this.btns.querySelectorAll('.ob');
-    this.bye = el('div', { class: 'abs center outro-bye', style: { left: 0, width: '100%', top: (L ? 700 : 820) + 'px', fontSize: (L ? 64 : 64) + 'px' } }, s);
+    this.bye = el('div', { class: 'abs center outro-bye', style: { left: 0, width: '100%', top: (L ? 700 : 540) + 'px', fontSize: (L ? 64 : 58) + 'px' } }, s);
     this.bye.textContent = '다음 영상에서 만나요';
     this.t = { logo: ctx.at('눈바공', 1, .6) - .1, role: ctx.at('바닥', 1, 1.4) - .1, sub: ctx.w('구독과') - .1, like: ctx.w('좋아요') - .1,
       ask: ctx.w('부탁드려요') - .1, bye: ctx.w('다음') - .1 };

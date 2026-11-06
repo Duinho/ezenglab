@@ -13,8 +13,11 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 FONTS = os.path.join(os.path.dirname(HERE), "fonts")
 FPS = 30
 SIZE = {"long": (1920, 1080), "short": (1080, 1920)}
-STAGE = {"long": (0, 0, 1920, 920), "short": (0, 300, 1080, 1150)}
-MAXCH = {"long": 26, "short": 30}   # 쇼츠는 두 줄까지 한 화면에
+# 쇼츠 배치 2판(팀장님 2026-11-06): 유튜브·인스타 버튼에 가리지 않게 내용을 x 60~920, y 470~1150에 모음.
+# 위 0~220·오른쪽 940~·아래 1380~은 앱 버튼·제목이 덮는 곳. 훅은 y 270부터, 자막은 1160~1340, 진행자는 왼쪽 아래(자막 위).
+SHORT_LAYOUT = 2
+STAGE = {"long": (0, 0, 1920, 920), "short": (60, 470, 860, 680)}
+MAXCH = {"long": 26, "short": 26}   # 쇼츠는 두 줄까지 한 화면에(폭 860이라 한 줄 13자 안팎)
 MAXLINES = {"long": 1, "short": 2}
 END_SEC = 2.2
 SCENE_CACHE = "/home/claude/build/scene_cache"   # 장면별 완성 조각(mp4)과 그림 지문
@@ -60,7 +63,7 @@ html,body{margin:0;width:%(W)dpx;height:%(H)dpx;overflow:hidden;background:#f2f8
 #host #eyes{transform-box:fill-box;transform-origin:50%% 50%%}
 #sub{position:absolute;z-index:5;left:%(subx)dpx;width:%(subw)dpx;top:%(suby)dpx;text-align:center}
 #sub span{display:inline-block;max-width:100%%;background:rgba(20,33,61,.88);color:#fff;font-weight:600;font-size:%(subf)dpx;line-height:1.3;padding:14px 34px;border-radius:18px;text-wrap:balance}
-#hook{position:absolute;left:60px;right:60px;top:90px;text-align:center;font-weight:800;font-size:78px;line-height:1.25;color:#14213d;text-wrap:balance}
+#hook{position:absolute;left:60px;right:160px;top:270px;text-align:center;font-weight:800;font-size:68px;line-height:1.25;color:#14213d;text-wrap:balance}
 #hook b{color:#14936a}
 #brand{position:absolute;left:0;right:0;bottom:70px;text-align:center;font-size:34px;font-weight:600;color:#14936a;opacity:.85}
 #endcard{position:absolute;inset:0;background:#14936a;color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:30px;text-align:center;opacity:0}
@@ -269,12 +272,12 @@ def main():
 
     sx, sy, sw, sh = STAGE[a.layout]
     css = CSS % dict(f=FONTS, W=W, H=H, sx=sx, sy=sy, sw=sw, sh=sh,
-                     subx=80 if a.layout == "long" else 50, subw=W - (160 if a.layout == "long" else 100),
-                     suby=935 if a.layout == "long" else 1500, subf=52 if a.layout == "long" else 56,
+                     subx=80 if a.layout == "long" else 60, subw=W - 160 if a.layout == "long" else 860,
+                     suby=935 if a.layout == "long" else 1160, subf=52 if a.layout == "long" else 52,
                      endf=72 if a.layout == "short" else 80,
-                     hs=190 if a.layout == "long" else 170, hx=1700 if a.layout == "long" else 870,
-                     hy=880 if a.layout == "long" else 1300)
-    hook = f'<div id="hook">{a.hook}</div><div id="brand">눈높이가 바닥에 있는 공학 연구소</div>' if a.layout == "short" else ""
+                     hs=190 if a.layout == "long" else 160, hx=1700 if a.layout == "long" else 60,
+                     hy=880 if a.layout == "long" else 990)
+    hook = f'<div id="hook">{a.hook}</div>' if a.layout == "short" else ""   # 아래 채널 문구는 댓글 칸에 가려 뺌(2판)
     endtext = a.endtext or "전체 설명은<br>관련 동영상에서"
     host_svg = open(os.path.join(HERE, "characters", "sojang_face.svg"), encoding="utf-8").read() if not a.no_host else ""
     cssf = os.path.join(a.folder, "style.css")
@@ -296,7 +299,8 @@ def main():
     segs = [(sc["id"], int(round(sc["start"] * FPS)), int(round((sc["start"] + sc["dur"]) * FPS))) for sc in tl]
     if n > segs[-1][2]:
         segs.append(("끝", segs[-1][2], n))
-    variant = hashlib.md5(json.dumps([a.layout, a.hook, a.endtext, a.end_cue, a.end_tail, a.no_host]).encode()).hexdigest()[:8]
+    vkey = [a.layout, a.hook, a.endtext, a.end_cue, a.end_tail, a.no_host] + ([SHORT_LAYOUT] if a.layout == "short" else [])
+    variant = hashlib.md5(json.dumps(vkey).encode()).hexdigest()[:8]
     cdir = os.path.join(SCENE_CACHE, os.path.basename(os.path.abspath(a.folder)), f"{a.layout}_{variant}")
     os.makedirs(cdir, exist_ok=True)
 
