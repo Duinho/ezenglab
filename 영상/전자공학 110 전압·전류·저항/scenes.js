@@ -397,30 +397,34 @@ const SCENES = {
       pop(this.cd, E.prog(t, this.t.c, .45), .85);
     },
   },
-  // ───────── L13 주변에서 만나는 전압 ─────────
+  // ───────── L13 주변에서 만나는 전압(직류와 교류) ─────────
   L13: {
     init(ctx) {
-      const s = ctx.stage, X0 = 700, PX = 300;            // 1V에서 시작, 10배마다 300px
-      const R = [['AA 건전지', 1.5, '1.5V'], ['아두이노 3.3V 핀', 3.3, '3.3V'], ['USB · 아두이노 5V 핀', 5, '5V'], ['가정용 콘센트', 220, '220V']];
+      const s = ctx.stage, X0 = 680, PX = 250;            // 1V에서 시작, 10배마다 250px
+      const R = [['AA 건전지', 1.5, '1.5V'], ['아두이노 우노 5V 핀', 5, '5V'], ['휴대폰 고속 충전기', 9, '9V'], ['가정용 콘센트', 220, '220V']];
       this.sv = svgAt(s, 0, 0, 1920, 920);
-      el('line', { x1: X0, y1: 90, x2: X0, y2: 700, stroke: '#9aa4b2', 'stroke-width': 4 }, this.sv);
-      el('line', { x1: X0, y1: 700, x2: X0 + 3 * PX + 20, y2: 700, stroke: '#9aa4b2', 'stroke-width': 4 }, this.sv);
-      ['1V', '10V', '100V', '1000V'].forEach((v, i) => { el('line', { x1: X0 + i * PX, y1: 700, x2: X0 + i * PX, y2: 716, stroke: '#9aa4b2', 'stroke-width': 4 }, this.sv); const tx = el('text', { x: X0 + i * PX, y: 756, 'text-anchor': 'middle', 'font-size': 32, 'font-weight': 600, fill: COLOR.sub }, this.sv); tx.textContent = v; });
-      const nt = el('text', { x: X0 + 1.5 * PX, y: 806, 'text-anchor': 'middle', 'font-size': 30, 'font-weight': 600, fill: COLOR.sub }, this.sv); nt.textContent = '눈금이 한 칸 갈 때마다 10배씩 커져요';
+      el('line', { x1: X0, y1: 90, x2: X0, y2: 650, stroke: '#9aa4b2', 'stroke-width': 4 }, this.sv);
+      el('line', { x1: X0, y1: 650, x2: X0 + 3 * PX + 20, y2: 650, stroke: '#9aa4b2', 'stroke-width': 4 }, this.sv);
+      ['1V', '10V', '100V', '1000V'].forEach((v, i) => { el('line', { x1: X0 + i * PX, y1: 650, x2: X0 + i * PX, y2: 666, stroke: '#9aa4b2', 'stroke-width': 4 }, this.sv); const tx = el('text', { x: X0 + i * PX, y: 704, 'text-anchor': 'middle', 'font-size': 30, 'font-weight': 600, fill: COLOR.sub }, this.sv); tx.textContent = v; });
+      const nt = el('text', { x: X0 + 1.5 * PX, y: 746, 'text-anchor': 'middle', 'font-size': 28, 'font-weight': 600, fill: COLOR.sub }, this.sv); nt.textContent = '눈금이 한 칸 갈 때마다 10배씩 커져요';
       this.rows = R.map((r, i) => {
-        const y = 120 + i * 145, w = Math.log10(r[1]) * PX;
-        const n = lab(s, 160, y + 16, 510, r[0], 44, { cls: 'bn' });
-        const bar = el('rect', { x: X0, y, width: 0, height: 96, rx: 10, fill: i === 3 ? VC : '#e88f9a' }, this.sv);
-        const v = lab(s, X0 + w + 24, y + 18, 220, r[2], 50, { cls: 'bv' });
+        const y = 110 + i * 132, w = Math.log10(r[1]) * PX;
+        const n = lab(s, 120, y + 14, 530, r[0], 42, { cls: 'bn' });
+        const bar = el('rect', { x: X0, y, width: 0, height: 86, rx: 10, fill: i === 3 ? VC : '#e88f9a' }, this.sv);
+        const v = lab(s, X0 + w + 22, y + 14, 200, r[2], 48, { cls: 'bv' });
         return { n, bar, v, w };
       });
-      this.wn = chip(s, 1240, 420, 420, '실습 대상 아님', { size: 42, color: VC, ink: VC });
-      this.t = [ctx.w('에이에이') - .1, ctx.w('아두이노의') - .1, ctx.w('유에스비와') - .1, ctx.w('우리나라') - .1];
-      this.tw = ctx.w('실습') - .1;
+      this.dc = [0, 1, 2].map(i => chip(s, 1480, 110 + i * 132 + 6, 210, '직류(DC)', { size: 34, color: IC, ink: IC }));
+      this.ac = chip(s, 1480, 110 + 3 * 132 + 6, 210, '교류(AC)', { size: 34, color: VC, ink: VC });
+      this.rm = chip(s, 560, 790, 860, '220V = 실효값 (같은 일을 하는 직류로 바꾼 값)', { size: 36, color: VC });
+      this.wn = chip(s, 120, 790, 380, '실습 대상 아님', { size: 36, color: VC, ink: VC });
+      this.t = [ctx.w('에이에이') - .1, ctx.w('아두이노') - .1, ctx.w('휴대폰') - .1, ctx.w('우리나라') - .1];
+      this.tx = { dc: ctx.w('직류예요') - .1, ac: ctx.w('교류예요') - .1, rm: ctx.w('실효값이라고') - .3, wn: ctx.w('실습') - .1 };
     },
     frame(ctx, t) {
       this.rows.forEach((r, i) => { const u = E.ease(E.prog(t, this.t[i], .6)); show(r.n, E.prog(t, this.t[i], .3), 10); r.bar.setAttribute('width', Math.max(0.01, r.w * u)); show(r.v, E.prog(t, this.t[i] + .4, .3), 8); });
-      pop(this.wn, E.prog(t, this.tw, .4), .7);
+      this.dc.forEach((c, i) => pop(c, E.prog(t, this.tx.dc + i * .12, .4), .7));
+      pop(this.ac, E.prog(t, this.tx.ac, .4), .7); pop(this.rm, E.prog(t, this.tx.rm, .4), .85); pop(this.wn, E.prog(t, this.tx.wn, .4), .7);
     },
   },
   // ───────── L14 저항 ─────────
