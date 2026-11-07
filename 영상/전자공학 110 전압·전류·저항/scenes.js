@@ -4,6 +4,16 @@
 // 색: 전압 빨강, 전류 파랑, 저항 주황(원고 그림과 같음).
 
 const VC = COLOR.red, IC = COLOR.blue, RC = COLOR.orange;
+// 페이퍼로지에 없는 기호(Ω, ρ, ⎓)는 글자 대신 도형으로 그린다(글꼴은 페이퍼로지만).
+const OM = `<svg viewBox="0 0 100 100" style="height:.74em;width:.74em;vertical-align:-.02em;overflow:visible"><path d="M 12 92 L 38 92 L 38 79 A 38 38 0 1 1 62 79 L 62 92 L 88 92" fill="none" stroke="currentColor" stroke-width="13" stroke-linejoin="round" stroke-linecap="round"/></svg>`;
+const RHO = `<svg viewBox="0 0 100 100" style="height:.74em;width:.62em;vertical-align:-.2em;overflow:visible"><path d="M 30 112 L 30 52 A 26 26 0 1 1 30 54" fill="none" stroke="currentColor" stroke-width="13" stroke-linecap="round"/></svg>`;
+const DC = `<svg viewBox="0 0 100 60" style="height:.42em;width:.8em;vertical-align:.12em"><line x1="6" y1="14" x2="94" y2="14" stroke="currentColor" stroke-width="10" stroke-linecap="round"/><path d="M 6 46 H 26 M 40 46 H 60 M 74 46 H 94" stroke="currentColor" stroke-width="10" stroke-linecap="round"/></svg>`;
+function svgGlyph(svg, kind, cx, cy, size, color) {          // SVG 안에 Ω 그리기
+  const k = size / 100, g = el('g', { transform: `translate(${cx - size / 2} ${cy - size / 2}) scale(${k})` }, svg);
+  if (kind === 'Ω') el('path', { d: 'M 12 92 L 38 92 L 38 79 A 38 38 0 1 1 62 79 L 62 92 L 88 92', fill: 'none', stroke: color, 'stroke-width': 13, 'stroke-linejoin': 'round', 'stroke-linecap': 'round' }, g);
+  return g;
+}
+
 
 function tag(parent, x, y, w, html, color = COLOR.green) {
   const t = el('div', { class: 'abs center tagp', style: { left: x + 'px', top: y + 'px', width: w + 'px', background: color } }, parent);
@@ -46,7 +56,7 @@ function charger(parent, x, y, w) {
   el('rect', { x: 20, y: 60, width: 260, height: 360, rx: 44, fill: '#fff', stroke: '#cfd8e3', 'stroke-width': 8 }, sv);
   el('rect', { x: 36, y: 200, width: 228, height: 90, rx: 18, fill: '#f2f5f9' }, sv);
   const v = el('text', { x: 86, y: 262, 'text-anchor': 'middle', 'font-size': 50, 'font-weight': 800, fill: COLOR.ink }, sv); v.textContent = '5V';
-  const m = el('text', { x: 150, y: 258, 'text-anchor': 'middle', 'font-size': 32, 'font-weight': 800, fill: COLOR.sub }, sv); m.textContent = '⎓';
+  el('line', { x1: 136, y1: 236, x2: 164, y2: 236, stroke: COLOR.sub, 'stroke-width': 4 }, sv); el('path', { d: 'M 136 246 H 142 M 147 246 H 153 M 158 246 H 164', stroke: COLOR.sub, 'stroke-width': 4 }, sv);
   const a = el('text', { x: 214, y: 262, 'text-anchor': 'middle', 'font-size': 50, 'font-weight': 800, fill: COLOR.ink }, sv); a.textContent = '3A';
   sv.style.opacity = 0; return { sv, v, a };
 }
@@ -143,6 +153,7 @@ function loop(svg, x0, y0, x1, y1, opt = {}) {
 function meter(svg, cx, cy, r, ch, color) {
   const g = el('g', {}, svg);
   el('circle', { cx, cy, r, fill: '#fff', stroke: color, 'stroke-width': 6 }, g);
+  if (ch === 'Ω') { svgGlyph(g, 'Ω', cx, cy + 2, r * .95, color); return g; }
   const t = el('text', { x: cx, y: cy + r * .36, 'text-anchor': 'middle', 'font-size': r, 'font-weight': 800, fill: color }, g); t.textContent = ch;
   return g;
 }
@@ -403,7 +414,7 @@ const SCENES = {
         const v = lab(s, X0 + w + 24, y + 18, 220, r[2], 50, { cls: 'bv' });
         return { n, bar, v, w };
       });
-      this.wn = chip(s, 1240, 420, 420, '⚠ 실습 대상 아님', { size: 42, color: VC, ink: VC });
+      this.wn = chip(s, 1240, 420, 420, '실습 대상 아님', { size: 42, color: VC, ink: VC });
       this.t = [ctx.w('에이에이') - .1, ctx.w('아두이노의') - .1, ctx.w('유에스비와') - .1, ctx.w('우리나라') - .1];
       this.tw = ctx.w('실습') - .1;
     },
@@ -432,7 +443,7 @@ const SCENES = {
   L15: {
     init(ctx) {
       const L = ctx.long;
-      this.hd = lab(ctx.stage, 0, L ? 20 : 0, L ? 1920 : 860, '저항을 바꾸는 세 가지', L ? 52 : 40, { color: RC });
+      this.hd = lab(ctx.stage, 0, L ? 30 : 0, L ? 1920 : 860, '저항을 바꾸는 세 가지', L ? 52 : 40, { color: RC });
       this.R = rodSet(ctx, ctx.stage, L);
       this.t = {
         row: [ctx.w('길이예요') - .1, ctx.w('굵기예요') - .1, ctx.w('재질이에요') - .1],
@@ -453,9 +464,9 @@ const SCENES = {
   L16: {
     init(ctx) {
       const s = ctx.stage;
-      this.hd = lab(s, 0, 20, 1920, '저항을 식으로 쓰면', 52, { color: RC });
-      this.fx = lab(s, 0, 110, 1920, '<span class="rr">R</span> = ρ × L ÷ A', 150, { cls: 'fx' });
-      const G = [['ρ', '재질마다 정해진 값'], ['L', '길이'], ['A', '단면적']];
+      this.hd = lab(s, 0, 30, 1920, '저항을 식으로 쓰면', 52, { color: RC });
+      this.fx = lab(s, 0, 110, 1920, '<span class="rr">R</span> = ' + RHO + ' × L ÷ A', 150, { cls: 'fx' });
+      const G = [[RHO + '(로)', '재질마다 정해진 값'], ['L', '길이'], ['A', '단면적']];
       this.g = G.map((g, i) => chip(s, 200 + i * 520, 400, 480, `<b style="color:#e0701b">${g[0]}</b>  ${g[1]}`, { size: 46, color: RC }));
       this.fn = big(s, 620, '길면 저항 <span class="vr">↑</span>　·　굵으면 저항 <span class="ir">↓</span>', 64);
       this.t = { f: ctx.w('알은') - .1, g: [ctx.w('로는') - .1, ctx.w('엘은') - .1, ctx.w('에이는') - .1], n: ctx.w('길면') - .1 };
@@ -466,9 +477,9 @@ const SCENES = {
   L17: {
     init(ctx) {
       const s = ctx.stage;
-      this.cd = wcard(s, 220, 120, 560, 620, 'r', '저항', 'Resistance', '흐름을<br>막는 정도', [['단위', 'Ω(옴)'], ['식에 쓰는 기호', 'R']], 80);
+      this.cd = wcard(s, 220, 120, 560, 620, 'r', '저항', 'Resistance', '흐름을<br>막는 정도', [['단위', OM + '(옴)'], ['식에 쓰는 기호', 'R']], 80);
       this.rw = [...this.cd.querySelectorAll('.rw')]; this.rw.forEach(r => r.style.opacity = 0);
-      this.cv = lab(s, 900, 130, 800, '1,000Ω = 1kΩ', 90, { color: RC });
+      this.cv = lab(s, 900, 130, 800, '1,000' + OM + ' = 1k' + OM, 90, { color: RC });
       this.sv = svgAt(s, 960, 330, 680, 420); this.sv.style.opacity = 0;
       wireLine(this.sv, [[80, 200], [80, 60], [230, 60]], COLOR.ink, 6); zig(this.sv, 230, 60, 160, RC, 7); wireLine(this.sv, [[390, 60], [600, 60], [600, 200]], COLOR.ink, 6);
       wireLine(this.sv, [[80, 240], [80, 360], [600, 360], [600, 330]], COLOR.ink, 6);
@@ -489,8 +500,8 @@ const SCENES = {
   L18: {
     init(ctx) {
       const s = ctx.stage;
-      const C = [['v', '전압', 'Voltage', '전기를 미는 힘<br>(두 지점의 높이 차이)', 'V(볼트)', 'V'], ['i', '전류', 'Current', '1초 동안 흐르는<br>전기의 양', 'A(암페어)', 'I'], ['r', '저항', 'Resistance', '흐름을<br>막는 정도', 'Ω(옴)', 'R']];
-      this.hd = lab(s, 0, 20, 1920, '세 단어 한눈에', 54, { color: COLOR.green });
+      const C = [['v', '전압', 'Voltage', '전기를 미는 힘<br>(두 지점의 높이 차이)', 'V(볼트)', 'V'], ['i', '전류', 'Current', '1초 동안 흐르는<br>전기의 양', 'A(암페어)', 'I'], ['r', '저항', 'Resistance', '흐름을<br>막는 정도', OM + '(옴)', 'R']];
+      this.hd = lab(s, 0, 32, 1920, '세 단어 한눈에', 54, { color: COLOR.green });
       this.c = C.map((c, i) => wcard(s, 180 + i * 540, 110, 480, 640, c[0], c[1], c[2], c[3], [['단위', c[4]], ['식에 쓰는 기호', c[5]]], 74));
       this.t = [ctx.w('전압은') - .1, ctx.w('전류는') - .1, ctx.w('저항은') - .1];
     },
@@ -508,7 +519,7 @@ const SCENES = {
   L20: {
     init(ctx) {
       meterPanels(this, ctx); this.P[0].lead(1); this.P[0].m.setAttribute('opacity', 1); this.P.forEach(p => p.box.style.opacity = 1);
-      this.warn = chip(ctx.stage, 690, 770, 500, '⚠ 양쪽에 대면 퓨즈가 끊어짐', { size: 36, color: VC, ink: VC });
+      this.warn = chip(ctx.stage, 690, 770, 500, '양쪽에 대면 퓨즈가 끊어짐', { size: 36, color: VC, ink: VC });
       this.t = { c: ctx.w('끊고') - .1, m: ctx.w('끼워서') - .1, f: ctx.w('퓨즈가') - .2, r: ctx.w('전원을') - .1, d: ctx.w('떼어') - .1 };
     },
     frame(ctx, t) {
@@ -524,7 +535,7 @@ const SCENES = {
     init(ctx) {
       const s = ctx.stage;
       this.hd = tag(s, 760, 40, 400, '자주 헷갈리는 점', COLOR.orange);
-      this.x = chip(s, 220, 170, 760, '<span style="color:#d24a5a">✕</span>  전압이 흐른다', { size: 64, color: VC });
+      this.x = chip(s, 220, 170, 760, '<span style="color:#d24a5a">×</span>  전압이 흐른다', { size: 64, color: VC });
       this.o = chip(s, 220, 400, 760, '<span style="color:#14936a">○</span>  <b class="ir">전류</b>가 흐른다', { size: 64, color: COLOR.green });
       this.st = straw(s, 1160, 90, 380); this.st.g.forEach((g, i) => g.setAttribute('opacity', i < 2 ? 1 : 0));
       this.la = lab(s, 1100, 690, 260, '빠는 힘<br>= <span class="vr">전압</span>', 40, { cls: 'note' });
@@ -568,7 +579,7 @@ const SCENES = {
       this.sv = svgAt(s, 1000, 100, 700, 620);
       this.w = el('path', { d: 'M 230 60 L 500 60 L 500 470 L 230 470', fill: 'none', stroke: COLOR.ink, 'stroke-width': 10, 'stroke-linecap': 'round', 'stroke-linejoin': 'round', opacity: 0 }, this.sv);
       this.sc = chip(s, 1080, 650, 520, '합선(쇼트)', { size: 52, color: VC, ink: VC });
-      this.ht = lab(s, 1520, 300, 200, '🔥', 80);
+      this.ht = chip(s, 1500, 300, 220, '뜨거워짐', { size: 40, color: VC, ink: VC });
       this.t = { a: ctx.w('이십') - .1, b: ctx.eq('천') - .1, c: ctx.w('바로') - .1, d: ctx.w('합선이라고') - .1, h: ctx.w('뜨거워지고') - .1 };
     },
     frame(ctx, t) {
@@ -585,7 +596,7 @@ const SCENES = {
       const s = ctx.stage;
       this.ch = charger(s, 330, 140, 360); this.ch.sv.style.opacity = 1;
       this.v = lab(s, 820, 170, 380, '5V', 150, { color: VC }); this.v.style.opacity = 1;
-      this.m = lab(s, 1140, 190, 120, '⎓', 110, { color: COLOR.sub }); this.m.style.opacity = 1;
+      this.m = lab(s, 1140, 200, 120, DC, 110, { color: COLOR.sub }); this.m.style.opacity = 1;
       this.a = lab(s, 1240, 170, 380, '3A', 150, { color: IC }); this.a.style.opacity = 1;
       this.lv = chip(s, 760, 420, 500, '충전기가 내보내는 <b class="vr">전압</b>', { size: 40, color: VC });
       this.la = chip(s, 1180, 560, 500, '보낼 수 있는 <b class="ir">최대 전류</b>', { size: 40, color: IC });
@@ -602,19 +613,19 @@ const SCENES = {
   L25: {
     init(ctx) {
       const s = ctx.stage;
-      this.hd = lab(s, 0, 10, 1920, '생활 속 저항', 54, { color: RC });
-      this.pa = el('div', { class: 'abs pane noqa', style: { left: '300px', top: '90px', width: '600px', height: '680px' } }, s);
-      this.pb = el('div', { class: 'abs pane noqa', style: { left: '1020px', top: '90px', width: '600px', height: '680px' } }, s);
-      this.sa = svgAt(s, 360, 140, 480, 330, '0 0 480 330');
+      this.hd = lab(s, 0, 30, 1920, '생활 속 저항', 54, { color: RC });
+      this.pa = el('div', { class: 'abs pane noqa', style: { left: '300px', top: '120px', width: '600px', height: '680px' } }, s);
+      this.pb = el('div', { class: 'abs pane noqa', style: { left: '1020px', top: '120px', width: '600px', height: '680px' } }, s);
+      this.sa = svgAt(s, 360, 170, 480, 330, '0 0 480 330');
       el('rect', { x: 40, y: 40, width: 300, height: 150, rx: 75, fill: RC }, this.sa); el('rect', { x: 150, y: 170, width: 80, height: 150, rx: 24, fill: RC }, this.sa);
       this.coil = zig(this.sa, 90, 115, 200, '#fff', 8);
       this.wv = [0, 1, 2].map(i => el('line', { x1: 360, y1: 80 + i * 35, x2: 450, y2: 80 + i * 35, stroke: VC, 'stroke-width': 7, 'stroke-linecap': 'round', opacity: 0 }, this.sa));
-      this.ta = lab(s, 300, 500, 600, '헤어드라이어 열선<small style="margin-top:14px">저항이 큰 선에 전류가 흐르면 열</small>', 50, { cls: 'pt', color: RC });
-      this.sb = svgAt(s, 1150, 130, 340, 340, '0 0 340 340');
+      this.ta = lab(s, 300, 530, 600, '헤어드라이어 열선<small style="margin-top:14px">저항이 큰 선에 전류가 흐르면 열</small>', 50, { cls: 'pt', color: RC });
+      this.sb = svgAt(s, 1150, 160, 340, 340, '0 0 340 340');
       [...Array(9)].forEach((_, i) => { const a = (-135 + i * 33.75) * Math.PI / 180; el('line', { x1: 170 + Math.cos(a) * 140, y1: 170 + Math.sin(a) * 140, x2: 170 + Math.cos(a) * 160, y2: 170 + Math.sin(a) * 160, stroke: COLOR.sub, 'stroke-width': 6, 'stroke-linecap': 'round' }, this.sb); });
       el('circle', { cx: 170, cy: 170, r: 115, fill: RC }, this.sb);
       this.nd = el('line', { x1: 170, y1: 170, x2: 170, y2: 85, stroke: '#fff', 'stroke-width': 14, 'stroke-linecap': 'round' }, this.sb);
-      this.tb = lab(s, 1020, 500, 600, '볼륨 손잡이<small style="margin-top:14px">돌리면 길이가 바뀌어 저항이 달라짐</small>', 50, { cls: 'pt', color: RC });
+      this.tb = lab(s, 1020, 530, 600, '볼륨 손잡이<small style="margin-top:14px">돌리면 길이가 바뀌어 저항이 달라짐</small>', 50, { cls: 'pt', color: RC });
       [this.pa, this.pb, this.sa, this.sb].forEach(n => n.style.opacity = 0);
       this.t = { a: ctx.w('헤어드라이어') - .1, h: ctx.w('열이') - .1, b: ctx.w('볼륨') - .1, r: ctx.w('돌릴') - .1 };
     },
@@ -628,7 +639,7 @@ const SCENES = {
   },
   // ───────── L26 퀴즈 ─────────
   L26: {
-    init(ctx) { quizSet(this, ctx); this.cd = countdown(ctx, ctx.stage, 1500, 600, 150); this.t = { w: ctx.w('구리선을') - .1, d: ctx.eq('두') - .1, q: ctx.w('저항은') - .1 }; },
+    init(ctx) { quizSet(this, ctx); this.cd = countdown(ctx, ctx.stage, 1640, 380, 150); this.t = { w: ctx.w('구리선을') - .1, d: ctx.eq('두') - .1, q: ctx.w('저항은') - .1 }; },
     frame(ctx, t) {
       pop(this.tg, E.prog(t, 0, .4), .8); show(this.a, E.prog(t, this.t.w, .4), 16); show(this.la, E.prog(t, this.t.w, .4), 12);
       const g = E.ease(E.prog(t, this.t.d, .8)); show(this.b, E.prog(t, this.t.d, .3), 0); this.bw.setAttribute('width', 400 + 400 * g); show(this.lb, E.prog(t, this.t.d + .5, .4), 12);
@@ -638,7 +649,7 @@ const SCENES = {
   L26B: {
     init(ctx) {
       quizSet(this, ctx); [this.tg, this.a, this.la, this.b, this.lb].forEach(n => n.style.opacity = 1); this.bw.setAttribute('width', 800);
-      this.x2 = chip(ctx.stage, 1060, 560, 300, '저항 × 2', { size: 52, color: RC, ink: RC });
+      this.x2 = chip(ctx.stage, 1400, 405, 300, '저항 × 2', { size: 52, color: RC, ink: RC });
       this.fn = big(ctx.stage, 720, '저항은 길이에 <b>비례</b>', 64);
       this.t = { d: ctx.eq('두') - .1, p: ctx.w('비례하기') - .3 };
     },
@@ -763,9 +774,9 @@ function meterPanels(self, ctx) {
 function quizSet(self, ctx) {
   const s = ctx.stage;
   self.tg = tag(s, 760, 30, 400, '퀴즈', COLOR.orange);
-  self.a = svgAt(s, 300, 200, 840, 80); el('rect', { x: 0, y: 18, width: 400, height: 44, rx: 22, fill: '#dfa064', stroke: '#b8712e', 'stroke-width': 4 }, self.a); self.a.style.opacity = 0;
-  self.la = lab(s, 300, 140, 400, '구리선 · 길이 L', 40, { color: COLOR.sub });
-  self.b = svgAt(s, 300, 400, 840, 80); self.bw = el('rect', { x: 0, y: 18, width: 400, height: 44, rx: 22, fill: '#dfa064', stroke: '#b8712e', 'stroke-width': 4 }, self.b); self.b.style.opacity = 0;
-  self.lb = lab(s, 300, 340, 800, '굵기는 그대로 · 길이 2L', 40, { color: COLOR.sub });
-  self.q = chip(s, 300, 560, 600, '저항은 어떻게 될까?', { size: 52, color: RC });
+  self.a = svgAt(s, 560, 200, 840, 80); el('rect', { x: 0, y: 18, width: 400, height: 44, rx: 22, fill: '#dfa064', stroke: '#b8712e', 'stroke-width': 4 }, self.a); self.a.style.opacity = 0;
+  self.la = lab(s, 560, 140, 400, '구리선 · 길이 L', 40, { color: COLOR.sub });
+  self.b = svgAt(s, 560, 400, 840, 80); self.bw = el('rect', { x: 0, y: 18, width: 400, height: 44, rx: 22, fill: '#dfa064', stroke: '#b8712e', 'stroke-width': 4 }, self.b); self.b.style.opacity = 0;
+  self.lb = lab(s, 560, 340, 800, '굵기는 그대로 · 길이 2L', 40, { color: COLOR.sub });
+  self.q = chip(s, 660, 580, 600, '저항은 어떻게 될까?', { size: 52, color: RC });
 }
