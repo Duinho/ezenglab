@@ -467,7 +467,7 @@ const SCENES = {
       this.hd = lab(s, 0, 30, 1920, '저항을 식으로 쓰면', 52, { color: RC });
       this.fx = lab(s, 0, 110, 1920, '<span class="rr">R</span> = ' + RHO + ' × L ÷ A', 150, { cls: 'fx' });
       const G = [[RHO + '(로)', '재질마다 정해진 값'], ['L', '길이'], ['A', '단면적']];
-      this.g = G.map((g, i) => chip(s, 200 + i * 520, 400, 480, `<b style="color:#e0701b">${g[0]}</b>  ${g[1]}`, { size: 46, color: RC }));
+      this.g = G.map((g, i) => chip(s, [120, 790, 1290][i], 400, [630, 460, 460][i], `<b style="color:#e0701b">${g[0]}</b>  ${g[1]}`, { size: 46, color: RC }));
       this.fn = big(s, 620, '길면 저항 <span class="vr">↑</span>　·　굵으면 저항 <span class="ir">↓</span>', 64);
       this.t = { f: ctx.w('알은') - .1, g: [ctx.w('로는') - .1, ctx.w('엘은') - .1, ctx.w('에이는') - .1], n: ctx.w('길면') - .1 };
     },
