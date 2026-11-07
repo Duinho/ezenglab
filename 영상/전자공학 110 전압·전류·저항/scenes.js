@@ -89,7 +89,7 @@ function strawSet(ctx, withAns) {
     o.li = SITEMS.map((it, i) => { const d = lab(s, withAns ? 830 : 900, 200 + i * 190, 620, `<span class="nb" style="background:${it[1]}">${i + 1}</span>${it[0]}`, 52, { cls: 'li' }); return d; });
     if (withAns) o.ans = SITEMS.map((it, i) => { const d = el('div', { class: 'abs ans', style: { left: '1440px', top: (186 + i * 190) + 'px', width: '260px', height: '104px', fontSize: '50px' } }, s); d.textContent = '?'; d.style.opacity = 0; return d; });
   } else {
-    o.st = straw(s, 330, 0, 200);
+    o.st = straw(s, 340, 36, 180);
     o.li = SITEMS.map((it, i) => lab(s, withAns ? 90 : 165, 340 + i * 112, withAns ? 470 : 530, `<span class="nb" style="background:${it[1]}">${i + 1}</span>${it[0]}`, 40, { cls: 'li' }));
     if (withAns) o.ans = SITEMS.map((it, i) => { const d = el('div', { class: 'abs ans', style: { left: '590px', top: (326 + i * 112) + 'px', width: '180px', height: '84px', fontSize: '40px' } }, s); d.textContent = '?'; d.style.opacity = 0; return d; });
   }
@@ -183,12 +183,12 @@ function rodSet(ctx, s, L) {
       });
       o.tg = [chip(s, 800, y + 30, 220, '저항 작음', { size: 38, color: IC }), chip(s, 1460, y + 30, 220, '저항 큼', { size: 38, color: VC })];
     } else {
-      const y = 64 + i * 205;
+      const y = 82 + i * 190;
       o.h = lab(s, 0, y, 860, r[0], 44, { color: RC });
       o.it = r[1].map((it, j) => {
         const x = j ? 470 : 40, w = 330 * it[1];
-        const sv = svgAt(s, x, y + 54, 350, 90); el('rect', { x: (350 - w) / 2, y: 45 - it[2] * .8 / 2, width: w, height: it[2] * .8, rx: it[2] * .4, fill: it[3], stroke: it[4], 'stroke-width': 4 }, sv); sv.style.opacity = 0;
-        const c = lab(s, x, y + 150, 350, `${it[0]} · <b style="color:${j ? VC : IC}">저항 ${j ? '큼' : '작음'}</b>`, 32, { cls: 'note' });
+        const sv = svgAt(s, x, y + 50, 350, 90); el('rect', { x: (350 - w) / 2, y: 45 - it[2] * .8 / 2, width: w, height: it[2] * .8, rx: it[2] * .4, fill: it[3], stroke: it[4], 'stroke-width': 4 }, sv); sv.style.opacity = 0;
+        const c = lab(s, x, y + 140, 350, `${it[0]} · <b style="color:${j ? VC : IC}">저항 ${j ? '큼' : '작음'}</b>`, 32, { cls: 'note' });
         return { sv, c };
       });
       o.tg = [];
@@ -355,9 +355,9 @@ const SCENES = {
         this.la = lab(s, 220, 670, 680, '<small>높이 차가 작다</small>전압이 낮다', 56, { color: VC });
         this.lb = lab(s, 1000, 670, 680, '<small>높이 차가 크다</small>전압이 높다', 56, { color: VC });
       } else {
-        this.a = slope(s, 20, 60, 400, 330, .35); this.b = slope(s, 440, 60, 400, 330, 1);
-        this.la = lab(s, 20, 430, 400, '<small>높이 차가 작다</small>전압이 낮다', 44, { color: VC });
-        this.lb = lab(s, 440, 430, 400, '<small>높이 차가 크다</small>전압이 높다', 44, { color: VC });
+        this.a = slope(s, 40, 60, 380, 314, .35); this.b = slope(s, 440, 60, 380, 314, 1);
+        this.la = lab(s, 40, 420, 380, '<small>높이 차가 작다</small>전압이 낮다', 44, { color: VC });
+        this.lb = lab(s, 440, 420, 380, '<small>높이 차가 크다</small>전압이 높다', 44, { color: VC });
       }
       this.t = { s: Math.min(.2, ctx.w('높이') - .1), a: ctx.w('높은') - .1, b: ctx.w('클수록') - .1 };
     },
@@ -381,7 +381,7 @@ const SCENES = {
       } else {
         this.bt = battery(s, 70, 30, 200, '1.5V');
         this.sv = svgAt(s, 280, 40, 120, 420);
-        this.vl = lab(s, 290, 210, 140, '1.5V', 50, { color: VC });
+        this.vl = lab(s, 318, 216, 110, '1.5V', 40, { color: VC });
         this.cd = wcard(s, 430, 40, 360, 400, 'v', '전압', '', '두 지점 사이의<br>높이 차이', [['단위', 'V(볼트)'], ['기호', 'V']], 62);
         this.arr = arrow(this.sv, 24, 390, 24, 20, VC, 7);
         this.ex = lab(s, 0, 500, 860, '+극과 −극 사이의 차이 = <b style="color:#d24a5a">1.5V</b>', 42, { cls: 'note' });
@@ -443,7 +443,7 @@ const SCENES = {
   L15: {
     init(ctx) {
       const L = ctx.long;
-      this.hd = lab(ctx.stage, 0, L ? 30 : 0, L ? 1920 : 860, '저항을 바꾸는 세 가지', L ? 52 : 40, { color: RC });
+      this.hd = lab(ctx.stage, 0, 30, L ? 1920 : 860, '저항을 바꾸는 세 가지', L ? 52 : 36, { color: RC });
       this.R = rodSet(ctx, ctx.stage, L);
       this.t = {
         row: [ctx.w('길이예요') - .1, ctx.w('굵기예요') - .1, ctx.w('재질이에요') - .1],
@@ -685,8 +685,8 @@ const SCENES = {
   S2A: {
     init(ctx) {
       const s = ctx.stage;
-      this.bt = battery(s, 315, 0, 230, '1.5V');
-      this.ring = el('div', { class: 'abs', style: { left: '448px', top: '205px', width: '74px', height: '74px', border: '7px solid #d24a5a', borderRadius: '50%', opacity: 0 } }, s);
+      this.bt = battery(s, 325, 30, 210, '1.5V');
+      this.ring = el('div', { class: 'abs noqa', style: { left: '448px', top: '232px', width: '74px', height: '74px', border: '7px solid #d24a5a', borderRadius: '50%', opacity: 0 } }, s);
       this.c = chip(s, 230, 500, 400, '<b class="vr">V(볼트)</b> = 전압의 단위', { size: 40, color: VC });
       this.t = { b: Math.min(.2, ctx.w('건전지에') - .1), v: ctx.w('볼트가') - .1 };
     },
@@ -699,7 +699,7 @@ const SCENES = {
       el('rect', { x: 10, y: 10, width: 280, height: 280, rx: 50, fill: '#fff', stroke: '#cfd8e3', 'stroke-width': 8 }, this.sv);
       el('circle', { cx: 150, cy: 150, r: 100, fill: '#f2f5f9', stroke: '#9aa4b2', 'stroke-width': 6 }, this.sv);
       el('circle', { cx: 110, cy: 150, r: 18, fill: COLOR.ink }, this.sv); el('circle', { cx: 190, cy: 150, r: 18, fill: COLOR.ink }, this.sv);
-      this.c = chip(s, 230, 380, 400, '우리 집 콘센트 = <b class="vr">? V</b>', { size: 44, color: VC });
+      this.c = chip(s, 160, 380, 540, '우리 집 콘센트 = <b class="vr">? V</b>', { size: 44, color: VC });
       this.t = { a: Math.min(.2, ctx.w('우리') - .1), c: ctx.w('몇') - .1 };
     },
     frame(ctx, t) { show(this.sv, E.prog(t, this.t.a, .4), 24); pop(this.c, E.prog(t, this.t.c, .4), .8); },
@@ -707,11 +707,11 @@ const SCENES = {
   S3A: {
     init(ctx) {
       const s = ctx.stage;
-      this.cd = wcard(s, 180, 0, 500, 300, 'r', '저항', '', '흐름을 막는 정도', [], 64);
-      this.sv = svgAt(s, 130, 360, 600, 160); this.sv.style.opacity = 0;
+      this.cd = wcard(s, 180, 30, 500, 270, 'r', '저항', '', '흐름을 막는 정도', [], 60);
+      this.sv = svgAt(s, 130, 350, 600, 160); this.sv.style.opacity = 0;
       el('rect', { x: 0, y: 30, width: 600, height: 40, rx: 20, fill: '#dfa064', stroke: '#b8712e', 'stroke-width': 4 }, this.sv);
       el('rect', { x: 0, y: 110, width: 600, height: 40, rx: 20, fill: '#dfa064', stroke: '#b8712e', 'stroke-width': 4 }, this.sv);
-      this.q = chip(s, 230, 560, 400, '저항이 다를까?', { size: 44, color: RC });
+      this.q = chip(s, 230, 530, 400, '저항이 다를까?', { size: 44, color: RC });
       this.t = { c: Math.min(.2, ctx.w('저항은') - .1), w: ctx.w('같은') - .1, q: ctx.w('달라질') - .1 };
     },
     frame(ctx, t) { pop(this.cd, E.prog(t, this.t.c, .45), .85); show(this.sv, E.prog(t, this.t.w, .4), 16); pop(this.q, E.prog(t, this.t.q, .4), .8); },
