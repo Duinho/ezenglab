@@ -176,12 +176,12 @@ function rodSet(ctx, s, L) {
       const y = 130 + i * 250;
       o.h = lab(s, 150, y + 34, 200, r[0], 64, { color: RC });
       o.it = r[1].map((it, j) => {
-        const x = j ? 1060 : 400, w = 420 * it[1];
-        const sv = svgAt(s, x, y, 440, 120); el('rect', { x: 4, y: 60 - it[2] / 2, width: w, height: it[2], rx: it[2] / 2, fill: it[3], stroke: it[4], 'stroke-width': 5 }, sv); sv.style.opacity = 0;
+        const x = j ? 1020 : 380, w = 360 * it[1];
+        const sv = svgAt(s, x, y, 380, 120); el('rect', { x: 4, y: 60 - it[2] / 2, width: w, height: it[2], rx: it[2] / 2, fill: it[3], stroke: it[4], 'stroke-width': 5 }, sv); sv.style.opacity = 0;
         const c = lab(s, x, y + 124, w + 8, it[0], 38, { cls: 'note' });
         return { sv, c };
       });
-      o.tg = [chip(s, 800, y + 30, 220, '저항 작음', { size: 38, color: IC }), chip(s, 1460, y + 30, 220, '저항 큼', { size: 38, color: VC })];
+      o.tg = [chip(s, 770, y + 30, 220, '저항 작음', { size: 38, color: IC }), chip(s, 1420, y + 30, 220, '저항 큼', { size: 38, color: VC })];
     } else {
       const y = 82 + i * 190;
       o.h = lab(s, 0, y, 860, r[0], 44, { color: RC });
