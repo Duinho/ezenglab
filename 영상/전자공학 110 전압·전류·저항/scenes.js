@@ -6,7 +6,7 @@
 const VC = COLOR.red, IC = COLOR.blue, RC = COLOR.orange;
 // 페이퍼로지에 없는 기호(Ω, ρ, ⎓)는 글자 대신 도형으로 그린다(글꼴은 페이퍼로지만).
 const OM = `<svg viewBox="0 0 100 100" style="height:.74em;width:.74em;vertical-align:-.02em;overflow:visible"><path d="M 12 92 L 38 92 L 38 79 A 38 38 0 1 1 62 79 L 62 92 L 88 92" fill="none" stroke="currentColor" stroke-width="13" stroke-linejoin="round" stroke-linecap="round"/></svg>`;
-const RHO = `<svg viewBox="0 0 100 100" style="height:.74em;width:.62em;vertical-align:-.2em;overflow:visible"><path d="M 30 112 L 30 52 A 26 26 0 1 1 30 54" fill="none" stroke="currentColor" stroke-width="13" stroke-linecap="round"/></svg>`;
+const RHO = `<svg viewBox="0 0 100 100" style="height:.9em;width:.72em;vertical-align:-.26em;overflow:visible"><path d="M 30 112 L 30 52 A 26 26 0 1 1 30 54" fill="none" stroke="currentColor" stroke-width="13" stroke-linecap="round"/></svg>`;
 const DC = `<svg viewBox="0 0 100 60" style="height:.42em;width:.8em;vertical-align:.12em"><line x1="6" y1="14" x2="94" y2="14" stroke="currentColor" stroke-width="10" stroke-linecap="round"/><path d="M 6 46 H 26 M 40 46 H 60 M 74 46 H 94" stroke="currentColor" stroke-width="10" stroke-linecap="round"/></svg>`;
 function svgGlyph(svg, kind, cx, cy, size, color) {          // SVG 안에 Ω 그리기
   const k = size / 100, g = el('g', { transform: `translate(${cx - size / 2} ${cy - size / 2}) scale(${k})` }, svg);
@@ -707,7 +707,7 @@ const SCENES = {
   S3A: {
     init(ctx) {
       const s = ctx.stage;
-      this.cd = wcard(s, 180, 30, 500, 270, 'r', '저항', '', '흐름을 막는 정도', [], 60);
+      this.cd = wcard(s, 180, 44, 500, 260, 'r', '저항', '', '흐름을 막는 정도', [], 60);
       this.sv = svgAt(s, 130, 350, 600, 160); this.sv.style.opacity = 0;
       el('rect', { x: 0, y: 30, width: 600, height: 40, rx: 20, fill: '#dfa064', stroke: '#b8712e', 'stroke-width': 4 }, this.sv);
       el('rect', { x: 0, y: 110, width: 600, height: 40, rx: 20, fill: '#dfa064', stroke: '#b8712e', 'stroke-width': 4 }, this.sv);
