@@ -13,6 +13,7 @@ FIELD = {  # 분야: (강조색, 배경색)
     "인공지능": ("#2f6fde", "#f4f8ff"),
     "전자공학": ("#e0701b", "#fff7f0"),
     "전자 부품": ("#14936a", "#f1faf6"),
+    "생활 기기": ("#00798c", "#eef8fa"),
 }
 
 # 그림(440x440 SVG 안쪽). {c}=강조색
@@ -120,6 +121,27 @@ M["pot"] = """
 <g stroke="#9aa6bb" stroke-width="6" stroke-linecap="round" fill="none"><path d="M150 120 H230 M150 120 l14 -12 M150 120 l14 12"/><path d="M310 120 H390 M390 120 l-14 -12 M390 120 l-14 12"/></g>
 <text x="220" y="370" text-anchor="middle" font-family="P" font-weight="800" font-size="44" fill="{c}">10kΩ</text>"""
 
+M["appliances"] = """
+<rect x="60" y="90" width="130" height="250" rx="16" fill="#f4f6f9" stroke="#7d8798" stroke-width="6"/>
+<line x1="60" y1="185" x2="190" y2="185" stroke="#7d8798" stroke-width="5"/>
+<line x1="170" y1="120" x2="170" y2="165" stroke="#7d8798" stroke-width="7" stroke-linecap="round"/><line x1="170" y1="205" x2="170" y2="250" stroke="#7d8798" stroke-width="7" stroke-linecap="round"/>
+<rect x="225" y="100" width="170" height="70" rx="20" fill="#f8f9fb" stroke="#7d8798" stroke-width="6"/>
+<line x1="245" y1="150" x2="375" y2="150" stroke="#9aa6bb" stroke-width="5"/>
+<rect x="235" y="230" width="150" height="110" rx="14" fill="#f8f9fb" stroke="#7d8798" stroke-width="6"/>
+<circle cx="310" cy="290" r="36" fill="#dce9f7" stroke="#7d8798" stroke-width="5"/>
+<g fill="{c}"><circle cx="125" cy="140" r="14"/><circle cx="352" cy="125" r="10"/></g>
+<text x="220" y="405" text-anchor="middle" font-family="P" font-weight="800" font-size="40" fill="{c}">알아채기 → 움직이기</text>"""
+
+M["heatmove"] = """
+<rect x="50" y="80" width="150" height="270" rx="16" fill="#e6f0fb" stroke="#7d8798" stroke-width="6"/>
+<line x1="50" y1="190" x2="200" y2="190" stroke="#7d8798" stroke-width="5"/>
+<text x="125" y="290" text-anchor="middle" font-family="P" font-weight="800" font-size="40" fill="#3b6fb6">차갑게</text>
+<line x1="215" y1="215" x2="320" y2="215" stroke="#d1495b" stroke-width="12" stroke-linecap="round"/>
+<path d="M310 190 L355 215 L310 240 Z" fill="#d1495b"/>
+<g fill="none" stroke="#d1495b" stroke-width="7" stroke-linecap="round"><path d="M365 260 q12 -20 0 -40 q-12 -20 0 -40"/><path d="M395 260 q12 -20 0 -40 q-12 -20 0 -40"/></g>
+<text x="268" y="185" text-anchor="middle" font-family="P" font-weight="800" font-size="40" fill="#d1495b">열</text>
+<text x="220" y="410" text-anchor="middle" font-family="P" font-weight="800" font-size="38" fill="{c}">안의 열을 밖으로</text>"""
+
 COVERS = {
     "전자 부품 130 가변저항": ("pot", "손잡이로 나누는 자리를 옮겨서\n출력 전압을 바꿔요"),  # 폴더: (그림, 한 줄 문구 — 강좌 본문 문장에서 가져옴, \n=줄바꿈)
     "인공지능 110 인공지능 첫걸음": ("fruit", "데이터에서 규칙을 배워\n처음 보는 상황에서도 판단해요"),
@@ -134,9 +156,13 @@ COVERS = {
     "전자공학 140 전압 분배": ("divider", "저항을 한 줄로 이으면\n저항 크기의 비율대로 나눠요"),
     "전자 부품 110 전자 부품 지도": ("blocks", "앞으로 배울 부품들이\n어느 칸에 들어가는지 보는 지도"),
     "전자 부품 120 저항": ("resistor", "전류가 지나가기 어렵게 만들어\n흐름을 원하는 만큼 줄여요"),
+    "생활 기기 100 생활 기기 들여다보기": ("appliances", "알아채고 판단하고 움직이는\n원리를 하나씩 들여다봐요"),
+    "생활 기기 110 냉장고와 에어컨": ("heatmove", "안쪽의 열을\n바깥으로 옮기는 기계예요"),
 }
 
 TITLE_LINES = {  # 왼쪽 정사각형에 크게 넣을 제목 줄(없으면 띄어쓰기 기준으로 나눔)
+    "생활 기기 100 생활 기기 들여다보기": ["생활 기기", "들여다보기"],
+    "생활 기기 110 냉장고와 에어컨": ["냉장고와", "에어컨"],
     "전자공학 110 전압·전류·저항": ["전압", "전류", "저항"],
     "전자 부품 110 전자 부품 지도": ["전자 부품", "지도"],
     "전자 부품 130 가변저항": ["가변", "저항"],
