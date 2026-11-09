@@ -22,7 +22,7 @@ STAGE = {"long": (0, 0, 1920, 920), "short": (110, 470, 860, 680)}
 MAXCH = {"long": 26, "short": 26}   # 쇼츠는 두 줄까지 한 화면에(폭 860이라 한 줄 13자 안팎)
 MAXLINES = {"long": 1, "short": 2}
 END_SEC = 2.2
-SCENE_CACHE = "/home/claude/build/scene_cache"   # 장면별 완성 조각(mp4)과 그림 지문
+SCENE_CACHE = os.path.join(os.environ.get("EZ_HOME", "/home/claude"), "build", "scene_cache")   # 장면별 완성 조각(mp4)과 그림 지문
 FP_TOL = 6      # 지문 비교 허용치(0~255). 시험: 그릴 때 생기는 차이 최대 1, 글자 하나 추가 79, 2px 이동 21
 
 CSS = """

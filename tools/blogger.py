@@ -201,7 +201,7 @@ def to_html(folder, sha=None):
     return meta, f'{STYLE}{extra}<div class="ezl">{out}</div>'
 
 
-VIDEO_REG = "/home/claude/ezenglab-work/업로드/재생목록.json"   # 강좌 폴더 → 유튜브 롱폼(있을 때만)
+VIDEO_REG = os.path.join(os.environ.get("EZ_HOME", "/home/claude"), "ezenglab-work", "업로드", "재생목록.json")   # 강좌 폴더 → 유튜브 롱폼(있을 때만)
 
 
 def links_html(folder, meta):

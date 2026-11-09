@@ -16,10 +16,11 @@ SCENE_TAIL = 0.45        # 장면 끝 쉼(초)
 LUFS = -16
 RUN_LIMIT = 12000
 MONTH_LIMIT = 180000     # 라이트 20만 크레딧 중 여유분을 남김
-KEY_FILE = "/home/claude/secrets/typecast_api_key"
-CACHE = "/home/claude/build/tts_cache"
-LEDGER = "/home/claude/ezenglab-work/기록/tts_사용량.json"
-STORE = "/home/claude/ezenglab-work/음성"      # 장면별 확정 음성(flac+json) 보관. 작업 공간이 정리돼도 여기서 복원
+EZ = os.environ.get("EZ_HOME", "/home/claude")   # 작업 기준 폴더(코덱스 PC에서는 다른 곳일 수 있음)
+KEY_FILE = os.path.join(EZ, "secrets", "typecast_api_key")
+CACHE = os.path.join(EZ, "build", "tts_cache")
+LEDGER = os.path.join(EZ, "ezenglab-work", "기록", "tts_사용량.json")
+STORE = os.path.join(EZ, "ezenglab-work", "음성")      # 장면별 확정 음성(flac+json) 보관. 작업 공간이 정리돼도 여기서 복원
 API = "https://api.typecast.ai"
 
 
