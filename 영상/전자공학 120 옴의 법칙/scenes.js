@@ -126,6 +126,9 @@ function title(ctx, add, text, phrase) {
 function panel(ctx, add, x, y, width, height, text, phrase, color = COLOR.line, size = 40) {
   const node = card(ctx.stage, x, y, width, height, { text: '<span>' + text + '</span>', color, size });
   node.classList.add('ohm-panel');
+  if (ctx.long && [VC, IC, RC, COLOR.green].includes(color) && height >= 200 && height <= 250 && width <= 1200) {
+    node.style.background = 'color-mix(in srgb, ' + color + ' 17%, white)';
+  }
   return add(node, phrase);
 }
 
@@ -193,13 +196,13 @@ function analogy(kind) {
   return scene((ctx, add, updates) => {
     title(ctx, add, isBike ? '자전거 세 장면' : '빨대 세 장면');
     rows.forEach(([label, result, phrase], i) => {
-      const w = ctx.long ? 470 : 246;
-      const gap = ctx.long ? 38 : 14;
-      const x = (ctx.W - 3 * w - 2 * gap) / 2 + i * (w + gap);
-      const y = ctx.long ? 180 : 148;
-      const h = ctx.long ? 485 : 368;
-      const heading = panel(ctx, add, x, y, w, 76, label, phrase, i ? RC : COLOR.line, ctx.long ? 42 : 32);
-      const svg = diagram(ctx, x, y + 94, w, ctx.long ? 260 : 192, '0 0 250 180');
+      const w = ctx.long ? 510 : 770;
+      const gap = ctx.long ? 30 : 0;
+      const x = ctx.long ? (ctx.W - 3 * w - 2 * gap) / 2 + i * (w + gap) : (ctx.W - w) / 2;
+      const y = ctx.long ? 144 : 116;
+      const h = ctx.long ? 688 : 523;
+      const heading = panel(ctx, add, x, y, w, ctx.long ? 106 : 80, label, phrase, i ? RC : COLOR.line, ctx.long ? 55 : 44);
+      const svg = diagram(ctx, x, y + (ctx.long ? 122 : 88), w, ctx.long ? 409 : 344, '0 0 250 180');
       const start = cue(ctx, phrase);
       add(svg, phrase);
       if (isBike) bicycle(svg, 0, 14, i !== 0);
@@ -211,13 +214,12 @@ function analogy(kind) {
         ? arrow(svg, 127, 160, i === 1 ? 161 : 230, 160, IC, 5)
         : arrow(svg, 125, 115, 125, i === 1 ? 77 : 42, IC, 3);
       updates.push(t => { force(E.prog(t, start, .45)); flow(E.prog(t, start, .55)); });
-      const outcome = panel(ctx, add, x, y + h - 83, w, 80, result, phrase, IC, ctx.long ? 35 : 22);
+      const outcome = panel(ctx, add, x, y + h - 83, w, ctx.long ? 112 : 83, result, phrase, IC, ctx.long ? 45 : 39);
       if (!ctx.long) {
         const starts = rows.map(([, , key]) => cue(ctx, key));
         updates.push(t => {
-          const visible = starts.filter(start => t >= start).length;
-          const offset = (3 - Math.max(1, visible)) * (w + gap) / 2;
-          for (const node of [heading, svg, outcome]) node.style.translate = offset + 'px';
+          const active = Math.max(0, starts.filter(start => t >= start).length - 1);
+          for (const node of [heading, svg, outcome]) node.style.visibility = i === active ? 'visible' : 'hidden';
         });
       }
     });
@@ -225,33 +227,35 @@ function analogy(kind) {
 }
 
 function circuit(ctx, add, updates, { voltage, resistance, current, change, compact = false }) {
-  const w = ctx.long ? 950 : 680;
-  const h = ctx.long ? (compact ? 335 : 480) : 470;
-  const svg = diagram(ctx, (ctx.W - w) / 2, compact ? 112 : 138, w, h, '0 0 680 365');
+  const w = ctx.long ? (compact ? 1130 : 1500) : 780;
+  const h = ctx.long ? (compact ? 375 : 730) : 530;
+  const svg = diagram(ctx, ctx.long ? (ctx.W - w) / 2 - 68 : (ctx.W - w) / 2, compact ? 100 : (ctx.long ? 105 : 108), w, h, ctx.long ? '0 0 680 365' : '0 18 680 475');
   add(svg);
-  const g = loop(svg, 155, 89, 505, 271);
+  const bottom = ctx.long ? 271 : 459;
+  const middle = (89 + bottom) / 2;
+  const g = loop(svg, 155, 89, 505, bottom);
   // 110의 회로와 전류계 도형을 사용하고, 저항 색만 강조한다.
   g.querySelector('path').setAttribute('stroke', RC);
-  meter(svg, 505, 180, 32, 'A', IC);
-  const v = svgText(svg, 61, 187, voltage, 35, VC);
-  const r = svgText(svg, 330, 51, resistance, 36, RC);
-  const a = svgText(svg, 617, 191, current, 35, IC);
+  meter(svg, 505, middle, 32, 'A', IC);
+  const v = svgText(svg, 59, middle + 4, voltage, ctx.long ? 35 : 34, VC);
+  const r = svgText(svg, 330, 48, resistance, ctx.long ? 36 : 34, RC);
+  const a = svgText(svg, 617, middle + 8, current, ctx.long ? 35 : 34, IC);
   const dots = Array.from({ length: 5 }, () => el('circle', { r: 6, fill: IC }, svg));
   const states = change.map(([node, text, phrase, n]) => [{ v, r, a }[node], text, cue(ctx, phrase, n)]);
   updates.push(t => {
     for (const [node, original] of [[v, voltage], [r, resistance], [a, current]]) node.textContent = original;
     for (const [node, value, time] of states) if (t >= time) node.textContent = value;
     const speed = parseFloat(a.textContent) * 8 || 40;
-    dots.forEach((dot, i) => { dot.setAttribute('cx', 169 + (i * 63 + t * speed) % 320); dot.setAttribute('cy', 271); });
+    dots.forEach((dot, i) => { dot.setAttribute('cx', 169 + (i * 63 + t * speed) % 320); dot.setAttribute('cy', bottom); });
   });
   return svg;
 }
 
 function equationCards(ctx, add, rows) {
   rows.forEach(([text, phrase], i) => {
-    const w = ctx.long ? 430 : 690;
+    const w = ctx.long ? 495 : 766;
     const x = ctx.long ? (ctx.W - 3 * w - 60) / 2 + i * (w + 30) : (ctx.W - w) / 2;
-    panel(ctx, add, x, ctx.long ? 350 : 150 + i * 144, w, ctx.long ? 170 : 125, text, phrase, colors[i], ctx.long ? 68 : 54);
+    panel(ctx, add, x, ctx.long ? 242 + (i === 1 ? 270 : 0) : 127 + i * 164, w, ctx.long ? 242 : 141, text, phrase, colors[i], ctx.long ? 96 : 69);
   });
 }
 
@@ -277,23 +281,23 @@ function simpleRows(ctx, add, rows, { y = 168, step = 133, width = 1080, size = 
 }
 
 function triangle(ctx, add) {
-  const svg = diagram(ctx, 340, 160, 590, 620, '0 0 500 520');
+  const svg = diagram(ctx, 248, 115, 765, 755, '0 0 500 520');
   add(svg, '삼각형');
   path(svg, 'M250 35 L38 460 H462 Z M145 245 H355 M250 245 V460', COLOR.ink, 7);
   add(svgText(svg, 250, 195, 'V', 70, VC), '위에');
   add(svgText(svg, 175, 379, 'I', 72, IC), '아래에');
   add(svgText(svg, 325, 379, 'R', 72, RC), '알을');
   add(el('rect', { x: 130, y: 303, width: 95, height: 100, rx: 22, fill: '#d5dce5' }, svg), '손으로');
-  panel(ctx, add, 980, 355, 545, 128, eqCurrent, '브이 나누기 알', IC, 64);
+  panel(ctx, add, 1030, 432, 610, 170, eqCurrent, '브이 나누기 알', IC, 64);
 }
 
 function graph(ctx, add, updates, kind) {
   const ledGraph = kind === 'led';
   const inverse = kind === 'inverse';
   const comparison = inverse || kind === 'direct';
-  const svg = diagram(ctx, comparison ? (inverse ? 935 : 590) : 515, 167, comparison ? (inverse ? 745 : 740) : 890, 595, '0 0 750 480');
+  const svg = diagram(ctx, comparison ? (inverse ? 956 : 290) : 343, 109, comparison ? (inverse ? 850 : 1290) : 1234, comparison && inverse ? 655 : 710, '0 0 750 480');
   if (inverse) {
-    const reference = diagram(ctx, 265, 167, 655, 595, '0 0 750 480');
+    const reference = diagram(ctx, 105, 109, 850, 655, '0 0 750 480');
     add(reference);
     path(reference, 'M105 77 V365 H663', COLOR.ink, 6);
     path(reference, 'M110 361 L635 105', IC, 8);
@@ -319,26 +323,26 @@ function graph(ctx, add, updates, kind) {
     add(rising, '갑자기 늘어요');
     add(svgText(svg, 523, 79, 'LED', 30, VC), '갑자기 늘어요');
     add(svgText(svg, 450, 165, '저항', 30, RC), '곧은 직선');
-    centered(ctx, add, 765, 840, 74, 'LED 곡선은 모양만 보여 주는 예시', '따로 달아서', COLOR.line, 37);
+    centered(ctx, add, 802, 960, 77, 'LED 곡선은 모양만 보여 주는 예시', '따로 달아서', COLOR.line, 37);
   } else {
     const points = inverse ? [[212, 267], [345, 319]] : [[352, 243], [592, 126]];
     points.forEach(([x, y]) => {
       add(path(grid, 'M' + x + ' ' + y + ' V365 M105 ' + y + ' H' + x, '#b0bccc', 3), inverse ? '절반' : '두 배면');
       add(el('circle', { cx: x, cy: y, r: 12, fill: IC }, svg), inverse ? '절반' : '두 배면');
     });
-    panel(ctx, add, inverse ? 1010 : 560, 755, 590, 86, inverse ? '전압 5V 고정 · 반비례' : '저항 1킬로옴 고정 · 비례', inverse ? '반비례' : '비례', inverse ? VC : RC, 40);
+    panel(ctx, add, inverse ? 1095 : 605, 797, 705, 80, inverse ? '전압 5V 고정 · 반비례' : '저항 1킬로옴 고정 · 비례', inverse ? '반비례' : '비례', inverse ? VC : RC, 40);
   }
 }
 
 function led(ctx, add, updates, mode) {
-  const svg = diagram(ctx, ctx.long ? 425 : 60, ctx.long ? 170 : 117, ctx.long ? 1070 : 740, ctx.long ? 380 : 350, '0 0 740 285');
+  const svg = diagram(ctx, ctx.long ? 135 : 40, ctx.long ? 109 : 105, ctx.long ? 1650 : 780, ctx.long ? 475 : 350, '0 0 740 285');
   add(svg);
   if (mode === 'calc' && !ctx.long) svg.classList.add('ohm-led-calc-short');
   const source = el('g', {}, svg);
   el('rect', { x: 23, y: 54, width: 162, height: 174, rx: 19, fill: '#286d85' }, source);
-  svgText(source, 103, 100, '아두이노', 28, '#fff');
-  svgText(source, 128, 149, '5V 핀', 24, '#fff');
-  svgText(source, 127, 213, 'GND', 22, '#fff');
+  svgText(source, 103, 100, '아두이노', 35, '#fff');
+  svgText(source, 128, 149, '5V 핀', 33, '#fff');
+  svgText(source, 127, 216, 'GND', 32, '#fff');
   add(source, mode === 'calc' ? null : '아두이노');
   path(svg, 'M185 138 H293 M415 138 H528 M573 138 H676 V203 H185', COLOR.ink, 5);
   zig(svg, 293, 138, 122, RC);
@@ -353,17 +357,17 @@ function led(ctx, add, updates, mode) {
   if (mode === 'calc') {
     const to220 = cue(ctx, '이백이십 옴처럼');
     updates.push(t => { value.textContent = t >= to220 ? '220옴' : '200옴'; });
-    centered(ctx, add, ctx.long ? 558 : 465, ctx.long ? 1000 : 724, 75, '3 ÷ 0.015 = 200옴', '이백 옴', RC, ctx.long ? 45 : 38);
-    centered(ctx, add, ctx.long ? 652 : 557, ctx.long ? 1000 : 724, 75, '3 ÷ 220 ≈ 13.6mA &lt; 20mA', '십삼 점 육', COLOR.green, ctx.long ? 45 : 37);
+    centered(ctx, add, ctx.long ? 588 : 455, ctx.long ? 1330 : 770, ctx.long ? 108 : 78, '3 ÷ 0.015 = 200옴', '이백 옴', RC, ctx.long ? 45 : 38);
+    centered(ctx, add, ctx.long ? 722 : 555, ctx.long ? 1330 : 770, ctx.long ? 108 : 78, '3 ÷ 220 ≈ 13.6mA &lt; 20mA', '십삼 점 육', COLOR.green, ctx.long ? 45 : 37);
   } else {
-    add(svgText(svg, 651, 76, '약 2V', 27, VC), '이 볼트');
-    add(svgText(svg, 559, 251, '최대 20mA', 29, IC), '이십 밀리암페어');
-    centered(ctx, add, ctx.long ? 570 : 473, ctx.long ? 905 : 700, 92, '5V − 2V = 3V', '삼 볼트', RC, ctx.long ? 58 : 50);
+    add(svgText(svg, 651, 76, '약 2V', 34, VC), '이 볼트');
+    add(svgText(svg, 559, 255, '최대 20mA', 34, IC), '이십 밀리암페어');
+    centered(ctx, add, ctx.long ? 650 : 526, ctx.long ? 1250 : 770, ctx.long ? 149 : 110, '5V − 2V = 3V', '삼 볼트', RC, ctx.long ? 58 : 50);
   }
 }
 
 function scaleGraphic(ctx, add) {
-  const svg = diagram(ctx, 310, 170, 560, 570, '0 0 520 520');
+  const svg = diagram(ctx, 158, 105, 735, 715, '0 0 520 520');
   add(svg, '체중계');
   el('rect', { x: 63, y: 79, width: 391, height: 352, rx: 47, fill: '#fff', stroke: IC, 'stroke-width': 8 }, svg);
   el('rect', { x: 177, y: 117, width: 164, height: 58, rx: 13, fill: COLOR.ink }, svg);
@@ -376,7 +380,7 @@ function scaleGraphic(ctx, add) {
 }
 
 function smallLed(ctx, add, phrase) {
-  const svg = diagram(ctx, 115, 166, 630, 265, '0 0 630 265');
+  const svg = diagram(ctx, 43, 135, 774, 282, '0 0 630 265');
   add(svg, phrase);
   path(svg, 'M72 134 H183 M307 134 H410 M470 134 H560', COLOR.ink, 6);
   zig(svg, 183, 134, 124, RC, 7);
@@ -389,64 +393,64 @@ function smallLed(ctx, add, phrase) {
 
 const SCENES = {
   L01: scene((ctx, add, updates) => {
-    const cards = names.map((name, i) => panel(ctx, add, 270 + i * 470, 225, 440, 205, colored(name, colors[i]), '지난 영상', colors[i], 72));
-    const v = add(lab(ctx.stage, 391, 447, 200, '↑', 82, { color: VC }), '전압을 올리면');
-    const q = add(lab(ctx.stage, 861, 447, 200, '?', 82, { color: IC }), '어떻게 될까요');
+    const cards = names.map((name, i) => panel(ctx, add, 162 + i * 535, 163, 526, 302, colored(name, colors[i]), '지난 영상', colors[i], 72));
+    const v = add(lab(ctx.stage, 335, 478, 200, '↑', 82, { color: VC }), '전압을 올리면');
+    const q = add(lab(ctx.stage, 870, 478, 200, '?', 82, { color: IC }), '어떻게 될까요');
     const join = cue(ctx, '하나의 식으로');
     updates.push(t => {
       const move = E.ease(E.prog(t, join, .65));
-      cards.forEach((card, i) => { card.style.translate = (1 - i) * 115 * move + 'px'; card.style.scale = 1 - .23 * move; });
+      cards.forEach((card, i) => { card.style.translate = (1 - i) * 95 * move + 'px'; card.style.scale = 1 - .23 * move; });
       [v, q].forEach(node => { if (t >= join) node.style.opacity = 1 - move; });
     });
-    centered(ctx, add, 570, 1080, 165, '옴의 법칙　' + ohm, '옴의 법칙', COLOR.green, 69);
+    centered(ctx, add, 607, 1300, 212, '옴의 법칙　' + ohm, '옴의 법칙', COLOR.green, 96);
   }),
   L02: INTRO,
   L03: scene((ctx, add) => {
     title(ctx, add, '한 줄로 먼저');
-    centered(ctx, add, 160, 530, 95, '옴의 법칙', '옴의 법칙', COLOR.green, 53);
-    centered(ctx, add, 322, 930, 175, ohm, '브이는', COLOR.line, 112);
-    ['전압은', '전류와', '저항을'].forEach((phrase, i) => panel(ctx, add, 360 + i * 413, 595, 374, 112,
+    centered(ctx, add, 144, 655, 122, '옴의 법칙', '옴의 법칙', COLOR.green, 53);
+    centered(ctx, add, 306, 1200, 237, ohm, '브이는', COLOR.line, 112);
+    ['전압은', '전류와', '저항을'].forEach((phrase, i) => panel(ctx, add, 210 + i * 515, 643, 470, 165,
       colored(['V ', 'I ', 'R '][i] + names[i], colors[i]), phrase, colors[i], 54));
   }),
   L04: analogy('bike'),
   L05: analogy('straw'),
-  L06: scene((ctx, add) => { title(ctx, add, '세 가지 규칙'); simpleRows(ctx, add, rules, { y: 185, step: 155, width: 1120, size: 59 }); }),
+  L06: scene((ctx, add) => { title(ctx, add, '세 가지 규칙'); simpleRows(ctx, add, rules, { y: 144, step: 227, width: 1430, size: 71 }); }),
   L07: scene((ctx, add) => {
     title(ctx, add, '전기 이름으로 바꾸기');
-    tableRows(ctx, add, ctx.long ? 195 : 157, ['자전거', '빨대', '전기'], electricRows, ctx.long ? 107 : 92, ctx.long ? 1250 : 748, ctx.long ? 49 : 33);
+    tableRows(ctx, add, ctx.long ? 144 : 121, ['자전거', '빨대', '전기'], electricRows, ctx.long ? 157 : 117, ctx.long ? 1530 : 774, ctx.long ? 62 : 39);
   }),
   L08: scene((ctx, add, updates) => {
     title(ctx, add, '회로 장면 1');
     circuit(ctx, add, updates, { voltage: '5V', resistance: '1킬로옴', current: '5mA', change: [['v', '10V', '십 볼트로'], ['a', '10mA', '십 밀리암페어로']] });
-    const svg = diagram(ctx, 1445, 158, 225, 166, '0 0 250 180'); bicycle(svg, 0, 15, false); add(svg, '세게 밟은');
-    panel(ctx, add, 1420, 341, 280, 75, '세게 밟기', '세게 밟은', VC, 39);
+    const svg = diagram(ctx, 1380, 138, 345, 254, '0 0 250 180'); bicycle(svg, 0, 15, false); add(svg, '세게 밟은');
+    panel(ctx, add, 1350, 705, 390, 113, '세게 밟기', '세게 밟은', VC, 39);
   }),
   L09: scene((ctx, add, updates) => {
     title(ctx, add, '회로 장면 2');
     circuit(ctx, add, updates, { voltage: '5V', resistance: '1킬로옴', current: '5mA', change: [['r', '2킬로옴', '이 킬로옴으로'], ['a', '2.5mA', '이 점 오']] });
-    const svg = diagram(ctx, 1445, 158, 225, 166, '0 0 250 180'); bicycle(svg, 0, 15, true); add(svg, '오르막');
-    panel(ctx, add, 1420, 341, 280, 75, '오르막', '오르막', RC, 39);
+    const svg = diagram(ctx, 1380, 138, 345, 254, '0 0 250 180'); bicycle(svg, 0, 15, true); add(svg, '오르막');
+    panel(ctx, add, 1350, 705, 390, 113, '오르막', '오르막', RC, 39);
   }),
   L10: scene((ctx, add, updates) => {
     title(ctx, add, '회로 장면 3');
     circuit(ctx, add, updates, { voltage: '5V', resistance: '2킬로옴', current: '2.5mA', compact: true,
       change: [['a', '5mA?', '되돌리려면'], ['v', '10V', '십 볼트로'], ['a', '5mA', '십 볼트로']] });
-    tableRows(ctx, add, 448, ['장면', '회로에서 바뀐 것', '결과'], [
+    tableRows(ctx, add, 477, ['장면', '회로에서 바뀐 것', '결과'], [
       { cells: ['1', '1킬로옴 그대로, 5V → 10V', '5mA → 10mA'], phrase: '십 볼트로' },
       { cells: ['2', '5V 그대로, 1킬로옴 → 2킬로옴', '5mA → 2.5mA'], phrase: '올려야' },
       { cells: ['3', '2킬로옴에서 5mA 원함', '10V로'], phrase: '더 세게' },
-    ], 76, 1560, 35);
+    ], 88, 1620, 41);
   }),
   L11: scene((ctx, add) => {
     title(ctx, add, '숫자 속 규칙');
-    const width = ctx.long ? 1300 : 748;
-    const y = ctx.long ? 185 : 157;
-    const height = ctx.long ? 92 : 75;
+    const width = ctx.long ? 1500 : 774;
+    const y = ctx.long ? 145 : 119;
+    const height = ctx.long ? 113 : 85;
     tableRows(ctx, add, y, ['전류', '저항', '전류 × 저항', '실제 전압'], numberRows.map((cells, i) => ({
       cells, phrase: i ? '나머지 줄도' : '영 점 영영오', color: COLOR.green, emphasized: 2,
-    })), height, width, ctx.long ? 45 : 28);
-    centered(ctx, add, ctx.long ? 734 : 600, ctx.long ? 610 : 500, ctx.long ? 76 : 43,
-      'mA → A　·　킬로옴 → 옴', '단위는', IC, ctx.long ? 36 : 24);
+    })), height, width, ctx.long ? 53 : 34);
+    centered(ctx, add, ctx.long ? 768 : 601, ctx.long ? 845 : 650, ctx.long ? 86 : 46,
+      'mA → A　·　킬로옴 → 옴', '단위는', IC, ctx.long ? 43 : 34);
   }),
   L12: scene((ctx, add) => {
     title(ctx, add, '옴의 법칙, 세 가지 모양');
@@ -458,32 +462,32 @@ const SCENES = {
     [['5V, 250옴 → 전류?', '5 ÷ 250 = 0.02A = 20mA', '이백오십 옴', '오 나누기 이백오십', IC],
       ['5V, 25mA → 저항?', '5 ÷ 0.025 = 200옴', '이십오 밀리암페어', '오 나누기 영 점 영이오', RC]]
       .forEach(([question, answer, start, solve, color], i) => {
-        const x = 260 + i * 720;
-        panel(ctx, add, x, 245, 680, 135, question, start, color, 52);
-        panel(ctx, add, x, 426, 680, 160, colored(answer, color), solve, color, 55);
+        const x = 145 + i * 825;
+        panel(ctx, add, x, 157, 800, 200, question, start, color, 52);
+        panel(ctx, add, x, 435, 800, 300, colored(answer, color), solve, color, 55);
       });
   }),
   L15: scene((ctx, add) => {
     title(ctx, add, '단위를 맞추지 않으면');
-    panel(ctx, add, 354, 257, 725, 134, '5V ÷ 220옴 = 0.0227A', '영 점 영이이칠', COLOR.green, 55);
-    panel(ctx, add, 1137, 257, 430, 134, '<s class="vr">22.7A</s>', '이십이 점 칠', VC, 68);
-    centered(ctx, add, 481, 800, 123, 'mA → A　·　킬로옴 → 옴', '바꾼 다음', IC, 52);
+    panel(ctx, add, 173, 148, 1040, 270, '5V ÷ 220옴 = 0.0227A', '영 점 영이이칠', COLOR.green, 55);
+    panel(ctx, add, 1248, 148, 493, 270, '<s class="vr">22.7A</s>', '이십이 점 칠', VC, 68);
+    centered(ctx, add, 555, 1160, 236, 'mA → A　·　킬로옴 → 옴', '바꾼 다음', IC, 52);
   }),
   L16: scene((ctx, add) => {
     title(ctx, add, '옴이라는 이름');
-    const svg = diagram(ctx, 375, 220, 420, 475, '0 0 420 475');
+    const svg = diagram(ctx, 178, 117, 617, 727, '0 0 420 475');
     add(svg, '천팔백이십칠');
     path(svg, 'M62 46 H349 Q376 46 376 72 V399 H66 Q46 399 46 372 V69 Q46 46 62 46Z M60 399 V82 H376', '#0f7459', 8, '#e2f5ec');
     svgText(svg, 209, 250, '1827', 82, COLOR.green);
-    panel(ctx, add, 860, 247, 640, 140, '게오르크 옴 · 독일 물리학자', '게오르크 옴이', COLOR.green, 45);
-    panel(ctx, add, 920, 459, 520, 128, '저항의 단위 = ' + OM, '단위 옴도', RC, 52);
+    panel(ctx, add, 842, 165, 836, 216, '게오르크 옴 · 독일 물리학자', '게오르크 옴이', COLOR.green, 45);
+    panel(ctx, add, 883, 517, 745, 230, '저항의 단위 = ' + OM, '단위 옴도', RC, 52);
   }),
   L17: scene((ctx, add, updates) => { title(ctx, add, '전압과 전류'); graph(ctx, add, updates, 'direct'); }),
   L18: scene((ctx, add, updates) => { title(ctx, add, '저항과 전류'); graph(ctx, add, updates, 'inverse'); }),
   L19: scene((ctx, add) => {
     title(ctx, add, '어디에 쓰나요');
     simpleRows(ctx, add, [['LED 저항 고르기 → 저항값', 'LED에', RC], ['아두이노 핀 확인 → 전류', '아두이노', IC],
-      ['고장 찾기 → 계산값과 비교', '회로 고장', VC]], { y: 176, step: 150, size: 55 });
+      ['고장 찾기 → 계산값과 비교', '회로 고장', VC]], { y: 149, step: 224, width: 1410, size: 68 });
   }),
   L20: scene((ctx, add, updates) => { title(ctx, add, 'LED 저항 고르기'); led(ctx, add, updates, 'voltage'); }),
   L21: scene((ctx, add, updates) => { title(ctx, add, 'LED 저항 고르기'); led(ctx, add, updates, 'calc'); }),
@@ -491,79 +495,79 @@ const SCENES = {
   L23: scene((ctx, add) => {
     title(ctx, add, '생활 속 옴의 법칙');
     scaleGraphic(ctx, add);
-    panel(ctx, add, 940, 251, 580, 105, '근육 · 잘 통함', '근육은', IC, 51);
-    panel(ctx, add, 940, 388, 580, 105, '지방 · 더 막음', '지방은', RC, 51);
-    panel(ctx, add, 900, 540, 660, 112, '저항 ↑ → 체지방 많다고 추정', '추정해요', COLOR.green, 46);
+    panel(ctx, add, 928, 161, 690, 162, '근육 · 잘 통함', '근육은', IC, 51);
+    panel(ctx, add, 928, 367, 690, 162, '지방 · 더 막음', '지방은', RC, 51);
+    panel(ctx, add, 914, 584, 722, 170, '저항 ↑ → 체지방 많다고 추정', '추정해요', COLOR.green, 46);
   }),
   L24: scene((ctx, add) => {
     title(ctx, add, '고속 충전기');
-    const power = charger(ctx.stage, 360, 202, 300);
+    const power = charger(ctx.stage, 218, 140, 385);
     power.v.textContent = ''; power.a.textContent = '';
     const g = power.sv.querySelectorAll('line, path');
     g.forEach(node => node.setAttribute('opacity', '0'));
     add(power.sv);
-    const phone = diagram(ctx, 790, 191, 230, 450, '0 0 230 450');
+    const phone = diagram(ctx, 738, 127, 275, 565, '0 0 230 450');
     add(phone, '약속해서');
     el('rect', { x: 16, y: 12, width: 198, height: 423, rx: 34, fill: '#fff', stroke: IC, 'stroke-width': 7 }, phone);
     el('rect', { x: 38, y: 58, width: 154, height: 321, rx: 14, fill: '#eaf2fc' }, phone);
     path(phone, 'M126 164 L83 234 H115 L105 282 L152 208 H118 Z', COLOR.green, 4, COLOR.green);
-    const cable = diagram(ctx, 644, 384, 142, 115, '0 0 142 115');
+    const cable = diagram(ctx, 565, 371, 170, 135, '0 0 142 115');
     const from = arrow(cable, 11, 37, 130, 37, IC, 6), back = arrow(cable, 130, 76, 11, 76, VC, 6);
     from(1); back(1); add(cable, '약속해서');
-    panel(ctx, add, 1080, 230, 540, 105, '전력 ' + colored('P', COLOR.green) + ' = ' + vi + ' × ' + ii, '전력은', COLOR.green, 49);
-    panel(ctx, add, 1080, 375, 540, 105, '5V → 9V · 15V · 20V', '오 볼트보다', VC, 44);
-    panel(ctx, add, 1080, 520, 540, 105, '9V × 3A = 27W', '이십칠 와트', IC, 47);
+    panel(ctx, add, 1050, 144, 650, 162, '전력 ' + colored('P', COLOR.green) + ' = ' + vi + ' × ' + ii, '전력은', COLOR.green, 49);
+    panel(ctx, add, 1050, 360, 650, 162, '5V → 9V · 15V · 20V', '오 볼트보다', VC, 44);
+    panel(ctx, add, 1050, 578, 650, 176, '9V × 3A = 27W', '이십칠 와트', IC, 47);
   }),
   L25: scene((ctx, add) => {
     title(ctx, add, '비유는 감 잡기용');
-    const svg = diagram(ctx, 330, 205, 580, 435, '0 0 280 205');
+    const svg = diagram(ctx, 148, 140, 795, 610, '0 0 280 205');
     add(svg, '자전거와');
     bicycle(svg, 15, 28, false);
     const wind = el('g', {}, svg);
     path(wind, 'M252 62 H205 M270 75 H214 M254 89 H207', IC, 4);
-    svgText(wind, 194, 42, '바람 저항↑', 21, RC);
+    svgText(wind, 194, 42, '바람 저항↑', 25, RC);
     add(wind, '바람 저항');
-    panel(ctx, add, 980, 266, 605, 128, '힘 ×2 ≠ 속도 ×2', '두 배가 되지는', RC, 59);
-    panel(ctx, add, 980, 450, 605, 157, ohm, '정확한 계산은', COLOR.green, 79);
+    panel(ctx, add, 945, 164, 730, 208, '힘 ×2 ≠ 속도 ×2', '두 배가 되지는', RC, 59);
+    panel(ctx, add, 945, 500, 730, 245, ohm, '정확한 계산은', COLOR.green, 102);
   }),
   L26: scene((ctx, add) => {
     title(ctx, add, '한눈에 정리');
-    centered(ctx, add, 145, 650, 126, ohm, null, COLOR.green, 71);
+    centered(ctx, add, 123, 780, 157, ohm, null, COLOR.green, 71);
     simpleRows(ctx, add, [['저항 그대로 → 전압↑ 전류↑(비례)', '저항이 그대로면', RC],
       ['전압 그대로 → 저항↑ 전류↓(반비례)', '전압이 그대로면', VC], ['두 값 → 나머지 하나', '두 값을', IC],
-      ['단위 V · A · 옴', '볼트', COLOR.green]], { y: 322, step: 110, width: 1070, size: 47 });
+      ['단위 V · A · 옴', '볼트', COLOR.green]], { y: 308, step: 130, width: 1350, size: 55 });
   }),
   L27: scene((ctx, add, updates) => {
     title(ctx, add, '퀴즈');
     circuit(ctx, add, updates, { voltage: '', resistance: '', current: '? A', change: [['v', '12V', '십이 볼트'], ['r', '4옴', '사 옴']] });
-    updates.push(countdown(ctx, ctx.stage, 1510, 335, 150));
+    updates.push(countdown(ctx, ctx.stage, 1500, 695, 145));
   }),
   L27B: scene((ctx, add, updates) => {
     title(ctx, add, '퀴즈 정답');
     circuit(ctx, add, updates, { voltage: '12V', resistance: '4옴', current: '? A', change: [['a', '3A', '삼 암페어']] });
-    centered(ctx, add, 689, 850, 115, eqCurrent + ' = 12 ÷ 4 = 3A', '십이 나누기', IC, 57);
+    centered(ctx, add, 709, 1230, 133, eqCurrent + ' = 12 ÷ 4 = 3A', '십이 나누기', IC, 57);
   }),
   L28: scene((ctx, add) => {
     title(ctx, add, '옴의 법칙');
-    panel(ctx, add, 305, 234, 590, 143, '옴의 법칙 · 설명란 링크', '블로그', COLOR.green, 48);
-    const svg = diagram(ctx, 1040, 210, 520, 365, '0 0 520 365');
+    panel(ctx, add, 204, 150, 752, 295, '옴의 법칙 · 설명란 링크', '블로그', COLOR.green, 48);
+    const svg = diagram(ctx, 960, 125, 760, 450, '0 0 520 365');
     add(svg, '늘어나면');
     path(svg, 'M70 190 H126 V103 H185 M305 103 H391 V190 H444 M126 190 V267 H185 M305 267 H391 V190', COLOR.ink, 6);
     zig(svg, 185, 103, 120, RC); zig(svg, 185, 267, 120, RC);
-    svgText(svg, 250, 208, '?', 59, IC);
-    panel(ctx, add, 450, 625, 1020, 120, '다음 영상 · 키르히호프의 법칙', '키르히호프', IC, 51);
+    svgText(svg, 250, 208, '?', 62, IC);
+    panel(ctx, add, 264, 610, 1392, 198, '다음 영상 · 키르히호프의 법칙', '키르히호프', IC, 51);
   }),
   L29: OUTRO,
   S1E: scene((ctx, add) => {
     title(ctx, add, '이 셋 사이에는');
-    names.forEach((name, i) => panel(ctx, add, 72 + i * 248, 209, 220, 96, colored(name, colors[i]), null, colors[i], 44));
-    centered(ctx, add, 367, 260, 136, '?', '어떤 식이', COLOR.green, 86);
+    names.forEach((name, i) => panel(ctx, add, 45 + i * 264, 132, 242, 168, colored(name, colors[i]), null, colors[i], 44));
+    centered(ctx, add, 362, 476, 230, '?', '어떤 식이', COLOR.green, 86);
   }),
   S2A: scene((ctx, add, updates) => {
     title(ctx, add, '간단한 회로');
     circuit(ctx, add, updates, { voltage: '5V', resistance: '1킬로옴', current: '5mA', change: [['r', '2킬로옴', '저항을'], ['a', '2.5mA', '전류를']] });
     const table = el('div', { class: 'abs ohm-switch' }, ctx.stage);
-    tableRows({ ...ctx, stage: table }, add, 135, ['전류', '저항'], numberRows.map(cells => ({ cells: cells.slice(0, 2) })), 82, 720, 35);
+    tableRows({ ...ctx, stage: table }, add, 100, ['전류', '저항'], numberRows.map(cells => ({ cells: cells.slice(0, 2) })), 96, 774, 40);
     const switchAt = cue(ctx, '네 줄');
     updates.push(t => {
       for (const node of ctx.stage.children) if (node !== table && t >= switchAt) node.style.opacity = 0;
@@ -577,12 +581,12 @@ const SCENES = {
   S3A: scene((ctx, add) => {
     title(ctx, add, 'LED 저항');
     smallLed(ctx, add, '저항을');
-    centered(ctx, add, 410, 280, 95, '? 옴', '몇 옴짜리를', RC, 49);
-    centered(ctx, add, 527, 480, 101, ohm, '옴의 법칙으로', COLOR.green, 55);
+    centered(ctx, add, 395, 485, 112, '? 옴', '몇 옴짜리를', RC, 49);
+    centered(ctx, add, 530, 683, 110, ohm, '옴의 법칙으로', COLOR.green, 55);
   }),
   S3E: scene((ctx, add) => {
     title(ctx, add, 'LED 전류');
     smallLed(ctx, add);
-    centered(ctx, add, 415, 665, 118, '전압 ÷ LED 저항 ?', '전압 나누기', RC, 50);
+    centered(ctx, add, 460, 770, 176, '전압 ÷ LED 저항 ?', '전압 나누기', RC, 50);
   }),
 };

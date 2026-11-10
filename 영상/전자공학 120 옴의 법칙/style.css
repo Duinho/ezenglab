@@ -56,3 +56,6 @@
 .ohm-row span+span{border-left:2px solid #e2e8f0}
 .ohm-switch{inset:0}
 #stage:has(> .ohm-led-calc-short) ~ #sub span{font-size:47px}
+
+/* Larger visual labels need a stable baseline as cards fade in. */
+.ohm-panel{line-height:1.18}
