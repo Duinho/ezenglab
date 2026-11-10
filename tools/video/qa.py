@@ -4,7 +4,7 @@
 """
 import difflib, json, os, re, subprocess, sys
 sys.path.insert(0, os.path.dirname(__file__))
-from common import parse_scenes, reading_text
+from common import parse_scenes, reading_text, MARK_RE, SLOW_RE
 
 folder, mp4 = sys.argv[1], sys.argv[2]
 rng = sys.argv[3] if len(sys.argv) > 3 else None
@@ -34,6 +34,25 @@ ref = " ".join(reading_text(byid[i]["reading"]) for i in want)
 norm = lambda s: re.sub(r"[^가-힣]", "", s)
 sm = difflib.SequenceMatcher(None, norm(ref), norm(hyp), autojunk=False)
 out["받아쓰기 일치(한글만)"] = f"{sm.ratio():.1%}"
+# 숫자 포함 점수(2026-11-10): 숫자·단위 읽기는 받아쓰기가 「5V」「0.005 ampere」처럼 적으므로
+# 기준 쪽은 그 자리를 자막 표기(숫자·영문)로, 양쪽 모두 단위·기호를 같은 꼴로 맞춘 뒤 비교한다.
+UNIT = [("밀리암페어", "ma"), ("암페어", "a"), ("ampere", "a"), ("amp", "a"), ("볼트", "v"), ("volt", "v"),
+        ("와트", "w"), ("watt", "w"), ("킬로옴", "k옴"), ("kΩ", "k옴"), ("ohm", "옴"), ("kω", "k옴"), ("Ω", "옴"), ("ω", "옴"),
+        ("×", "곱하기"), ("÷", "나누기"), ("−", "빼기"), ("+", "더하기"), ("%", "퍼센트")]
+def num_side(marked):
+    s = SLOW_RE.sub(lambda m: m.group(1), marked)
+    return MARK_RE.sub(lambda m: m.group(2) if re.search(r"[0-9A-Za-z]", m.group(2)) else m.group(1), s)
+def norm2(s):
+    s = s.lower()
+    for a_, b_ in UNIT:
+        s = s.replace(a_.lower(), b_)
+    s = re.sub(r"(?<=\d),(?=\d{3})", "", s)          # 1,000 → 1000
+    s = re.sub(r"(?<!\d)\.|\.(?!\d)", "", s)          # 문장 끝 마침표는 빼고 소수점만 남김
+    return re.sub(r"[^가-힣0-9a-z.]", "", s)
+ref2 = " ".join(num_side(byid[i]["reading"]) for i in want)
+sm2 = difflib.SequenceMatcher(None, norm2(ref2), norm2(hyp), autojunk=False)
+out["받아쓰기 일치(숫자 포함)"] = f"{sm2.ratio():.1%}"
+out["숫자 포함 차이"] = [(norm2(ref2)[a:b], norm2(hyp)[c:d]) for op, a, b, c, d in sm2.get_opcodes() if op != "equal"][:30]
 diffs = [(norm(ref)[a:b], norm(hyp)[c:d]) for op, a, b, c, d in sm.get_opcodes() if op != "equal"]
 # 영문·숫자로 받아 적힌 소리(케이·에이·비·씨·숫자 읽기)는 차이에서 뺌
 skip = re.compile(r"^(케이엔엔|케이|에이|비|씨|세|두|한|네|열두|영점|이팔|삼이|오사|센티미터|일|이|삼|사|오|육|십이|디|애노이|래|예|에)+$")
