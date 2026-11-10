@@ -5,6 +5,7 @@
   python3 tools/video/render.py "영상/폴더" 음성폴더 short L03-L06 결과.mp4 --hook "이 음식, 누가 좋아할까?"
 """
 import argparse, hashlib, json, math, os, re, shutil, subprocess, sys, wave
+from pathlib import Path
 sys.path.insert(0, os.path.dirname(__file__))
 from common import parse_scenes
 from subtitles import scene_phrases, forced_phrases
@@ -26,9 +27,9 @@ SCENE_CACHE = os.path.join(os.environ.get("EZ_HOME", "/home/claude"), "build", "
 FP_TOL = 6      # 지문 비교 허용치(0~255). 시험: 그릴 때 생기는 차이 최대 1, 글자 하나 추가 79, 2px 이동 21
 
 CSS = """
-@font-face{font-family:P;src:url(file://%(f)s/Paperlogy-4Regular.ttf);font-weight:400}
-@font-face{font-family:P;src:url(file://%(f)s/Paperlogy-6SemiBold.ttf);font-weight:600}
-@font-face{font-family:P;src:url(file://%(f)s/Paperlogy-8ExtraBold.ttf);font-weight:800}
+@font-face{font-family:P;src:url(%(f)s/Paperlogy-4Regular.ttf);font-weight:400}
+@font-face{font-family:P;src:url(%(f)s/Paperlogy-6SemiBold.ttf);font-weight:600}
+@font-face{font-family:P;src:url(%(f)s/Paperlogy-8ExtraBold.ttf);font-weight:800}
 *{box-sizing:border-box}
 html,body{margin:0;width:%(W)dpx;height:%(H)dpx;overflow:hidden;background:#f2f8f5;font-family:P;color:#14213d;word-break:keep-all}
 #stage{position:absolute;left:%(sx)dpx;top:%(sy)dpx;width:%(sw)dpx;height:%(sh)dpx;overflow:hidden}
@@ -275,7 +276,7 @@ def main():
         out.writeframes(silence(end_sec))
 
     sx, sy, sw, sh = STAGE[a.layout]
-    css = CSS % dict(f=FONTS, W=W, H=H, sx=sx, sy=sy, sw=sw, sh=sh,
+    css = CSS % dict(f=Path(FONTS).as_uri(), W=W, H=H, sx=sx, sy=sy, sw=sw, sh=sh,
                      subx=80 if a.layout == "long" else 160, subw=W - 160 if a.layout == "long" else 760,
                      suby=935 if a.layout == "long" else 1510, subf=52 if a.layout == "long" else 52,
                      endf=72 if a.layout == "short" else 80,
