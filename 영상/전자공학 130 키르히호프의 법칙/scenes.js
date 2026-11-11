@@ -185,6 +185,12 @@ function canvas130(ctx, add, phrase, compact = false) {
   return add(svg, phrase);
 }
 function badge(ctx, add, text, phrase, color, row = 0, rows = 1) {
+  if(!ctx.long && rows===2) {
+    const wrapped=text.replace(' = ','<br>= ');
+    const box=panel(ctx,add,35+row*410,552,380,90,wrapped,phrase,color,34);
+    box.style.padding='0'; box.style.lineHeight='1';
+    return box;
+  }
   const h = ctx.long ? 131 : 72;
   const bottom = ctx.long ? 866 : 637;
   const size = ctx.long ? (text.length <= 18 ? 96 : 57) : (text.length <= 18 ? 49 : 38);
@@ -211,8 +217,10 @@ function resistor(svg, x, y, vertical = false) {
   return g;
 }
 function battery130(svg, x, y, label) {
-  path(svg,'M'+x+' '+(y-65)+' v48 m-33 0 h66 m-20 34 h40 m-20 0 v48',COLOR.ink,8);
-  svgText(svg, x-55, y+9, label, 36, VC);
+  path(svg,'M'+x+' '+(y-65)+' V'+(y-18)+' M'+(x-33)+' '+(y-18)+' H'+(x+33)
+    +' M'+(x-20)+' '+(y+18)+' H'+(x+20)+' M'+x+' '+(y+18)+' V'+(y+65),COLOR.ink,8);
+  path(svg,'M'+(x+55)+' '+(y-38)+' h22 m-11 -11 v22 M'+(x+55)+' '+(y+38)+' h22',VC,5);
+  svgText(svg,x-95,y+12,label,40,VC);
 }
 function dotFlow(ctx, svg, updates, coords, phrase, count=4) {
   const [x0,y0,x1,y1] = coords;
@@ -234,65 +242,78 @@ function split130(ctx, add, updates, values, {compact=false, quiz=false}={}) {
     dotFlow(ctx,svg,updates,coords,phrase,i===0?5:3);
   });
   el('circle',{cx:306,cy:229,r:20,fill:'#fff',stroke:COLOR.teal,'stroke-width':8},svg);
-  if(quiz) updates.push(countdown(ctx,ctx.stage,ctx.long?1520:430,ctx.long?690:355,ctx.long?122:82));
+  if(quiz) {
+    if(ctx.long) {
+      svg.style.width='1260px'; svg.style.left='110px';
+      updates.push(countdown(ctx,ctx.stage,1610,420,122));
+    } else {
+      svg.style.width='776px'; svg.style.left='42px';
+      updates.push(countdown(ctx,ctx.stage,750,315,82));
+    }
+  }
   return svg;
 }
 function branch130(ctx, add, updates, opts={}) {
-  const {mode='current', source='6V', resistances=['1킬로옴','1.5킬로옴'], compact=false, led=false}=opts;
-  const svg=canvas130(ctx,add,opts.begin,compact);
-  const supply=g130(svg,0,0);
-  const tall=!ctx.long && mode==='voltage';
-  const top=tall?46:82, bottom=tall?441:368;
-  const center=(top+bottom)/2;
-  const right=tall?630:680;
-  path(supply,'M124 '+top+' H'+right+' M124 '+bottom+' H'+right+' M124 '+top+' V'+(center-65)+' M124 '+(center+65)+' V'+bottom,COLOR.ink,8);
-  battery130(supply,124,center,source);
-  for(const [i,x] of [355,630].entries()){
+  const {mode='current',source='6V',resistances=['1킬로옴','1.5킬로옴'],led=false}=opts;
+  const width=ctx.long?1450:800, height=ctx.long?(opts.doubleBadges?535:625):482;
+  const svg=svgAt(ctx.stage,(ctx.W-width)/2,ctx.long?(opts.doubleBadges?65:110):75,width,height,'0 0 750 458');
+  add(svg,opts.begin);
+  const top=70,bottom=440,center=255,sourceX=140;
+  path(svg,'M'+sourceX+' '+top+' H670 M'+sourceX+' '+bottom+' H670 M'+sourceX+' '+top
+    +' V'+(center-65)+' M'+sourceX+' '+(center+65)+' V'+bottom,COLOR.ink,8);
+  battery130(svg,sourceX,center,source);
+  for(const [i,x] of [335,610].entries()) {
     const branch=g130(svg,0,0);
     path(branch,'M'+x+' '+top+' V177 M'+x+' 271 V'+bottom,COLOR.ink,8);
     resistor(branch,x,224,true);
-    svgText(branch,x-91,151,resistances[i],34,RC);
+    svgText(branch,x,ctx.long?35:48,resistances[i],36,RC);
     for(const y of [top,bottom]) el('circle',{cx:x,cy:y,r:10,fill:COLOR.teal},branch);
-    if(led){path(branch,'M'+(x-15)+' 291 l30 0 l-15 27 Z',VC,4,VC);path(branch,'M'+(x-18)+' 321 h36',VC,4);}
+    if(led) {
+      path(branch,'M'+(x-15)+' 305 h30 l-15 27 Z',VC,4,VC);
+      path(branch,'M'+(x-18)+' 335 h36',VC,4);
+    }
     add(branch,mode==='voltage'?'나란히':null);
-    if(mode==='voltage') add(svgText(svg,x-61,255,'6V',36,VC),'같은 육 볼트가');
-    if(mode==='current'){
+    if(mode==='voltage') add(svgText(svg,x+87,255,'6V',40,VC),'같은 육 볼트가');
+    if(mode==='current') {
       const phrase=i?'사 밀리암페어':'육 밀리암페어';
-      add(svgText(svg,x-63,255,i?'4mA':'6mA',39,IC),phrase);
-      dotFlow(ctx,svg,updates,[x,105,x,168],phrase,3);
+      add(svgText(svg,x+87,255,i?'4mA':'6mA',40,IC),phrase);
+      dotFlow(ctx,svg,updates,[x,100,x,168],phrase,3);
     }
-    if(mode==='arduino'){
-      add(svgText(svg,x-106,260,'약 13.6mA',36,IC),'십삼 점 육');
-      dotFlow(ctx,svg,updates,[x,105,x,168],'십삼 점 육',3);
+    if(mode==='arduino') {
+      add(svgText(svg,472,i?390:180,'약 13.6mA',36,IC),'십삼 점 육');
+      dotFlow(ctx,svg,updates,[x,100,x,168],'십삼 점 육',3);
     }
   }
-  if(mode==='current'){
-    add(svgText(svg,235,47,'10mA',40,IC),'십 밀리암페어가');
-    add(svgText(svg,236,428,'10mA',40,IC),'다시 만나는');
+  if(mode==='current') {
+    add(svgText(svg,237,145,'10mA',40,IC),'십 밀리암페어가');
+    add(svgText(svg,237,388,'10mA',40,IC),'다시 만나는');
   }
-  if(mode==='arduino') add(svgText(svg,237,47,'약 27.2mA',38,IC),'이십칠 점 이');
+  if(mode==='arduino') add(svgText(svg,237,388,'약 27.2mA',28,IC),'이십칠 점 이');
   return svg;
 }
 function loop130(ctx, add, updates, opts={}) {
-  const {voltage='9V', r1='1킬로옴',r2='2킬로옴',compact=false,phrase,labels=[],led=false,single=false,side=false}=opts;
-  const svg=canvas130(ctx,add,phrase,compact);
-  if(side){svg.style.width=(ctx.long?1050:556)+'px';svg.style.left=(ctx.long?135:36)+'px';}
-  path(svg,'M125 85 H311 M405 85 H603 V169 M603 263 V367 H125 V288 M125 158 V85',COLOR.ink,8);
-  battery130(svg,125,223,voltage);
-  resistor(svg,358,85);
-  if(led){
-    path(svg,'M580 191 L626 191 L603 241 Z',VC,5,VC);
-    path(svg,'M577 242 H629 M603 169 V190 M603 242 V263',VC,5);
-  } else if(single) path(svg,'M603 169 V263',COLOR.ink,8);
-  else resistor(svg,603,216,true);
-  if(r1) svgText(svg,358,48,r1,39,RC);
-  if(r2) svgText(svg,684,224,r2,34,RC);
+  const {voltage='9V',r1='1킬로옴',r2='2킬로옴',phrase,labels=[],led=false,single=false,side=false}=opts;
+  const width=ctx.long?(side?1050:1450):800;
+  const height=ctx.long?(opts.doubleBadges?535:625):475;
+  const top=ctx.long&&opts.doubleBadges?50:70;
+  const svg=svgAt(ctx.stage,side&&ctx.long?135:(ctx.W-width)/2,ctx.long?(opts.doubleBadges?70:110):(opts.doubleBadges?75:90),width,height,'0 0 750 458');
+  add(svg,phrase);
+  path(svg,'M140 '+top+' H311 M405 '+top+' H550 V203 M550 297 V440 H140 V320 M140 190 V'+top,COLOR.ink,8);
+  battery130(svg,140,255,voltage);
+  resistor(svg,358,top);
+  if(led) {
+    path(svg,'M527 225 H573 L550 275 Z',VC,5,VC);
+    path(svg,'M524 276 H576 M550 203 V224 M550 276 V297',VC,5);
+  } else if(single) path(svg,'M550 203 V297',COLOR.ink,8);
+  else resistor(svg,550,250,true);
+  if(r1) svgText(svg,358,opts.doubleBadges?130:30,r1,38,RC);
+  if(r2) svgText(svg,660,260,r2,36,RC);
   for(const [x,y,label,color,cueWord] of labels) add(svgText(svg,x,y,label,42,color),cueWord);
-  if(opts.flow) dotFlow(ctx,svg,updates,[160,367,567,367],opts.flow,7);
+  if(opts.flow) dotFlow(ctx,svg,updates,[180,440,510,440],opts.flow,7);
   return svg;
 }
 function profile130(ctx,add,updates,phrase,compact=false){
-  const svg=canvas130(ctx,add,phrase,compact);
+  const svg=canvas130(ctx,add,phrase,ctx.long?false:compact);
   const segments=[[74,345,260,80,'구 미터'],[260,80,428,169,'삼 미터와'],[428,169,660,345,'육 미터']];
   path(svg,'M57 345 H690',COLOR.line,5);
   path(svg,'M71 344 V269 L117 283 L71 299',COLOR.green,6);
@@ -336,6 +357,30 @@ function outlets130(ctx,add,updates,opts={}){
   return svg;
 }
 function comparison130(ctx,add,withLabels=true) {
+
+  if(!ctx.long) {
+    ['직렬','병렬'].forEach((name,i)=>{
+      const x=50+i*410;
+      const label=panel(ctx,add,x,90,350,64,name,name,i?IC:VC,43);
+      label.style.padding='0';
+      const svg=svgAt(ctx.stage,x,160,350,408,'0 0 300 350');
+      add(svg,name);
+      if(i) {
+        path(svg,'M30 5 H270 M30 345 H270 M30 5 V128 M30 222 V345 M270 5 V128 M270 222 V345',COLOR.ink,10);
+        resistor(svg,30,175,true); resistor(svg,270,175,true);
+      } else {
+        path(svg,'M30 5 H270 V58 M270 152 V198 M270 292 V345 H30 V5',COLOR.ink,10);
+        resistor(svg,270,105,true); resistor(svg,270,245,true);
+      }
+      if(withLabels) {
+        const first=i?'전압 같음':'전류 같음';
+        const second=i?['전류 나눠','흐름']:['전압 나눠','가짐'];
+        add(svgText(svg,150,135,first,30,i?IC:VC),i?'전압이 같아요':'전류가 같아요');
+        second.forEach((text,row)=>add(svgText(svg,150,215+row*45,text,30,i?IC:VC),i?'나눠 흘러요':'나눠 가져요'));
+      }
+    });
+    return;
+  }
   const top=ctx.long?145:123, h=ctx.long?330:225;
   const widths=ctx.long?[740,740]:[766,766];
   const names=['직렬','병렬'];
@@ -382,33 +427,35 @@ function rulePair130(ctx, add, opts) {
   });
 }
 function riseFall130(ctx, add) {
-  const x=ctx.long?1288:537;
-  const y=ctx.long?267:354;
-  const svg=svgAt(ctx.stage,x,y,ctx.long?390:272,ctx.long?275:158,'0 0 375 236');
+  const x=ctx.long?1288:290;
+  const y=ctx.long?267:335;
+  const svg=svgAt(ctx.stage,x,y,ctx.long?390:290,ctx.long?275:190,'0 0 375 236');
   add(svg,'동네 한 바퀴');
   path(svg,'M31 185 H346',COLOR.line,5);
   path(svg,'M41 181 L122 58 L215 100 L328 181',IC,8);
-  svgText(svg,72,90,'+9',43,VC);
-  svgText(svg,184,47,'−3',43,IC);
-  svgText(svg,309,121,'−6',43,IC);
+  svgText(svg,35,55,'+9',ctx.long?43:48,VC);
+  svgText(svg,184,47,'−3',ctx.long?43:48,IC);
+  svgText(svg,309,121,'−6',ctx.long?43:48,IC);
 }
 function warning130(svg, add, phrase) {
-  const g=g130(svg,375,26);
+  const outer=el('g',{},svg);
+  const g=g130(outer,700,240);
   path(g,'M0 -24 L23 16 H-23 Z',RC,5,'#fce1c5');
   path(g,'M0 -10 V4 M0 10 V11',COLOR.ink,5);
-  return add(g,phrase);
+  return add(outer,phrase);
 }
 function currentMeters130(ctx,add,updates) {
-  const svg=canvas130(ctx,add,null,true);
+  const svg=canvas130(ctx,add,null,false);
   path(svg,'M70 230 H680',COLOR.ink,9);
   path(svg,'M351 201 L397 230 L351 259 Z',VC,5,VC);
   path(svg,'M397 199 V261',VC,7);
   for(const [i,x] of [193,553].entries()){
-    meter(svg,x,230,53,'A',IC);
-    svgText(svg,x,130,i?'나온 전류':'들어간 전류',37,IC);
-    add(svgText(svg,x,349,'13.6mA',49,IC),'하지만');
+    const gauge=meter(svg,x,230,94,'A',IC);
+    gauge.querySelector('circle').setAttribute('fill','#cfe3fa');
+    svgText(svg,x,100,i?'나온 전류':'들어간 전류',37,IC);
+    add(svgText(svg,x,410,'13.6mA',72,IC),'하지만');
   }
-  const q=add(svgText(svg,553,350,'줄어든다?',45,COLOR.sub),'줄어든다고');
+  const q=add(svgText(svg,553,410,'줄어든다?',56,COLOR.sub),'줄어든다고');
   const answer=cue(ctx,'하지만');
   updates.push(t=>{q.style.visibility=t<answer?'visible':'hidden';});
 }
@@ -436,8 +483,8 @@ const SCENES={
     const heading=title(c,a,'여는 질문');
     const headingAt=cue(c,'키르히호프');
     u.push(t=>{heading.textContent=t<headingAt?'여는 질문':'키르히호프의 법칙';});
-    loop130(c,a,u,{voltage:'',r1:'',r2:'',compact:true,single:true,phrase:'부품 하나'});
-    const branch=branch130(c,a,u,{source:'',resistances:['',''],compact:true,mode:'diagram',begin:'늘어나면'});
+    loop130(c,a,u,{voltage:'',r1:'',r2:'',doubleBadges:true,compact:true,single:true,phrase:'부품 하나'});
+    const branch=branch130(c,a,u,{source:'',resistances:['',''],doubleBadges:true,compact:true,mode:'diagram',begin:'늘어나면'});
     const change=cue(c,'늘어나면');
     const prior=branch.previousElementSibling;
     u.push(t=>{prior.style.visibility=t<change?'visible':'hidden';});
@@ -453,12 +500,12 @@ const SCENES={
   L08:scene((c,a)=>{title(c,a,'두 예시의 규칙');stack130(c,a,[['1　들어온 양 = 나간 양의 합','첫째',IC],['2　올라간 높이 = 내려간 높이','둘째',VC],['올라간 전압 = 내려간 전압','전압으로 바꿔',VC]]);}),
   L09:scene((c,a,u)=>{title(c,a,'갈림길은 전류로');branch130(c,a,u,{mode:'voltage',begin:'전원에'});}),
   L10:scene((c,a,u)=>{title(c,a,'나뉘고 합쳐지는 전류');branch130(c,a,u,{mode:'current',compact:true});badge(c,a,'10 = 6 + 4','자전거',IC);}),
-  L11:scene((c,a,u)=>{title(c,a,'한 바퀴는 전압으로');loop130(c,a,u,{compact:true,phrase:'한 줄로',flow:'같은 전류가',labels:[[375,324,'3mA',IC,'삼 밀리암페어']]});badge(c,a,'1킬로옴 + 2킬로옴 = 3킬로옴','삼 킬로옴이고',RC,0,2);badge(c,a,'9V ÷ 3,000옴 = 3mA','삼 밀리암페어',IC,1,2);}),
-  L12:scene((c,a,u)=>{title(c,a,'올라간 만큼 내려가요');loop130(c,a,u,{compact:true,side:true,labels:[[359,151,'3V',VC,'삼 볼트'],[520,220,'6V',VC,'육 볼트가 걸려요'],[174,125,'↑',VC,'올라가고']]});riseFall130(c,a);badge(c,a,'3V + 6V = 9V','삼 더하기 육은 구',VC);}),
+  L11:scene((c,a,u)=>{title(c,a,'한 바퀴는 전압으로');loop130(c,a,u,{doubleBadges:true,compact:true,phrase:'한 줄로',flow:'같은 전류가',labels:[[375,324,'3mA',IC,'삼 밀리암페어']]});badge(c,a,'1킬로옴 + 2킬로옴 = 3킬로옴','삼 킬로옴이고',RC,0,2);badge(c,a,'9V ÷ 3,000옴 = 3mA','삼 밀리암페어',IC,1,2);}),
+  L12:scene((c,a,u)=>{title(c,a,'올라간 만큼 내려가요');loop130(c,a,u,{compact:true,side:true,labels:[[359,151,'3V',VC,'삼 볼트'],[660,340,'6V',VC,'육 볼트가 걸려요'],[174,125,'↑',VC,'올라가고']]});riseFall130(c,a);badge(c,a,'3V + 6V = 9V','삼 더하기 육은 구',VC);}),
   L13:scene((c,a)=>{title(c,a,'키르히호프의 두 법칙');stack130(c,a,[['구스타프 키르히호프 · 독일 물리학자 · 1845','키르히호프가',COLOR.green],['전류 법칙　KCL','케이 씨 엘',IC],['전압 법칙　KVL','케이 브이 엘',VC]]);}),
   L14:scene((c,a)=>{title(c,a,'교과서 표현');stack130(c,a,[['갈림점　+10 − 6 − 4 = 0','한 점에',IC],['한 바퀴　+9 − 3 − 6 = 0','한 바퀴 돌며',VC]]);}),
   L15:scene((c,a)=>{title(c,a,'직렬과 병렬');comparison130(c,a);}),
-  L16:scene((c,a,u)=>{title(c,a,'LED 한 개 검산');loop130(c,a,u,{voltage:'5V',r1:'220옴',r2:'LED',compact:true,led:true,phrase:'연결했어요',flow:'한 바퀴',labels:[[367,157,'3V',VC,'삼 볼트'],[519,225,'약 2V',VC,'이 볼트']]});badge(c,a,'2V + 3V = 5V','이 더하기 삼은 오',VC,0,2);badge(c,a,'전압 법칙','전압 법칙',VC,1,2);}),
+  L16:scene((c,a,u)=>{title(c,a,'LED 한 개 검산');loop130(c,a,u,{voltage:'5V',r1:'220옴',r2:'LED',doubleBadges:true,compact:true,led:true,phrase:'연결했어요',flow:'한 바퀴',labels:[[358,210,'3V',VC,'삼 볼트'],[660,340,'약 2V',VC,'이 볼트']]});badge(c,a,'2V + 3V = 5V','이 더하기 삼은 오',VC,0,2);badge(c,a,'전압 법칙','전압 법칙',VC,1,2);}),
   L17:scene((c,a,u)=>{title(c,a,'LED 두 개를 나란히');branch130(c,a,u,{mode:'arduino',source:'5V',resistances:['220옴','220옴'],compact:true,led:true,begin:'두 갈래로'});badge(c,a,'전류 법칙','이십칠 점 이',IC);}),
   L18:scene((c,a,u)=>{title(c,a,'리모컨 건전지');remote130(c,a,u,'거꾸로',true);const result=badge(c,a,'+1.5V + 1.5V = 3V','삼 볼트가',VC);const flip=cue(c,'남는 전압이 없어요');u.push(t=>{result.firstChild.textContent=t<flip?'+1.5V + 1.5V = 3V':'+1.5V − 1.5V = 0V';});}),
   L19:scene((c,a,u)=>{title(c,a,'멀티탭 최대 용량');const svg=outlets130(c,a,u,{start:'여러 개',compact:true,names:['히터','전기포트','']});dotFlow(c,svg,u,[172,346,640,346],'합쳐져',7);warning130(svg,a,'히터나');badge(c,a,'최대 용량','최대 전류나',RC);}),
@@ -483,15 +530,15 @@ const SCENES={
     badge(c,a,'짐 = 전압(내려감)','짐이 전압',VC,1,2);
   }),
   L23:scene((c,a)=>{title(c,a,'어댑터의 A는 최대치');capacity130(c,a);}),
-  L24:scene((c,a,u)=>{title(c,a,'전압이 바뀌면 다시 계산');const svg=loop130(c,a,u,{voltage:'5V',r1:'220옴',r2:'LED',compact:true,led:true,phrase:'오 볼트에'});const node=svg.querySelector('text');const t0=cue(c,'구 볼트 어댑터에');u.push(t=>{node.textContent=t<t0?'5V':'9V';});badge(c,a,'(9V − 2V) ÷ 220옴 ≈ 31.8mA','삼십일 점 팔',VC,0,2);badge(c,a,'최대 20mA 넘음','최대치를 넘어요',VC,1,2);}),
-  L25:scene((c,a)=>{title(c,a,'비유는 감 잡기용');const svg=canvas130(c,a,'그림이에요',true);bicycle(svg,155,134,false);const truck=g130(svg,440,169);box130(truck,0,0,105,72,IC,'#e7f1ff');box130(truck,104,24,50,48,IC);for(const x of [27,123])el('circle',{cx:x,cy:78,r:12,fill:IC},truck);badge(c,a,'V = I × R　·　KCL　·　KVL','정확한 값은',COLOR.green);}),
+  L24:scene((c,a,u)=>{title(c,a,'전압이 바뀌면 다시 계산');const svg=loop130(c,a,u,{voltage:'5V',r1:'220옴',r2:'LED',doubleBadges:true,compact:true,led:true,phrase:'오 볼트에'});const node=svg.querySelector('text');const t0=cue(c,'구 볼트 어댑터에');u.push(t=>{node.textContent=t<t0?'5V':'9V';});badge(c,a,'(9V − 2V) ÷ 220옴 ≈ 31.8mA','삼십일 점 팔',VC,0,2);badge(c,a,'최대 20mA 넘음','최대치를 넘어요',VC,1,2);}),
+  L25:scene((c,a)=>{title(c,a,'비유는 감 잡기용');const svg=svgAt(c.stage,160,120,1550,600,'0 0 1100 500');a(svg,'그림이에요');const bike=bicycle(svg,20,40,false);bike.setAttribute('transform','translate(20 40) scale(2.1)');const truck=g130(svg,620,125,2.5);box130(truck,0,0,105,72,IC,'#cfe3fa');box130(truck,104,24,50,48,IC);for(const x of [27,123])el('circle',{cx:x,cy:78,r:12,fill:IC},truck);badge(c,a,'V = I × R　·　KCL　·　KVL','정확한 값은',COLOR.green);}),
   L26:scene((c,a)=>{title(c,a,'한눈에 정리');stack130(c,a,[['전류 법칙 KCL · 들어온 전류 = 나간 전류의 합','전류 법칙은',IC],['전압 법칙 KVL · 올라간 전압 = 내려간 전압의 합','전압 법칙은',VC],['직렬 · 전류 같음, 전압 나눔','직렬은',RC],['병렬 · 전압 같음, 전류 나눔','병렬은',IC]]);}),
   L27:scene((c,a,u)=>{title(c,a,'퀴즈');split130(c,a,u,[['20mA','이십 밀리암페어'],['12mA','십이 밀리암페어'],['? mA','몇 밀리암페어']],{quiz:true});}),
   L27B:scene((c,a,u)=>{title(c,a,'퀴즈 정답');split130(c,a,u,[['20mA'],['12mA'],['8mA','팔 밀리암페어']],{compact:true});badge(c,a,'20 = 12 + 8','이십은',IC);}),
-  L28:scene((c,a,u)=>{title(c,a,'키르히호프의 법칙');loop130(c,a,u,{voltage:'',r1:'? V',r2:'? V',compact:true,phrase:'나눠 가질까요'});badge(c,a,'블로그 글 · 설명란 링크','블로그',COLOR.green,0,2);badge(c,a,'다음 영상 · 전압 분배','전압 분배',IC,1,2);}),
+  L28:scene((c,a,u)=>{title(c,a,'키르히호프의 법칙');loop130(c,a,u,{voltage:'',r1:'? V',r2:'? V',doubleBadges:true,compact:true,phrase:'나눠 가질까요'});badge(c,a,'블로그 글 · 설명란 링크','블로그',COLOR.green,0,2);badge(c,a,'다음 영상 · 전압 분배','전압 분배',IC,1,2);}),
   L29:OUTRO,
   S1E:scene((c,a,u)=>{title(c,a,'전류는 어떻게 될까요?');loop130(c,a,u,{voltage:'',r1:'',r2:'',compact:true});badge(c,a,'? mA','전류는',IC);}),
-  S2A:scene((c,a,u)=>{title(c,a,'전압 = 높이 차이','높이 차이와');const svg=canvas130(c,a);path(svg,'M83 347 H665 M100 346 L292 95 L570 347 Z',RC,7,'#fae9d9');badge(c,a,'회로 한 바퀴　·　동네 한 바퀴','동네를',VC);}),
+  S2A:scene((c,a,u)=>{title(c,a,'전압 = 높이 차이','높이 차이와');const svg=canvas130(c,a);svg.style.height='540px';path(svg,'M83 347 H665 M100 346 L292 50 L570 347 Z',RC,7,'#fae9d9');badge(c,a,'회로 한 바퀴　·　동네 한 바퀴','동네를',VC);}),
   S2E:scene((c,a,u)=>{title(c,a,'리모컨은 왜 안 켜질까요?');remote130(c,a,u,'거꾸로',true);badge(c,a,'?','왜 안 켜질까요',VC);}),
   S3A:scene((c,a)=>{title(c,a,'저항을 잇는 두 가지 방법');comparison130(c,a,false);}),
   S3E:scene((c,a,u)=>{title(c,a,'집 안 콘센트');outlets130(c,a,u,{start:'콘센트는',compact:true});badge(c,a,'직렬?　병렬?','직렬일까요',IC);}),
