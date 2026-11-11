@@ -421,7 +421,32 @@ const SCENES = {
   }),
   L08: scene((ctx, add, updates) => {
     title(ctx, add, '회로 장면 1');
-    circuit(ctx, add, updates, { voltage: '5V', resistance: '1킬로옴', current: '5mA', change: [['v', '10V', '십 볼트로'], ['a', '10mA', '십 밀리암페어로']] });
+    const circuitSvg = circuit(ctx, add, updates, { voltage: '5V', resistance: '1킬로옴', current: '5mA', change: [['v', '10V', '십 볼트로'], ['a', '10mA', '십 밀리암페어로']] });
+    // L08에서만 전류를 회로 전체에 고르게 순환시킨다.
+    if (ctx.long) {
+      const route = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+      // 전원 위쪽 → 실제 저항의 굴곡 → 전류계 → 아래 귀환선 → 전원.
+      // 경로는 측정에만 쓰며 화면에 선이나 글자를 추가하지 않는다.
+      route.setAttribute('d', 'M155 89 H260' + circuitSvg.querySelector('g > path').getAttribute('d').replace(/^M 260 89/, '') + ' H505 V271 H155 Z');
+      const length = route.getTotalLength();
+      const dots = [...circuitSvg.querySelectorAll('circle[r="6"]')];
+      while (dots.length < 12) dots.push(el('circle', { r: 6, fill: IC }, circuitSvg));
+      dots.forEach(dot => dot.setAttribute('data-current-dot', 'L08'));
+      const fasterAt = cue(ctx, '십 밀리암페어로');
+      updates.push(t => {
+        // 속도가 바뀌어도 누적 이동 거리를 이어서 위치가 튀지 않는다.
+        const distance = t * 40 + Math.max(0, t - fasterAt) * 40;
+        dots.forEach((dot, i) => {
+          const point = route.getPointAtLength((i * length / dots.length + distance) % length);
+          dot.setAttribute('cx', point.x);
+          dot.setAttribute('cy', point.y);
+          // 부품 내부에서는 기호를 덮지 않고, 연결선에서 다시 이어 보인다.
+          const insideMeter = Math.hypot(point.x - 505, point.y - 180) < 40;
+          const insideSource = Math.abs(point.x - 155) < 1 && Math.abs(point.y - 180) < 27;
+          dot.style.opacity = insideMeter || insideSource ? 0 : 1;
+        });
+      });
+    }
     const svg = diagram(ctx, 1380, 138, 345, 254, '0 0 250 180'); bicycle(svg, 0, 15, false); add(svg, '세게 밟은');
     panel(ctx, add, 1350, 705, 390, 113, '세게 밟기', '세게 밟은', VC, 39);
   }),
