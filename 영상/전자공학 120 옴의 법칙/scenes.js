@@ -325,14 +325,19 @@ function simpleRows(ctx, add, rows, { y = 168, step = 133, width = 1080, size = 
   rows.forEach(([text, phrase, color], i) => centered(ctx, add, y + i * step, width, step - 17, text, phrase, color, size));
 }
 
-function triangle(ctx, add) {
+function triangle(ctx, add, updates) {
   const svg = diagram(ctx, 248, 115, 765, 755, '0 0 500 520');
   add(svg, '삼각형');
   path(svg, 'M250 35 L38 460 H462 Z M145 245 H355 M250 245 V460', COLOR.ink, 7);
   add(svgText(svg, 250, 195, 'V', 70, VC), '위에');
-  add(svgText(svg, 175, 379, 'I', 72, IC), '아래에');
+  const current = add(svgText(svg, 175, 379, 'I', 72, IC), '아래에');
   add(svgText(svg, 325, 379, 'R', 72, RC), '알을');
-  add(el('rect', { x: 130, y: 303, width: 95, height: 100, rx: 22, fill: '#d5dce5' }, svg), '손으로');
+  // L13 전용: 원래 가리개 등장 시각에 물음표 카드를 I 위에 놓는다.
+  const cover = el('g', { 'data-question-cover': 'I' }, svg);
+  el('rect', { x: 138, y: 303, width: 94, height: 110, rx: 6, fill: '#d4e4f7', stroke: IC, 'stroke-width': 4 }, cover);
+  svgText(cover, 185, 377, '?', 60, IC);
+  add(cover, '손으로');
+  updates.push(() => { current.style.opacity = +current.style.opacity * (1 - +cover.style.opacity); });
   panel(ctx, add, 1030, 432, 610, 170, eqCurrent, '브이 나누기 알', IC, 64);
 }
 
@@ -530,7 +535,7 @@ const SCENES = {
     title(ctx, add, '옴의 법칙, 세 가지 모양');
     equationCards(ctx, add, [[ohm, '브이는'], [eqCurrent, '아이는'], [eqResistance, '알은']]);
   }),
-  L13: scene((ctx, add) => { title(ctx, add, '옴의 삼각형'); triangle(ctx, add); }),
+  L13: scene((ctx, add, updates) => { title(ctx, add, '옴의 삼각형'); triangle(ctx, add, updates); }),
   L14: scene((ctx, add) => {
     title(ctx, add, '직접 계산해 보기');
     [['5V, 250옴 → 전류?', '5 ÷ 250 = 0.02A = 20mA', '이백오십 옴', '오 나누기 이백오십', IC],
