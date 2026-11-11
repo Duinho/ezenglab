@@ -13,8 +13,9 @@
 """
 import json, os, sys, time, urllib.parse, urllib.request
 
-TOKEN = "/home/claude/youtube/token.json"
-CLIENT = "/home/claude/youtube/client.json"
+EZ = os.environ.get("EZ_HOME", "/home/claude")   # 코덱스 PC에서는 다른 곳
+TOKEN = os.path.join(EZ, "youtube", "token.json")
+CLIENT = os.path.join(EZ, "youtube", "client.json")
 
 
 def access_token():
@@ -109,7 +110,7 @@ def comment(vid, text):
     return j["id"]
 
 
-PL_REG = "/home/claude/ezenglab-work/업로드/재생목록.json"   # 과목별 재생목록 ID와 들어 있는 강좌 번호
+PL_REG = os.path.join(EZ, "ezenglab-work", "업로드", "재생목록.json")   # 과목별 재생목록 ID와 들어 있는 강좌 번호
 
 
 def playlist_place(folder_name, vid):

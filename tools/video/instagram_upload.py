@@ -14,7 +14,8 @@
 """
 import json, os, sys, time, urllib.parse, urllib.request
 
-TOKEN = "/home/claude/instagram/token.json"
+EZ = os.environ.get("EZ_HOME", "/home/claude")   # 코덱스 PC에서는 다른 곳
+TOKEN = os.path.join(EZ, "instagram", "token.json")
 VER = "v21.0"
 GRAPH = f"https://graph.facebook.com/{VER}"
 
@@ -86,7 +87,7 @@ def comment(mid, text):
     return call("POST", f"{GRAPH}/{mid}/comments", data={"message": text})["id"]
 
 
-STOP = "/home/claude/ezenglab-work/업로드/인스타_중지.md"   # 이 파일이 있으면 인스타에 아무것도 하지 않음(계정 정지·검토 중)
+STOP = os.path.join(EZ, "ezenglab-work", "업로드", "인스타_중지.md")   # 이 파일이 있으면 인스타에 아무것도 하지 않음(계정 정지·검토 중)
 
 
 def main():

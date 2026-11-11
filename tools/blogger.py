@@ -20,7 +20,7 @@ import urllib.request
 import markdown
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-AUTH_DIR = os.environ.get("BLOGGER_AUTH_DIR", "/home/claude/blogger")
+AUTH_DIR = os.environ.get("BLOGGER_AUTH_DIR", os.path.join(os.environ.get("EZ_HOME", "/home/claude"), "blogger"))
 BLOG_ID = "6080462052485759032"
 REPO = "Duinho/ezenglab"
 POSTS_JSON = os.path.join(ROOT, "posts.json")
