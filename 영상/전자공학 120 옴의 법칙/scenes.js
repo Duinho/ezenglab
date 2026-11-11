@@ -7,6 +7,51 @@ function svgGlyph(svg, kind, cx, cy, size, color) {          // SVG 안에 Ω �
   return g;
 }
 
+// 팀장님 최신 요청: 지정한 롱폼 장면에서만 킬로옴을 K + 기존 Ω 도형으로 표시한다.
+// 음성·자막·공통 회로/그래프/표 구현과 쇼츠에는 영향을 주지 않는다.
+function kiloohmNotation(ctx, updates) {
+  if (!ctx.long) return;
+  const symbol = OM.replace('<svg ', '<svg data-kilo-unit="KΩ" aria-label="옴" ');
+  const walker = document.createTreeWalker(ctx.stage, NodeFilter.SHOW_TEXT);
+  const htmlTexts = [];
+  while (walker.nextNode()) {
+    const node = walker.currentNode;
+    if (!node.parentElement.closest('svg') && node.textContent.includes('킬로옴')) htmlTexts.push(node);
+  }
+  for (const node of htmlTexts) {
+    const parts = node.textContent.split('킬로옴'), fragment = document.createDocumentFragment();
+    parts.forEach((part, i) => {
+      if (i) {
+        fragment.appendChild(document.createTextNode('K'));
+        const template = document.createElement('template'); template.innerHTML = symbol;
+        fragment.appendChild(template.content);
+      }
+      fragment.appendChild(document.createTextNode(part));
+    });
+    node.replaceWith(fragment);
+  }
+  const labels = [...ctx.stage.querySelectorAll('svg text')].filter(node => node.textContent.includes('킬로옴'));
+  const centres = new Map(labels.map(node => [node, +node.getAttribute('x')]));
+  // 회로의 원래 값 갱신 뒤에 적용하므로 1KΩ→2KΩ 시각도 원래대로 유지된다.
+  updates.push(() => {
+    for (const node of labels) {
+      const raw = node.textContent;
+      if (!raw.includes('킬로옴')) continue;
+      if (node.kiloGlyph) node.kiloGlyph.remove();
+      const [before, after] = raw.split('킬로옴');
+      const size = +node.getAttribute('font-size'), y = +node.getAttribute('y');
+      node.textContent = before + 'K'; const leftWidth = node.getComputedTextLength();
+      node.textContent = after; const rightWidth = node.getComputedTextLength();
+      const gap = size * .84, x = centres.get(node) - (leftWidth + gap + rightWidth) / 2;
+      node.textContent = ''; node.setAttribute('x', x); node.setAttribute('text-anchor', 'start');
+      el('tspan', { text: before + 'K' }, node);
+      el('tspan', { text: after, dx: gap }, node);
+      node.kiloGlyph = svgGlyph(node.parentNode, 'Ω', x + leftWidth + gap / 2, y - size * .37, size * .74, node.getAttribute('fill'));
+      node.kiloGlyph.setAttribute('data-kilo-unit', 'KΩ');
+    }
+  });
+}
+
 function lab(parent, x, y, w, html, size, opt = {}) {
   const d = el('div', { class: 'abs ' + (opt.cls || 'lb'), style: { left: x + 'px', top: y + 'px', width: w + 'px', fontSize: size + 'px', color: opt.color || COLOR.ink } }, parent);
   d.innerHTML = html; d.style.opacity = 0; return d;
@@ -449,12 +494,14 @@ const SCENES = {
     }
     const svg = diagram(ctx, 1380, 138, 345, 254, '0 0 250 180'); bicycle(svg, 0, 15, false); add(svg, '세게 밟은');
     panel(ctx, add, 1350, 705, 390, 113, '세게 밟기', '세게 밟은', VC, 39);
+    kiloohmNotation(ctx, updates);
   }),
   L09: scene((ctx, add, updates) => {
     title(ctx, add, '회로 장면 2');
     circuit(ctx, add, updates, { voltage: '5V', resistance: '1킬로옴', current: '5mA', change: [['r', '2킬로옴', '이 킬로옴으로'], ['a', '2.5mA', '이 점 오']] });
     const svg = diagram(ctx, 1380, 138, 345, 254, '0 0 250 180'); bicycle(svg, 0, 15, true); add(svg, '오르막');
     panel(ctx, add, 1350, 705, 390, 113, '오르막', '오르막', RC, 39);
+    kiloohmNotation(ctx, updates);
   }),
   L10: scene((ctx, add, updates) => {
     title(ctx, add, '회로 장면 3');
@@ -465,8 +512,9 @@ const SCENES = {
       { cells: ['2', '5V 그대로, 1킬로옴 → 2킬로옴', '5mA → 2.5mA'], phrase: '올려야' },
       { cells: ['3', '2킬로옴에서 5mA 원함', '10V로'], phrase: '더 세게' },
     ], 88, 1620, 41);
+    kiloohmNotation(ctx, updates);
   }),
-  L11: scene((ctx, add) => {
+  L11: scene((ctx, add, updates) => {
     title(ctx, add, '숫자 속 규칙');
     const width = ctx.long ? 1500 : 774;
     const y = ctx.long ? 145 : 119;
@@ -476,6 +524,7 @@ const SCENES = {
     })), height, width, ctx.long ? 53 : 34);
     centered(ctx, add, ctx.long ? 768 : 601, ctx.long ? 845 : 650, ctx.long ? 86 : 46,
       'mA → A　·　킬로옴 → 옴', '단위는', IC, ctx.long ? 43 : 34);
+    kiloohmNotation(ctx, updates);
   }),
   L12: scene((ctx, add) => {
     title(ctx, add, '옴의 법칙, 세 가지 모양');
@@ -492,11 +541,12 @@ const SCENES = {
         panel(ctx, add, x, 435, 800, 300, colored(answer, color), solve, color, 55);
       });
   }),
-  L15: scene((ctx, add) => {
+  L15: scene((ctx, add, updates) => {
     title(ctx, add, '단위를 맞추지 않으면');
     panel(ctx, add, 173, 148, 1040, 270, '5V ÷ 220옴 = 0.0227A', '영 점 영이이칠', COLOR.green, 55);
     panel(ctx, add, 1248, 148, 493, 270, '<s class="vr">22.7A</s>', '이십이 점 칠', VC, 68);
     centered(ctx, add, 555, 1160, 236, 'mA → A　·　킬로옴 → 옴', '바꾼 다음', IC, 52);
+    kiloohmNotation(ctx, updates);
   }),
   L16: scene((ctx, add) => {
     title(ctx, add, '옴이라는 이름');
@@ -507,8 +557,8 @@ const SCENES = {
     panel(ctx, add, 842, 165, 836, 216, '게오르크 옴 · 독일 물리학자', '게오르크 옴이', COLOR.green, 45);
     panel(ctx, add, 883, 517, 745, 230, '저항의 단위 = ' + OM, '단위 옴도', RC, 52);
   }),
-  L17: scene((ctx, add, updates) => { title(ctx, add, '전압과 전류'); graph(ctx, add, updates, 'direct'); }),
-  L18: scene((ctx, add, updates) => { title(ctx, add, '저항과 전류'); graph(ctx, add, updates, 'inverse'); }),
+  L17: scene((ctx, add, updates) => { title(ctx, add, '전압과 전류'); graph(ctx, add, updates, 'direct'); kiloohmNotation(ctx, updates); }),
+  L18: scene((ctx, add, updates) => { title(ctx, add, '저항과 전류'); graph(ctx, add, updates, 'inverse'); kiloohmNotation(ctx, updates); }),
   L19: scene((ctx, add) => {
     title(ctx, add, '어디에 쓰나요');
     simpleRows(ctx, add, [['LED 저항 고르기 → 저항값', 'LED에', RC], ['아두이노 핀 확인 → 전류', '아두이노', IC],
