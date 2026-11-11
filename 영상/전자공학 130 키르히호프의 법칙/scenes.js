@@ -351,10 +351,10 @@ function profile130(ctx,add,updates,phrase,compact=false){
 }
 function remote130(ctx,add,updates,flip,compact=false){
   const svg=canvas130(ctx,add,null,compact);
-  box130(svg,150,38,434,360,COLOR.sub,'#e8eef3');
-  box130(svg,205,125,320,211,COLOR.line,'#fff');
-  const cells=[225,365].map((x,i)=>{
-    const g=g130(svg,x,170);
+  box130(svg,110,38,530,360,COLOR.sub,'#e8eef3');
+  box130(svg,140,115,470,245,COLOR.line,'#fff');
+  const cells=[195,410].map((x,i)=>{
+    const g=g130(svg,x,170);g.dataset.role=i?'rotating-cell':'fixed-cell';
     box130(g,0,0,130,ctx.long?99:130,VC,'#f9dfe4');
     svgText(g,65,ctx.long?62:80,i?'−   +':'+   −',ctx.long?37:44,VC);
     return g;
@@ -362,12 +362,12 @@ function remote130(ctx,add,updates,flip,compact=false){
   const lamp=el('circle',{cx:371,cy:78,r:16,fill:COLOR.green},svg);
   const start=cue(ctx,flip),lampAt=ctx.long?cue(ctx,'동작하지 않아요'):start+.55;
   updates.push(t=>{
-    cells[1].setAttribute('transform','translate(365 170) rotate('+(180*E.ease(E.prog(t,start,.55)))+' 65 '+(ctx.long?50:65)+')');
+    cells[1].setAttribute('transform','translate(410 170) rotate('+(180*E.ease(E.prog(t,start,.55)))+' 65 '+(ctx.long?50:65)+')');
     lamp.setAttribute('fill',t>=lampAt?'#b2bdc7':COLOR.green);
   });
   if(ctx.long){svg.style.overflow='visible';const stairs=el('g',{},svg);
-    box130(stairs,620,230,60,100,VC,'#f9dfe4');const second=box130(stairs,775,120,60,110,VC,'#f9dfe4');
-    svgText(stairs,650,465,'+1.5V',40,VC);const value=svgText(stairs,805,465,'+1.5V',40,VC);
+    box130(stairs,690,230,60,100,VC,'#f9dfe4');const second=box130(stairs,845,120,60,110,VC,'#f9dfe4');
+    svgText(stairs,720,465,'+1.5V',40,VC);const value=svgText(stairs,875,465,'+1.5V',40,VC);
     add(stairs,'두 번 올라가요');updates.push(t=>{const flipped=t>=start+.55;second.setAttribute('y',flipped?230:120);value.textContent=flipped?'−1.5V':'+1.5V';});}
   return svg;
 }
@@ -603,7 +603,7 @@ const SCENES={
       return {g,load};
     });
     const start=cue(c,'실어 보내면'), drop=cue(c,'내려놓고');
-    const led=el('g',{},svg);path(led,'M680 205 H720 L700 245 Z M675 250 H725',VC,5,VC);const glow=el('g',{},led);path(glow,'M730 202 l18 -14 M734 225 h22',VC,6);a(led,'내려놓고');u.push(t=>glow.style.opacity=t>=drop?.6+.4*Math.sin(t*6):0);
+    const led=el('g',{'data-role':'truck-led'},svg);path(led,'M760 205 H800 L780 245 Z M755 250 H805',VC,5,VC);const glow=el('g',{},led);path(glow,'M810 202 l18 -14 M814 225 h22',VC,6);a(led,'내려놓고');u.push(t=>glow.style.opacity=t>=drop?.6+.4*Math.sin(t*6):0);
     u.push(t=>trucks.forEach(({g,load},i)=>{
       const cycle=(i/4+t*.14)%1,d=cycle*1474;let pos;
       if(d<514)pos=[63+d,73];else if(d<737)pos=[577,73+d-514];else if(d<1251)pos=[577-(d-737),296];else pos=[63,296-(d-1251)];
