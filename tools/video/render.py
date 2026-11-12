@@ -7,6 +7,7 @@
 import argparse, hashlib, json, math, os, re, shutil, subprocess, sys, wave
 from pathlib import Path
 sys.path.insert(0, os.path.dirname(__file__))
+from final_output import finalize
 from common import parse_scenes
 from subtitles import scene_phrases, forced_phrases
 
@@ -211,8 +212,9 @@ def main():
     ap.add_argument("--preview", type=float, default=0, help="영상 대신 N초마다 한 장씩만 저장(빠른 확인)")
     ap.add_argument("--end-cue", default="", help="마지막 장면에서 이 단어를 말할 때 끝 안내 화면을 띄움(쇼츠)")
     ap.add_argument("--full", action="store_true", help="저장된 장면을 쓰지 않고 전부 다시 만듦(업로드 전 최종본)")
-    ap.add_argument("--end-tail", type=float, default=0.8, help="--end-cue를 쓸 때 말이 끝난 뒤 남길 시간(초)")
+    ap.add_argument("--end-tail", type=float, default=0.5, help="--end-cue 쇼츠 최종 출력에서 마지막 말 뒤 남길 시간(초)")
     a = ap.parse_args()
+    if not math.isfinite(a.end_tail) or a.end_tail < 0:ap.error("--end-tail은 0 이상이어야 합니다")
 
     md = open(os.path.join(a.folder, "장면표.md"), encoding="utf-8").read()
     scenes = parse_scenes(md)
@@ -250,7 +252,7 @@ def main():
         end_at = round(last["start"] + w[-1]["start"] - 0.15, 3)   # 같은 단어가 여러 번이면 마지막 것
         spoken_end = last["start"] + max(x["end"] for x in last["words"])
         end_sec = 0
-        last["dur"] = round(math.ceil(round((spoken_end + a.end_tail - last["start"]) * FPS, 6)) / FPS, 4)
+        last["dur"] = round(math.ceil(round((spoken_end + max(0.8, a.end_tail) - last["start"]) * FPS, 6)) / FPS, 4)
         last["hold"] = 0
         t = last["start"] + last["dur"]
     total = t + end_sec
@@ -304,7 +306,7 @@ def main():
     segs = [(sc["id"], int(round(sc["start"] * FPS)), int(round((sc["start"] + sc["dur"]) * FPS))) for sc in tl]
     if n > segs[-1][2]:
         segs.append(("끝", segs[-1][2], n))
-    vkey = [a.layout, a.hook, a.endtext, a.end_cue, a.end_tail, a.no_host] + ([SHORT_LAYOUT] if a.layout == "short" else [])
+    vkey = [a.layout, a.hook, a.endtext, a.end_cue, max(0.8, a.end_tail), a.no_host] + ([SHORT_LAYOUT] if a.layout == "short" else [])
     variant = hashlib.md5(json.dumps(vkey).encode()).hexdigest()[:8]
     cdir = os.path.join(SCENE_CACHE, os.path.basename(os.path.abspath(a.folder)), f"{a.layout}_{variant}")
     os.makedirs(cdir, exist_ok=True)
@@ -428,7 +430,14 @@ def main():
     lst = os.path.join(work, "clips.txt")
     open(lst, "w").write("".join(f"file '{os.path.join(cdir, sid + '.mp4')}'\n" for sid, _, _ in segs))
     subprocess.run(["ffmpeg", "-v", "error", "-y", "-f", "concat", "-safe", "0", "-i", lst, "-i", os.path.join(work, "audio.wav"),
-                    "-c:v", "copy", "-c:a", "aac", "-b:a", "192k", "-shortest", "-movflags", "+faststart", a.out], check=True)
+                    "-c:v", "copy", "-c:a", "pcm_s16le", "-shortest", os.path.join(work, "unprocessed.mkv")], check=True)
+    report["최종 출력 처리"] = finalize(os.path.join(work, "unprocessed.mkv"), a.out, a.layout == "short" and bool(a.end_cue), a.end_tail)
+    total = report["최종 출력 처리"]["duration"]
+    n = report["최종 출력 처리"]["frames"]; report["frames"] = n
+    for scene in tl:
+        scene["dur"] = round(max(0, min(scene["dur"], total-scene["start"])), 4)
+    json.dump({"timeline": [{k: v for k, v in s.items() if k != "words"} for s in tl], "report": report},
+              open(os.path.join(work, "report.json"), "w"), ensure_ascii=False, indent=1)
     print(a.out, f"{total:.2f}초", f"{n}프레임", f"다시 만든 장면 {len(redo)}개, 재사용 {len(reused)}개")
     print(json.dumps(report, ensure_ascii=False)[:800])
 
