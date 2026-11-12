@@ -670,3 +670,142 @@ const SCENES = {
     centered(ctx, add, 460, 770, 176, '전압 ÷ LED 저항 ?', '전압 나누기', RC, 50);
   }),
 };
+
+// 제작8차: 팀장님이 승인하신 long14장면에만 적용한다. 공통 도형과 쇼츠는 보존한다.
+const EE120_LONG8 = new Set(['L08','L09','L10','L11','L14','L15','L16','L17','L18','L21','L22','L26','L27','L27B']);
+function unitParts8(text) {
+  // 인명/명칭은 한글, 저항 단위만 Ω 도형. 읽기·음성은 바꾸지 않는다.
+  return text.split(/(킬로옴|옴(?!의|이라는))/g);
+}
+function htmlUnits8(root) {
+  const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT), nodes = [];
+  while (walker.nextNode()) {
+    const node = walker.currentNode;
+    if (!node.parentElement.closest('svg') && !node.textContent.includes('게오르크 옴') && unitParts8(node.textContent).length > 1) nodes.push(node);
+  }
+  for (const node of nodes) {
+    const fragment = document.createDocumentFragment();
+    for (const part of unitParts8(node.textContent)) {
+      if (part === '킬로옴' || part === '옴') {
+        if (part === '킬로옴') fragment.appendChild(document.createTextNode('k'));
+        const template = document.createElement('template');
+        template.innerHTML = OM.replace('<svg ', '<svg data-ohm-unit="Ω" aria-label="Ω" ');
+        fragment.appendChild(template.content);
+      } else fragment.appendChild(document.createTextNode(part));
+    }
+    node.replaceWith(fragment);
+  }
+  root.querySelectorAll('svg text').forEach(n=>{if(n.kiloGlyph)n.querySelectorAll('tspan').forEach(s=>s.textContent=s.textContent.replace(/K/g,'k'));});
+  root.querySelectorAll('[data-kilo-unit]').forEach(g => {
+    g.setAttribute('data-kilo-unit','kΩ');
+    const span = g.previousElementSibling;
+    if (span && span.tagName.toLowerCase()==='text') span.querySelectorAll('tspan').forEach(t=>t.textContent=t.textContent.replace(/K/g,'k'));
+  });
+  // HTML의 기존 KΩ 표기에서 K는 도형 바로 앞의 텍스트 노드다.
+  root.querySelectorAll('svg[data-kilo-unit]').forEach(g=>{const n=g.previousSibling;if(n&&n.nodeType===3)n.textContent=n.textContent.replace(/K$/,'k');});
+}
+function svgUnits8(stage) {
+  for (const node of [...stage.querySelectorAll('svg text')]) {
+    const raw = node.textContent, parts = unitParts8(raw);
+    if (parts.length === 1) continue;
+    const size = +node.getAttribute('font-size'), y = +node.getAttribute('y');
+    if (node.unitCenter8 == null) node.unitCenter8 = +node.getAttribute('x');
+    if (node.unitGlyph8) node.unitGlyph8.remove();
+    const widths = parts.map((p,i)=>{if(i%2)return size*.84;node.textContent=p;return node.getComputedTextLength();});
+    let x=node.unitCenter8-widths.reduce((a,b)=>a+b,0)/2;
+    node.textContent='';node.setAttribute('x',x);node.setAttribute('text-anchor','start');
+    const glyphs=el('g',{'data-ohm-unit':'Ω'},node.parentNode);node.unitGlyph8=glyphs;
+    parts.forEach((p,i)=>{
+      if(i%2){if(p==='킬로옴'){const k=svgText(glyphs,x+size*.27,y,'k',size,node.getAttribute('fill'));k.setAttribute('text-anchor','start');x+=size*.57;}
+        svgGlyph(glyphs,'Ω',x+size*.42,y-size*.37,size*.74,node.getAttribute('fill'));x+=size*.84;
+      }else{el('tspan',{text:p,x,y},node);x+=widths[i];}
+    });
+    // 표기 도형도 원래 라벨의 등장·숨김을 그대로 따른다.
+    glyphs.style.opacity=node.style.opacity||1;
+  }
+}
+function currentLoop8(ctx,svg,id) {
+  const route=document.createElementNS('http://www.w3.org/2000/svg','path');
+  route.setAttribute('d','M155 89 H260'+svg.querySelector('g > path').getAttribute('d').replace(/^M 260 89/,'')+' H505 V271 H155 Z');
+  const length=route.getTotalLength(), dots=[...svg.querySelectorAll('circle[r="6"]')];
+  while(dots.length<12)dots.push(el('circle',{r:6,fill:IC},svg));
+  dots.forEach(d=>d.setAttribute('data-current-dot',id));
+  const change=id==='L09'?cue(ctx,'이 점 오'):id==='L10'?cue(ctx,'십 볼트로'):0;
+  const v0=id==='L09'?40:id==='L10'?20:40,v1=id==='L09'?20:id==='L10'?40:40;
+  return t=>{
+    const distance=v0*t+(v1-v0)*Math.max(0,t-change);
+    dots.forEach((d,i)=>{
+      const p=route.getPointAtLength((i*length/dots.length+distance)%length);
+      d.setAttribute('cx',p.x);d.setAttribute('cy',p.y);
+      d.style.opacity=Math.hypot(p.x-505,p.y-180)<40 || Math.abs(p.x-155)<1&&Math.abs(p.y-180)<27?0:1;
+    });
+  };
+}
+function miniTriangle8(ctx,x,hide) {
+  const svg=diagram(ctx,x+600,172,180,170,'0 0 200 200');svg.setAttribute('data-mini-triangle',hide);
+  path(svg,'M100 10 L10 190 H190 Z M55 100 H145 M100 100 V190',COLOR.ink,3);
+  svgText(svg,100,75,'V',36,VC);
+  for(const [letter,cx,color] of [['I',65,IC],['R',135,RC]]){
+    if(letter===hide)el('rect',{x:cx-16,y:122,width:32,height:48,rx:3,fill:'#d4e4f7',stroke:color,'stroke-width':2},svg);
+    svgText(svg,cx,159,letter===hide?'?':letter,36,color);
+  }
+  return svg;
+}
+for (const id of EE120_LONG8) {
+  const original=SCENES[id];
+  SCENES[id]={
+    init(ctx){
+      original.init(ctx);this.extra8=[];
+      if(!ctx.long)return;
+      const add=(node,phrase)=>{const at=phrase?cue(ctx,phrase):0;this.extra8.push(t=>show(node,E.prog(t,at,.22),5));return node;};
+      if(['L09','L10','L27','L27B'].includes(id))this.extra8.push(currentLoop8(ctx,ctx.stage.querySelector('svg'),id));
+      if(id==='L27')ctx.stage.querySelector('svg').querySelectorAll('line,path').forEach(n=>{if(n.getAttribute('stroke-width')==='6')n.setAttribute('stroke-width','7');});
+      if(id==='L10'){
+        const r=[...ctx.stage.querySelectorAll('svg text')].find(n=>n.textContent==='2킬로옴');
+        if(r)r.setAttribute('y',40); // 값과 저항의 간격을 16px 이상 확보한다.
+      }
+      if(id==='L14'){
+        const cards=[...ctx.stage.querySelectorAll('.ohm-panel')];
+        cards.filter((_,i)=>i%2===0).forEach(c=>{c.style.justifyContent='flex-start';c.firstChild.style.width='570px';c.firstChild.style.flexShrink='0';});
+        const questions=cards.filter((_,i)=>i%2===0);
+        ['I','R'].forEach((hide,i)=>{const mini=miniTriangle8(ctx,0,hide);questions[i].appendChild(mini);mini.style.left='600px';mini.style.top='10px';mini.style.opacity=1;});
+      }
+      if(id==='L17'||id==='L18'){
+        const panel=ctx.stage.querySelector('.ohm-panel');
+        const at=cue(ctx,'고정하고');panel.setAttribute('data-fixed-label',id);
+        const kind=id==='L17'?'비례':'반비례';
+        panel.innerHTML='<span>'+ (id==='L17'?'저항 1킬로옴 고정':'전압 5V 고정')+'<b data-relation-label style="font-weight:inherit"> · '+kind+'</b></span>';
+        const relation=panel.querySelector('[data-relation-label]'),relationAt=cue(ctx,kind);
+        this.extra8.push(t=>relation.style.opacity=E.prog(t,relationAt,.22));
+        this.extra8.push(t=>show(panel,E.prog(t,at,.22),5));
+        if(id==='L18'){
+          const svg=ctx.stage.querySelector('svg');
+          ctx.stage.querySelectorAll('svg text').forEach(n=>{if(n.textContent==='저항 →'||n.textContent==='전압 →')n.setAttribute('y',424);if(n.textContent==='↑ 전류')n.setAttribute('y',47);});
+        }
+      }
+      if(id==='L22'){
+        // L20 회로의 전원·저항·LED·귀환선을 작은 아이콘으로 재사용한다.
+        const icon=diagram(ctx,1430,155,390,300,'0 0 740 360');icon.setAttribute('data-led-circuit','L20');
+        el('rect',{x:23,y:54,width:162,height:174,rx:19,fill:'#286d85'},icon);
+        svgText(icon,103,130,'5V',56,'#fff');
+        path(icon,'M185 138 H293 M415 138 H528 M573 138 H676 V203 H185',COLOR.ink,5);zig(icon,293,138,122,RC);
+        path(icon,'M528 111 L573 138 L528 165 Z',VC,4,'#f2b3b9');path(icon,'M573 111 V165',COLOR.ink,5);
+        const ray1=arrow(icon,541,103,566,74,RC,3),ray2=arrow(icon,563,103,588,74,RC,3);ray1(1);ray2(1);
+        add(icon,'따로 달아서');
+        const graphSvg=ctx.stage.querySelector('svg');graphSvg.style.left='150px';graphSvg.setAttribute('width',1180);
+      }
+    },
+    frame(ctx,t){
+      original.frame(ctx,t);if(!ctx.long)return;
+      this.extra8.forEach(f=>f(t));htmlUnits8(ctx.stage);svgUnits8(ctx.stage);
+    }
+  };
+}
+// render.py가 자막을 만든 다음 단위만 도형으로 바꾼다. TL 대사/타이밍과 원본 장면표는 보존한다.
+window.addEventListener('DOMContentLoaded',()=>{
+  const base=window.render;
+  window.render=function(t){base(t);if(TL.layout==='long'){
+    const sc=TL.scenes.find(s=>t>=s.start&&t<s.start+s.dur);
+    if(sc&&EE120_LONG8.has(sc.id))htmlUnits8(document.getElementById('sub'));
+  }};
+});
