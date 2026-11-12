@@ -897,3 +897,15 @@ for (const id of ['S2A','S2E']) {
   }
  };
 }
+
+// 제작13차: 팀장님 S2 5초 피드백. 전류값 폭과 관계없이 S2A 회로 위치 고정.
+{
+ const original13=SCENES.S2A;
+ SCENES.S2A={
+  init(ctx){original13.init(ctx);},
+  frame(ctx,t){
+   original13.frame(ctx,t);
+   if(!ctx.long)ctx.stage.querySelector('svg').style.left='22.24px';
+  }
+ };
+}
