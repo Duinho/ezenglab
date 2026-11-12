@@ -300,7 +300,8 @@ function equalBars140(ctx,add){
   const supply=group140(sv,0,0);
   box140(supply,108,68,534,109,VC,'#f3c7ce');svgText(supply,375,138,'전원 전압',44,VC);
   const divided=group140(sv,0,0);
-  box140(divided,108,68,176,109,VC,'#f7dfe1');box140(divided,284,68,358,109,VC,'#ec9ca8');
+  box140(divided,108,68,534,109,VC,'#ec9ca8');
+  el('rect',{x:111,y:71,width:173,height:103,rx:15,fill:'#f7dfe1'},divided);
   svgText(divided,375,138,'전원 전압',44,VC);
   const resistance=group140(sv,0,0);
   box140(resistance,108,253,176,111,RC,'#ffedda');box140(resistance,284,253,358,111,RC,'#f8c895');
@@ -343,21 +344,18 @@ function sensors140(ctx,add,updates){
   return circuit;
 }
 function flow140(ctx,add,updates){
+  // L16 only: roomy chips and exposed arrows, horizontal / vertical independently.
   const items=[['대상 변화','대상이 변하면',OUT_GREEN],['저항 변화','저항이 바뀌어요',RC],['전압 변화','출력 전압이',VC],['숫자로 읽기','숫자로 읽어요',IC],['판단','판단해요',COLOR.teal]];
-  const sv=diagram140(ctx,add);
+  const sv=add(svgAt(ctx.stage,ctx.long?40:43,ctx.long?150:100,ctx.long?1840:774,ctx.long?600:575,ctx.long?'0 0 1840 600':'0 0 774 575'));
   items.forEach(([text,word,col],i)=>{
-    const x=ctx.long?25+i*145:110;
-    const y=ctx.long?145:18+i*89;
-    const width=ctx.long?120:530,h=ctx.long?155:64;
+    const x=ctx.long?20+i*380:72, y=ctx.long?190:10+i*121;
+    const width=ctx.long?280:630,h=ctx.long?300:65;
     const group=group140(sv,x,y);
     box140(group,0,0,width,h,col,'#fff');
-    if(ctx.long&&text==='숫자로 읽기'){
-      svgText(group,width/2,h/2-7,'숫자로',31,col);
-      svgText(group,width/2,h/2+35,'읽기',31,col);
-    }else svgText(group,width/2,h/2+13,text,ctx.long?29:39,col);
+    svgText(group,width/2,h/2+14,text,ctx.long?44:39,col);
     add(group,word);
     if(i){
-      const move=ctx.long?arrow(sv,x-24,y+78,x-4,y+78,COLOR.line,4):arrow(sv,375,y-23,375,y-4,COLOR.line,4);
+      const move=ctx.long?arrow(sv,x-76,y+h/2,x-24,y+h/2,COLOR.sub,6):arrow(sv,387,y-40,387,y-16,COLOR.sub,3);
       const start=cue(ctx,word);
       updates.push(t=>move(E.prog(t,start,.2)));
     }
@@ -400,20 +398,22 @@ function lifeStick140(ctx,add,updates){
 }
 function gauge140(ctx,add){
   const sv=diagram140(ctx,add,'바꿔요');
-  for(const [i,x] of [231,520].entries()){
-    box140(sv,x-72,95,144,280,i?IC:VC,'#fff');
+  for(const [i,x] of [145,605].entries()){
+    box140(sv,x-55,95,110,280,i?IC:VC,'#fff');
     for(let y=117;y<366;y+=38)graphLine(sv,'M'+(x-30)+' '+y+' h60',COLOR.line,5);
     svgText(sv,x,65,i?'0 ~ 1023':'0V ~ 5V',42,i?IC:VC);
   }
   const values=[[333,'0.45V → 약 93','구십삼'],[214,'2.5V → 약 512','오백십이']];
   values.forEach(([y,text,word])=>{
-    const g=group140(sv,0,0);graphLine(g,'M230 '+y+' H520',OUT_GREEN,6);
-    for(const x of [231,520])el('circle',{cx:x,cy:y,r:11,fill:OUT_GREEN},g);
-    svgText(g,376,y-20,text,32,OUT_GREEN);add(g,word);
+    const g=group140(sv,0,0);graphLine(g,'M145 '+y+' H605',OUT_GREEN,6);
+    for(const x of [145,605])el('circle',{cx:x,cy:y,r:11,fill:OUT_GREEN},g);
+    svgText(g,375,y-40,text,32,OUT_GREEN);add(g,word);
   });
 }
 function dividerQuiz140(ctx,add,updates,answer){
-  divider140(ctx,add,updates,{input:'10V',upper:'R1 3킬로옴',lower:'R2 2킬로옴',result:answer?'4V':'? V',compact:answer,inputCue:answer?null:'십 볼트',upperCue:answer?null:'삼 킬로옴',lowerCue:answer?null:'이 킬로옴',outputCue:answer?'사 볼트':'출력 전압은'});
+  const d=divider140(ctx,add,updates,{input:'10V',upper:'R1 3킬로옴',lower:'R2 2킬로옴',result:answer?'4V':'? V',compact:answer,inputCue:answer?null:'십 볼트',upperCue:answer?null:'삼 킬로옴',lowerCue:answer?null:'이 킬로옴',outputCue:answer?'사 볼트':'출력 전압은'});
+  d.upperText.setAttribute('x',105);d.lowerText.setAttribute('x',105);
+  if(!answer){d.upperText.setAttribute('font-size',46);d.lowerText.setAttribute('font-size',46);}
   if(answer)ribbon140(ctx,add,'10 × 2 ÷ (3 + 2) = 4V','십 곱하기',OUT_GREEN,{size:96});
   else updates.push(countdown(ctx,ctx.stage,1520,689,145));
 }
@@ -443,8 +443,9 @@ const SCENES={
  }),
  L06:scene((c,a,u)=>{
    title(c,a,'회로로 보기');
-   divider140(c,a,u,{split:true,emphasis:true,entry:'세로로',inputCue:'구 볼트',groundCue:'영 볼트',upperCue:'일 킬로옴과',lowerCue:'이 킬로옴이',drops:[['3V','삼 볼트'],['6V','육 볼트'],]});
-   const ratio=svgAt(c.stage,c.long?1300:680,c.long?395:322,c.long?280:123,98,'0 0 150 100');svgText(ratio,74,57,'1 : 2',c.long?40:44,VC);a(ratio,'일 대 이니');
+   const d=divider140(c,a,u,{split:true,emphasis:true,entry:'세로로',inputCue:'구 볼트',groundCue:'영 볼트',upperCue:'일 킬로옴과',lowerCue:'이 킬로옴이',drops:[['3V','삼 볼트'],['6V','육 볼트'],]});
+   const ratio=svgText(d.svg,535,249,'1 : 2',44,VC);a(ratio,'일 대 이니');
+   if(!c.long)d.svg.style.left='75px';
  }),
   L07:scene((c,a,u)=>{
    title(c,a,'출력 전압');
@@ -457,6 +458,8 @@ const SCENES={
  L08:scene((c,a,u)=>{
    title(c,a,'식이 나오는 과정');
    const d=divider140(c,a,u,{side:true,entry:'같은 전류가',result:'',input:'V전원',upper:'R1',lower:'R2',ground:'GND'});
+   d.svg.style.left='25px';d.svg.style.width='830px';
+   d.upperText.setAttribute('x',150);d.power.setAttribute('x',420);
    const dots=Array.from({length:3},()=>el('circle',{cx:300,r:7,fill:IC},d.svg));
    u.push(t=>dots.forEach((dot,i)=>dot.setAttribute('cy',179+((i/3+t*.7)%1)*94)));
    cards140(c,a,[['옴　·　KCL　·　KVL','세 법칙을',OUT_GREEN],['1　같은 전류가 흐름','같은 전류가',IC],['2　I = V전원 ÷ (R1 + R2)','전체 전압 나누기',RC,60]],{side:true});
@@ -472,6 +475,8 @@ const SCENES={
  L11:scene((c,a)=>{title(c,a,'저항을 알 때');resistanceBars140(c,a);}),
  L12:scene((c,a,u)=>{
    title(c,a,'전압을 알 때');const d=divider140(c,a,u,{side:true,input:'5V',upper:'1킬로옴',lower:'?',result:'3.3V',outputCue:'삼 점 삼 볼트 부품에'});
+   d.svg.style.left='25px';d.svg.style.width='830px';
+   d.upperText.setAttribute('x',150);d.lowerText.setAttribute('x',125);
    changeText140(c,u,d.lowerText,'?',[['1.94킬로옴','일 점 구사'],['2킬로옴','이 킬로옴을']]);
    cards140(c,a,[['R1 전압 = 5V − 3.3V = 1.7V','일 점 칠',VC,53],['R2 = 1킬로옴 × 3.3 ÷ 1.7 ≈ 1.94킬로옴','일 점 구사',RC,46],['2킬로옴 → 출력 ≈ 3.33V','삼 점 삼삼',OUT_GREEN,53]],{side:true});
  }),
@@ -485,6 +490,8 @@ const SCENES={
  L14:scene((c,a,u)=>{
    title(c,a,'센서의 지금 저항');
    const d=divider140(c,a,u,{side:true,input:'5V',upper:'10킬로옴',lower:'센서 ?',result:'2V',sensor:true,outputCue:'이 볼트가'});
+   d.svg.style.left='25px';d.svg.style.width='830px';
+   d.upperText.setAttribute('x',150);d.lowerText.setAttribute('x',115);
    changeText140(c,u,d.lowerText,'센서 ?',[['6.67킬로옴','육 점 육칠']]);
    cards140(c,a,[['5V − 2V = 3V','삼 볼트예요',VC,62],['10킬로옴 × 2 ÷ 3 ≈ 6.67킬로옴','육 점 육칠',RC,51]],{side:true,top:223});
  }),
@@ -501,15 +508,17 @@ const SCENES={
  }),
  L18:scene((c,a)=>{
    title(c,a,'모든 센서가 이렇지는 않아요');
-   const sv=diagram140(c,a,'온습도 센서나',{compact:true});
-   sensorIcon140(sv,152,161,'heat');sensorIcon140(sv,152,334,'push');
-   svgText(sv,152,257,'온습도',39);svgText(sv,152,430,'거리',39);
-   a(graphLine(sv,'M260 318 H325 V210 H399 V318 H466 V210 H533 V318 H611 V210 H676',IC,12),'디지털 신호로');
+   const sv=a(svgAt(c.stage,310,140,1300,560,'0 0 1000 450'),'온습도 센서나');
+   sensorIcon140(sv,210,100,'heat');sensorIcon140(sv,210,310,'push');
+   svgText(sv,210,220,'온습도',39);svgText(sv,210,430,'거리',39);
+   a(graphLine(sv,'M400 290 H465 V180 H539 V290 H606 V180 H673 V290 H751 V180 H850',IC,12),'디지털 신호로');
    ribbon140(c,a,'사양서 확인','사양서에서',OUT_GREEN,{size:72});
  }),
  L19:scene((c,a,u)=>{
    title(c,a,'아두이노로 밝기 읽기');
-   divider140(c,a,u,{side:true,input:'5V',upper:'10킬로옴',lower:'조도 센서',sensor:true,result:'A0',outputCue:'에이 영에'});
+   const d=divider140(c,a,u,{side:true,input:'5V',upper:'10킬로옴',lower:'조도 센서',sensor:true,result:'A0',outputCue:'에이 영에'});
+   d.svg.style.left='25px';d.svg.style.width='830px';
+   d.upperText.setAttribute('x',150);d.lowerText.setAttribute('x',125);
    cards140(c,a,[['밝을 때 · 1킬로옴 · 약 0.45V','밝을 때',VC,55],['어두울 때 · 10킬로옴 · 2.5V','어두울 때',IC,55]],{side:true,top:235});
  }),
  L20:scene((c,a)=>{title(c,a,'전압을 숫자로');gauge140(c,a);ribbon140(c,a,'센서 저항값은 계산용 예시','예시예요',COLOR.teal,{size:43});}),
@@ -531,6 +540,15 @@ const SCENES={
    const normal=divider140(c,a,u,{entry:'육 볼트가',result:'6V',compact:true});
    const loaded=divider140(c,a,u,{entry:'연결하면',result:'6V',load:true,compact:true});
    const at=cue(c,'연결하면');
+   // L23 only: branch label outside wire and GND below return wire.
+   for(const d of [normal,loaded]){
+     d.svg.setAttribute('viewBox','0 0 750 510');d.svg.setAttribute('height',c.long?560:430);
+     const ground=[...d.svg.querySelectorAll('text')].find(t=>t.textContent==='0V (GND)');ground.setAttribute('y',500);
+   }
+   const branch=loaded.svg.lastElementChild;
+   branch.querySelector('path').setAttribute('d','M510 226 H540 V279 M540 373 V418 H300');
+   branch.children[1].setAttribute('transform','translate(540 326) rotate(90)');
+   branch.querySelector('text').setAttribute('x',665);
    if(c.long){normal.svg.style.left='30px';normal.svg.style.width='850px';loaded.svg.style.left='952px';loaded.svg.style.width='910px';}
    else u.push(t=>{normal.svg.style.visibility=t<at?'visible':'hidden';});
    changeText140(c,u,loaded.value,'6V',[['4.5V','사 점 오']]);
