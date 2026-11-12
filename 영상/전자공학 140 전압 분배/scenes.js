@@ -461,7 +461,13 @@ const SCENES={
    d.svg.style.left='25px';d.svg.style.width='830px';
    d.upperText.setAttribute('x',150);d.power.setAttribute('x',420);
    const dots=Array.from({length:3},()=>el('circle',{cx:300,r:7,fill:IC},d.svg));
-   u.push(t=>dots.forEach((dot,i)=>dot.setAttribute('cy',179+((i/3+t*.7)%1)*94)));
+   // L08: 같은 간격의 전류 점이 R1·R2 전체를 지나고 끝에서 서서히 사라진다.
+   const flowStart=cue(c,'같은 전류가');
+   u.push(t=>dots.forEach((dot,i)=>{
+     const phase=((i/3+Math.max(0,t-flowStart)*.22)%1);
+     dot.setAttribute('cy',48+phase*386);
+     dot.style.opacity=t<flowStart?0:Math.min(1,phase*24,(1-phase)*24);
+   }));
    cards140(c,a,[['옴　·　KCL　·　KVL','세 법칙을',OUT_GREEN],['1　같은 전류가 흐름','같은 전류가',IC],['2　I = V전원 ÷ (R1 + R2)','전체 전압 나누기',RC,60]],{side:true});
  }),
  L09:scene((c,a)=>{
