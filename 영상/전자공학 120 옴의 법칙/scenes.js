@@ -874,3 +874,26 @@ window.addEventListener('DOMContentLoaded',()=>{
   if(s&&EE120_SHORT8.has(s.id)){htmlUnits8(document.getElementById('sub'));htmlUnits8(document.getElementById('hook'));}
  }};
 });
+
+// 제작12차: 팀장님 수정2·3. S2A의 2kΩ 자간과 S2E 초기 회로 위치만 수정.
+for (const id of ['S2A','S2E']) {
+ const original12=SCENES[id];
+ SCENES[id]={
+  init(ctx){this.original12=original12;original12.init(ctx);},
+  frame(ctx,t){
+   this.original12.frame(ctx,t);if(ctx.long)return;
+   const svg=ctx.stage.querySelector('svg');
+   if(id==='S2A'){
+    for(const node of svg.querySelectorAll('text')){
+     if(node.unitGlyph8 && node.textContent.trim()==='2'){
+      const omega=node.unitGlyph8.querySelector('g');
+      if(omega)omega.setAttribute('transform','translate(10 0) '+omega.getAttribute('transform'));
+     }
+    }
+   }else if(parseFloat(svg.style.left)<30){
+    // 5V 등장 후의 기존 최종 위치. 값이 비어 있는 동안에도 같은 위치를 유지.
+    svg.style.left='49.7339px';
+   }
+  }
+ };
+}
