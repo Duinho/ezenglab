@@ -809,3 +809,68 @@ window.addEventListener('DOMContentLoaded',()=>{
     if(sc&&EE120_LONG8.has(sc.id))htmlUnits8(document.getElementById('sub'));
   }};
 });
+
+// 제작8차 후반: 승인된 쇼츠 여섯 장면에만 적용. long/S1/공통 부품 보존.
+const EE120_SHORT8 = new Set(['S2A','L11','S2E','S3A','L20','L21']);
+const s2a8 = scene((ctx,add,updates)=>{
+  title(ctx,add,'간단한 회로');
+  circuit(ctx,add,updates,{voltage:'5V',resistance:'1킬로옴',current:'5mA',change:[['r','2킬로옴','저항을'],['a','2.5mA','전류를']]});
+});
+function shortLoop8(ctx,svg,id){
+  const route=document.createElementNS('http://www.w3.org/2000/svg','path');
+  route.setAttribute('d','M155 89 H260'+svg.querySelector('g > path').getAttribute('d').replace(/^M 260 89/,'')+' H505 V459 H155 Z');
+  const length=route.getTotalLength(),dots=[...svg.querySelectorAll('circle[r="6"]')];
+  while(dots.length<12)dots.push(el('circle',{r:6,fill:IC},svg));
+  dots.forEach(n=>n.setAttribute('data-current-dot',id));
+  const change=id==='S2A'?cue(ctx,'전류를'):0;
+  return t=>{
+    const distance=40*t-(id==='S2A'?20*Math.max(0,t-change):0);
+    dots.forEach((n,i)=>{const p=route.getPointAtLength((i*length/dots.length+distance)%length);n.setAttribute('cx',p.x);n.setAttribute('cy',p.y);n.style.opacity=Math.hypot(p.x-505,p.y-274)<40||Math.abs(p.x-155)<1&&Math.abs(p.y-274)<27?0:1;});
+  };
+}
+for(const id of EE120_SHORT8){
+ const original=SCENES[id];
+ SCENES[id]={
+  init(ctx){
+   this.baseShort8=(!ctx.long&&id==='S2A')?s2a8:original;
+   this.baseShort8.init(ctx);this.shortUpdates8=[];
+   if(ctx.long)return;
+   if(id==='S2A'||id==='S2E'){
+    const svg=ctx.stage.querySelector('svg');svg.setAttribute('viewBox','0 0 680 475');
+    [...svg.querySelectorAll('text')].find(n=>+n.getAttribute('x')===330).setAttribute('y',40);
+    this.shortUpdates8.push(shortLoop8(ctx,svg,id));
+   }
+   if(id==='L11'){
+    const rows=[...ctx.stage.querySelectorAll('.ohm-row')];
+    const header=rows[0],at=cue(ctx,'곱해 볼게요');
+    this.shortUpdates8.push(t=>show(header,E.prog(t,at,.22),5));
+    // 행 틀·입력은 계산을 읽을 때, 결과와 실제 전압은 각 발화에서 채운다.
+    const row=rows[1],cells=[...row.children];
+    const resultAt=cue(ctx,'오예요'),voltageAt=cue(ctx,'실제 전압');
+    this.shortUpdates8.push(t=>{cells[2].style.visibility=t>=resultAt?'visible':'hidden';cells[3].style.visibility=t>=voltageAt?'visible':'hidden';});
+    const restAt=cue(ctx,'나머지 줄도');
+    rows.slice(2).forEach((r,i)=>this.shortUpdates8.push(t=>show(r,E.prog(t,restAt+i*.17,.22),5)));
+   }
+   if(id==='L20'||id==='L21'){
+    const pin=[...ctx.stage.querySelectorAll('svg text')].find(n=>n.textContent==='5V 핀');
+    pin.setAttribute('x',122); // 부품 내부 이름표와 외부 회로선 사이를 확보한다.
+   }
+  },
+  frame(ctx,t){this.baseShort8.frame(ctx,t);if(ctx.long)return;this.shortUpdates8.forEach(f=>f(t));htmlUnits8(ctx.stage);svgUnits8(ctx.stage);
+   if(id==='S2A'||id==='S2E'){
+    const svg=ctx.stage.querySelector('svg');
+    const rects=[...svg.querySelectorAll('path,line,circle,rect,text,polygon,polyline')].filter(n=>n.tagName.toLowerCase()!=='text'||n.textContent.trim()).map(n=>n.getBoundingClientRect()).filter(r=>r.width||r.height);
+    const left=Math.min(...rects.map(r=>r.left)),right=Math.max(...rects.map(r=>r.right));
+    svg.style.left=(parseFloat(svg.style.left)+540-(left+right)/2)+'px';
+   }
+  }
+ };
+}
+window.addEventListener('DOMContentLoaded',()=>{
+ const base=window.render,hook=document.getElementById('hook'),hookOriginal=hook?hook.innerHTML:'';
+ window.render=function(t){base(t);if(TL.layout==='short'){
+  if(hook)hook.innerHTML=hookOriginal;
+  const s=TL.scenes.find(s=>t>=s.start&&t<s.start+s.dur);
+  if(s&&EE120_SHORT8.has(s.id)){htmlUnits8(document.getElementById('sub'));htmlUnits8(document.getElementById('hook'));}
+ }};
+});
