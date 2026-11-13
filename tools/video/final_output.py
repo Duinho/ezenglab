@@ -41,16 +41,18 @@ def normalize(video, audio, output, duration=None):
         cmd = ['ffmpeg', '-v', 'error', '-nostdin', '-y', '-i', str(video), '-i', str(audio),
                '-map', '0:v:0', '-map', '1:a:0', '-c:v', 'copy', '-af', filt,
                '-ar', '48000', '-c:a', 'aac', '-b:a', '192k', '-movflags', '+faststart']
-        if duration is not None:cmd += ['-t', f'{duration:.6f}']
-        cmd += ['-shortest', str(output)]
+        if duration is not None:cmd += ['-t', f'{duration:.6f}', '-shortest']
+        # 롱폼에서 -shortest는 AAC 끝 시각보다 뒤에 놓인 B프레임을 버릴 수 있습니다.
+        # 끝을 자르지 않는 출력은 전체 영상 패킷을 그대로 복사합니다.
+        cmd += [str(output)]
         run(cmd)
         log = run(['ffmpeg', '-hide_banner', '-nostdin', '-i', str(output), '-vn',
                    '-af', 'ebur128=peak=true', '-f', 'null', '-']).stderr
         peaks = re.findall(r'Peak:\s+(-?(?:[\d.]+|inf)) dBFS', log)
         if not peaks:raise ValueError('final AAC true peak measurement missing')
-        if float(peaks[-1]) <= -1.0:
+        if float(peaks[-1]) <= -1.5:
             return {'lufs_target': -16, 'true_peak_target': target, 'aac_true_peak': float(peaks[-1]) if peaks else None}
-    raise ValueError('AAC true peak exceeds -1.0 dBTP after final limiting')
+    raise ValueError('AAC true peak exceeds -1.5 dBTP after final limiting')
 
 
 def finalize(source, output, short=False, tail=0.5):
@@ -62,7 +64,7 @@ def finalize(source, output, short=False, tail=0.5):
     fps = float(v['avg_frame_rate'].split('/')[0]) / float(v['avg_frame_rate'].split('/')[1])
     end = math.ceil(tail_end(source, duration, tail)*fps - 1e-6)/fps if short else duration
     end = min(duration, end)
-    result = normalize(source, source, output, end)
+    result = normalize(source, source, output, end if short else None)
     final_info = probe(output)
     final_video = next(s for s in final_info['streams'] if s['codec_type']=='video')
     return {**result, 'video_codec': 'copy', 'original_duration': duration,
