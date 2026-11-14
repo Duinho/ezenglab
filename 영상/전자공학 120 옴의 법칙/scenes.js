@@ -55,7 +55,7 @@ function kiloohmNotation(ctx, updates) {
 
 // 팀장님 2026-11-12·11-14: 저항 단위는 화면에서 무조건 기호로. 킬로옴 → k + Ω 도형(SI 접두어는 소문자 k), 숫자 뒤 옴 → Ω 도형.
 // 「옴의 법칙」처럼 이름으로 쓰인 옴은 그대로 둔다. 음성은 바꾸지 않는다. 롱폼·쇼츠 모두 적용.
-const OHM_SPLIT = /(킬로옴|(?<=[0-9?]\s?)옴)/;
+const OHM_SPLIT = /((?<=[0-9?→=·]\s?)킬로옴|(?<=[0-9?→=·]\s?)옴)/;
 function ohmNotation(ctx, updates) {
   const symbol = OM.replace('<svg ', '<svg data-ohm-unit="Ω" aria-label="옴" ');
   const walker = document.createTreeWalker(ctx.stage, NodeFilter.SHOW_TEXT);
@@ -724,7 +724,8 @@ const SCENES = {
 const EE120_LONG8 = new Set(['L08','L09','L10','L11','L14','L15','L16','L17','L18','L21','L22','L26','L27','L27B']);
 function unitParts8(text) {
   // 인명/명칭은 한글, 저항 단위만 Ω 도형. 읽기·음성은 바꾸지 않는다.
-  return text.split(/(킬로옴|옴(?!의|이라는))/g);
+  // 2026-11-15 팀장님 「게오르크 옴을 옴 기호로 넣으면 어떡하냐」: 값·단위 자리(숫자·?·→·= 바로 뒤)의 옴만 Ω. 「게오르크 옴이」「단위 옴도」「몇 옴」은 한글 그대로.
+  return text.split(/((?<=[0-9?→=·]\s?)킬로옴|(?<=[0-9?→=·]\s?)옴)/g);
 }
 function htmlUnits8(root) {
   const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT), nodes = [];

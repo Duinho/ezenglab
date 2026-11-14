@@ -120,7 +120,7 @@ window.render = function (t) {
 // 페이퍼로지에 Ω가 없으므로 글꼴 대체 문자 대신 도형으로 그린다. 「옴의 법칙」 같은 이름은 숫자 뒤가 아니라 그대로 둔다.
 const SUB_OHM = '<svg viewBox="0 0 100 100" style="height:.74em;width:.74em;vertical-align:-.02em;overflow:visible"><path d="M 12 92 L 38 92 L 38 79 A 38 38 0 1 1 62 79 L 62 92 L 88 92" fill="none" stroke="currentColor" stroke-width="13" stroke-linejoin="round" stroke-linecap="round"/></svg>';
 function subWord(e, w) {
-  const re = /(킬로옴|(?<=[0-9])옴)/;
+  const re = /((?<=[0-9?→=·]\\s?)킬로옴|(?<=[0-9?→=·]\\s?)옴)/;   // 값·단위 자리만(2026-11-15 팀장님: 게오르크 옴·옴의 법칙·「킬로옴은 옴으로」 같은 이름·낱말은 한글)
   if (!re.test(w)) { e.textContent = w; return; }
   w.split(re).forEach(part => {
     if (part === '킬로옴' || part === '옴') { if (part === '킬로옴') e.appendChild(document.createTextNode('k')); const t = document.createElement('template'); t.innerHTML = SUB_OHM; e.appendChild(t.content); }
