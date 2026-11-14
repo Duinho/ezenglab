@@ -5,7 +5,8 @@
   설명 안의 {long} 같은 표시는 앞서 올린 영상 주소로 바뀐다(쇼츠 설명에 롱폼 주소 넣기).
 - 결과(영상 ID·주소)는 같은 파일의 "결과"에 적는다. 이미 올린 키는 다시 올리지 않는다.
 - "썸네일": jpg 경로를 주면 롱폼에 넣는다(채널 인증 필요, 2MB 이하).
-- "재생목록": 강좌 폴더 이름을 주면 과목 재생목록(예: 인공지능)에 강좌 번호 순서로 넣는다(롱폼만).
+- "재생목록": 강좌 폴더 이름을 주면 과목 재생목록(예: 인공지능)에 강좌 번호 순서로 넣는다(롱폼만). 넣은 뒤 채널 홈 섹션 순서도 맞춘다(arrange_sections).
+- 채널 홈 섹션 순서만 맞추기: python3 tools/video/youtube_upload.py --섹션
 - "설명"을 고치고 다시 돌리면 올린 영상의 설명만 바뀐다. "댓글"이 있으면 영상마다 한 번 댓글을 단다(고정은 스튜디오에서 직접).
 - AI 사용 표시(containsSyntheticMedia)는 업로드 때 켠다. GET 응답에는 이 값이 안 나오므로, 나중에 status를 PUT할 때는 반드시 containsSyntheticMedia: true를 함께 보낸다(빠뜨리면 꺼질 수 있음).
 - "공개": "지금"이면 올리자마자 공개, "2026-11-06T10:00:00Z" 같은 시각이면 그때 공개되게 예약, 없으면 비공개.
@@ -144,6 +145,56 @@ def playlist_place(folder_name, vid):
     return pl["id"], pos
 
 
+SUBJECT_ORDER = ["인공지능", "전자공학", "생활 기기", "전자 부품"]   # 채널 홈 과목 섹션 순서(팀장님 2026-11-10). 새 과목은 재생목록.json에 생긴 순서대로 이 뒤에
+
+
+def arrange_sections():
+    """채널 홈 섹션 순서 맞추기(팀장님 2026-11-14 「재생목록 만들 때 위치까지 보정」).
+    과목 재생목록 섹션을 SUBJECT_ORDER 순으로 맨 위에, 그 뒤에 동영상(recentUploads)·Shorts 등 나머지를 원래 순서로.
+    공개된 과목 재생목록인데 섹션이 없으면 새로 만든다(새 섹션은 맨 아래에 생기므로 바로 이어서 순서를 맞춤).
+    맨 위 소개 영상(채널 예고편)은 섹션 목록 밖이라 건드리지 않는다."""
+    reg = json.load(open(PL_REG, encoding="utf-8")) if os.path.exists(PL_REG) else {}
+    subjects = [x for x in SUBJECT_ORDER if x in reg] + [x for x in reg if x not in SUBJECT_ORDER]
+    pl_of = {reg[x]["id"]: x for x in subjects}
+    items = api("GET", "channelSections?part=snippet,contentDetails&mine=true").get("items", [])
+    have = {tuple(it.get("contentDetails", {}).get("playlists") or []) for it in items}
+    for subj in subjects:
+        pid = reg[subj]["id"]
+        if (pid,) in have:
+            continue
+        st = api("GET", f"playlists?part=status&id={pid}").get("items", [])
+        if st and st[0]["status"]["privacyStatus"] == "public":
+            api("POST", "channelSections?part=snippet,contentDetails",
+                {"snippet": {"type": "singlePlaylist", "style": "horizontalRow"}, "contentDetails": {"playlists": [pid]}})
+            print("채널 홈 섹션 새로 만듦:", subj)
+            items = api("GET", "channelSections?part=snippet,contentDetails&mine=true").get("items", [])
+    def subj_of(it):
+        ps = it.get("contentDetails", {}).get("playlists") or []
+        return pl_of.get(ps[0]) if len(ps) == 1 else None
+    items.sort(key=lambda it: it["snippet"].get("position", 0))
+    want = [it for s in subjects for it in items if subj_of(it) == s] + [it for it in items if subj_of(it) is None]
+    for pos, it in enumerate(want):
+        if it["snippet"].get("position") == pos:
+            continue
+        sn = {"type": it["snippet"]["type"], "position": pos}
+        for key in ("title", "style"):
+            if it["snippet"].get(key):
+                sn[key] = it["snippet"][key]
+        body = {"id": it["id"], "snippet": sn}
+        if it.get("contentDetails"):
+            body["contentDetails"] = it["contentDetails"]
+        try:
+            api("PUT", "channelSections?part=snippet,contentDetails", body)
+        except SystemExit as e:                     # Shorts 같은 종류는 API로 못 옮길 수 있음: 과목 섹션만 맞으면 됨
+            print("섹션 이동 못 함:", it["snippet"]["type"], str(e)[:120])
+    time.sleep(3)
+    now = api("GET", "channelSections?part=snippet,contentDetails&mine=true").get("items", [])
+    now.sort(key=lambda it: it["snippet"].get("position", 0))
+    order = [subj_of(it) or it["snippet"]["type"] for it in now]
+    print("채널 홈 섹션 순서:", " → ".join(order))
+    return order
+
+
 def main():
     plan_path = sys.argv[1]
     plan = json.load(open(plan_path, encoding="utf-8"))
@@ -196,6 +247,7 @@ def main():
         if v.get("재생목록") and not r.get("재생목록"):      # 과목 재생목록에 강좌 번호 순서로 넣기
             pid, pos = playlist_place(v["재생목록"], r["id"])
             r["재생목록"] = pid; print(k, f"재생목록에 넣음(자리 {pos})")
+            arrange_sections()                             # 새 재생목록·섹션이 생겨도 채널 홈 순서를 바로 맞춤
             json.dump(plan, open(plan_path, "w", encoding="utf-8"), ensure_ascii=False, indent=1)
             import subprocess                              # 블로그 글 끝에 이 영상 링크 넣기(세 곳 연결)
             subprocess.run([sys.executable, os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "blogger.py"), "links", v["재생목록"]])
@@ -211,4 +263,7 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    if sys.argv[1:] == ["--섹션"]:
+        arrange_sections()
+    else:
+        main()
