@@ -121,6 +121,17 @@ M["pot"] = """
 <g stroke="#9aa6bb" stroke-width="6" stroke-linecap="round" fill="none"><path d="M150 120 H230 M150 120 l14 -12 M150 120 l14 12"/><path d="M310 120 H390 M390 120 l-14 -12 M390 120 l-14 12"/></g>
 <text x="220" y="370" text-anchor="middle" font-family="P" font-weight="800" font-size="44" fill="{c}">10kΩ</text>"""
 
+M["diode"] = """
+<line x1="20" y1="200" x2="420" y2="200" stroke="#9aa6bb" stroke-width="9" stroke-linecap="round"/>
+<rect x="110" y="160" width="220" height="80" rx="20" fill="#2b2b2b"/>
+<rect x="282" y="160" width="24" height="80" fill="#d9d9d9"/>
+<line x1="120" y1="320" x2="290" y2="320" stroke="{c}" stroke-width="10" stroke-linecap="round"/>
+<path d="M330 320 L292 296 L292 344 Z" fill="{c}"/>
+<line x1="150" y1="90" x2="250" y2="90" stroke="#d1495b" stroke-width="9" stroke-linecap="round"/>
+<path d="M110 90 L148 66 L148 114 Z" fill="#d1495b"/>
+<g stroke="#d1495b" stroke-width="9" stroke-linecap="round"><line x1="285" y1="70" x2="325" y2="110"/><line x1="325" y1="70" x2="285" y2="110"/></g>
+<text x="220" y="400" text-anchor="middle" font-family="P" font-weight="800" font-size="38" fill="{c}">정방향만 통과</text>"""
+
 M["appliances"] = """
 <rect x="60" y="90" width="130" height="250" rx="16" fill="#f4f6f9" stroke="#7d8798" stroke-width="6"/>
 <line x1="60" y1="185" x2="190" y2="185" stroke="#7d8798" stroke-width="5"/>
@@ -143,6 +154,7 @@ M["heatmove"] = """
 <text x="220" y="410" text-anchor="middle" font-family="P" font-weight="800" font-size="38" fill="{c}">안의 열을 밖으로</text>"""
 
 COVERS = {
+    "전자 부품 140 다이오드": ("diode", "띠 쪽으로만 전류를 내보내고\n반대쪽은 거의 막아요"),
     "전자 부품 130 가변저항": ("pot", "손잡이로 나누는 자리를 옮겨서\n출력 전압을 바꿔요"),  # 폴더: (그림, 한 줄 문구 — 강좌 본문 문장에서 가져옴, \n=줄바꿈)
     "인공지능 110 인공지능 첫걸음": ("fruit", "데이터에서 규칙을 배워\n처음 보는 상황에서도 판단해요"),
     "인공지능 120 kNN 알고리즘": ("knn", "나와 비슷한 이웃을 보면\n내가 누군지 알 수 있다"),
@@ -166,6 +178,7 @@ TITLE_LINES = {  # 왼쪽 정사각형에 크게 넣을 제목 줄(없으면 띄
     "전자공학 110 전압·전류·저항": ["전압", "전류", "저항"],
     "전자 부품 110 전자 부품 지도": ["전자 부품", "지도"],
     "전자 부품 130 가변저항": ["가변", "저항"],
+    "전자 부품 140 다이오드": ["다이", "오드"],
     "인공지능 140 로지스틱 회귀 개념편": ["로지스틱", "회귀", "개념편"],
     "인공지능 145 로지스틱 회귀 계산편": ["로지스틱", "회귀", "계산편"],
     "인공지능 130 선형 회귀 개념편": ["선형 회귀", "개념편"],
