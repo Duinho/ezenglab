@@ -464,7 +464,7 @@ function gauge140(ctx,add){
 function dividerQuiz140(ctx,add,updates,answer){
   const d=divider140(ctx,add,updates,{input:'10V',upper:'R1 3킬로옴',lower:'R2 2킬로옴',result:answer?'4V':'? V',compact:answer,inputCue:answer?null:'십 볼트',upperCue:answer?null:'삼 킬로옴',lowerCue:answer?null:'이 킬로옴',outputCue:answer?'사 볼트':'출력 전압은'});
   d.upperText.setAttribute('x',105);d.lowerText.setAttribute('x',105);
-  if(!answer){d.upperText.setAttribute('font-size',46);d.lowerText.setAttribute('font-size',46);}
+  if(!answer){d.upperText.setAttribute('font-size',52);d.lowerText.setAttribute('font-size',52);d.value.setAttribute('font-size',64);d.power.setAttribute('font-size',52);}  // 옴 도형으로 바뀐 뒤 채움 4% 아래로 내려가 글자를 조금 키움
   if(answer)ribbon140(ctx,add,'10 × 2 ÷ (3 + 2) = 4V','십 곱하기',OUT_GREEN,{size:96});
   else updates.push(countdown(ctx,ctx.stage,1520,689,145));
 }
