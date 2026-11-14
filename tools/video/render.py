@@ -113,8 +113,19 @@ window.render = function (t) {
   let ph = null; for (const p of sc.phrases) if (lt >= p.start - SUB_LEAD && lt < p.end + .25) ph = p;
   const txt = ph ? ph.text : '';
   if (sub.dataset.t !== txt) { sub.dataset.t = txt; sub.innerHTML = txt ? '<span></span>' : '';
-    if (txt) { const box = sub.firstChild; txt.split(' ').forEach((w, i) => { if (i) box.appendChild(document.createTextNode(' ')); const e = document.createElement('i'); e.textContent = w; e.style.fontStyle = 'normal'; box.appendChild(e); }); } }
+    if (txt) { const box = sub.firstChild; txt.split(' ').forEach((w, i) => { if (i) box.appendChild(document.createTextNode(' ')); const e = document.createElement('i'); subWord(e, w); e.style.fontStyle = 'normal'; box.appendChild(e); }); } }
 };
+// 자막의 저항 단위도 기호로(영상_제작_기준: 화면·자막 모두 Ω, 킬로옴은 KΩ, 팀장님 2026-11-12·11-14).
+// 페이퍼로지에 Ω가 없으므로 글꼴 대체 문자 대신 도형으로 그린다. 「옴의 법칙」 같은 이름은 숫자 뒤가 아니라 그대로 둔다.
+const SUB_OHM = '<svg viewBox="0 0 100 100" style="height:.74em;width:.74em;vertical-align:-.02em;overflow:visible"><path d="M 12 92 L 38 92 L 38 79 A 38 38 0 1 1 62 79 L 62 92 L 88 92" fill="none" stroke="currentColor" stroke-width="13" stroke-linejoin="round" stroke-linecap="round"/></svg>';
+function subWord(e, w) {
+  const re = /(킬로옴|(?<=[0-9])옴)/;
+  if (!re.test(w)) { e.textContent = w; return; }
+  w.split(re).forEach(part => {
+    if (part === '킬로옴' || part === '옴') { if (part === '킬로옴') e.appendChild(document.createTextNode('K')); const t = document.createElement('template'); t.innerHTML = SUB_OHM; e.appendChild(t.content); }
+    else if (part) e.appendChild(document.createTextNode(part));
+  });
+}
 window.overlaps = () => {
   // 글·그림·상자가 서로 겹치는지, 화면 가장자리 여백(MARGIN)을 지키는지, 진행자 얼굴을 가리는지 검사
   const st = stage.getBoundingClientRect(), out = [], M = 30;   // 화면 가장자리 여백(px)

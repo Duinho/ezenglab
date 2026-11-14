@@ -7,6 +7,53 @@ function svgGlyph(svg, kind, cx, cy, size, color) {          // SVG 안에 Ω �
   return g;
 }
 
+// 팀장님 2026-11-12·11-14: 저항 단위는 화면에서 무조건 기호로. 킬로옴 → K + Ω 도형, 숫자 뒤 옴 → Ω 도형.
+// 「옴의 법칙」처럼 이름으로 쓰인 옴은 그대로 둔다. 음성은 바꾸지 않는다. 롱폼·쇼츠 모두 적용.
+const OHM_SPLIT = /(킬로옴|(?<=[0-9?]\s?)옴)/;
+function ohmNotation(ctx, updates) {
+  const symbol = OM.replace('<svg ', '<svg data-ohm-unit="Ω" aria-label="옴" ');
+  const walker = document.createTreeWalker(ctx.stage, NodeFilter.SHOW_TEXT);
+  const htmlTexts = [];
+  while (walker.nextNode()) {
+    const node = walker.currentNode;
+    if (!node.parentElement.closest('svg') && OHM_SPLIT.test(node.textContent)) htmlTexts.push(node);
+  }
+  for (const node of htmlTexts) {
+    const fragment = document.createDocumentFragment();
+    node.textContent.split(OHM_SPLIT).forEach(part => {
+      if (part === '킬로옴' || part === '옴') {
+        if (part === '킬로옴') fragment.appendChild(document.createTextNode('K'));
+        const template = document.createElement('template'); template.innerHTML = symbol;
+        fragment.appendChild(template.content);
+      } else if (part) fragment.appendChild(document.createTextNode(part));
+    });
+    node.replaceWith(fragment);
+  }
+  const labels = [...ctx.stage.querySelectorAll('svg text')];
+  const centres = new Map(labels.map(node => [node, +node.getAttribute('x')]));
+  // 값이 바뀌는 글자(changeText140) 뒤에 적용해 1.94킬로옴 → 2킬로옴 같은 변화도 기호로 유지한다.
+  updates.push(() => {
+    for (const node of labels) {
+      if (node.ohmRaw === node.textContent && node.ohmGlyph) continue;
+      const raw = node.textContent, m = raw.match(OHM_SPLIT);
+      if (node.ohmGlyph) { node.ohmGlyph.remove(); node.ohmGlyph = null; }
+      if (!m) continue;
+      const before = raw.slice(0, m.index) + (m[0] === '킬로옴' ? 'K' : ''), after = raw.slice(m.index + m[0].length);
+      const size = +node.getAttribute('font-size'), y = +node.getAttribute('y');
+      node.setAttribute('x', centres.get(node)); node.setAttribute('text-anchor', 'middle');
+      node.textContent = before; const leftWidth = before ? node.getComputedTextLength() : 0;
+      node.textContent = after; const rightWidth = after ? node.getComputedTextLength() : 0;
+      const gap = size * .84, x = centres.get(node) - (leftWidth + gap + rightWidth) / 2;
+      node.textContent = ''; node.setAttribute('x', x); node.setAttribute('text-anchor', 'start');
+      el('tspan', { text: before }, node);
+      el('tspan', { text: after, dx: gap }, node);
+      node.ohmGlyph = svgGlyph(node.parentNode, 'Ω', x + leftWidth + gap / 2, y - size * .37, size * .74, node.getAttribute('fill'));
+      node.ohmGlyph.setAttribute('data-ohm-unit', 'Ω');
+      node.ohmRaw = node.textContent;
+    }
+  });
+}
+
 function lab(parent, x, y, w, html, size, opt = {}) {
   const d = el('div', { class: 'abs ' + (opt.cls || 'lb'), style: { left: x + 'px', top: y + 'px', width: w + 'px', fontSize: size + 'px', color: opt.color || COLOR.ink } }, parent);
   d.innerHTML = html; d.style.opacity = 0; return d;
@@ -109,6 +156,7 @@ function scene(draw) {
         return node;
       };
       draw(ctx, add, updates);
+      ohmNotation(ctx, updates);
       this.updates = updates;
     },
     frame(ctx, time) { this.updates.forEach(update => update(time)); },
@@ -194,6 +242,9 @@ function resistor(svg, x, y, vertical = false) {
 }
 
 const OUT_GREEN=COLOR.green;
+// 단계 번호는 글자와 떨어진 동그라미 배지로(팀장님 2026-11-14: 1 2 3이 따로 보이게)
+const step140=(n,color)=>'<span style="display:inline-flex;align-items:center;justify-content:center;width:1.3em;height:1.3em;border-radius:50%;background:'+color+';color:#fff;font-size:.78em;margin-right:.7em;vertical-align:.06em;flex:none">'+n+'</span>';
+const vsub=(name)=>'V<sub>'+name+'</sub>';
 const formula140=colored('V<sub>출력</sub>',VC)+' = '+colored('V<sub>전원</sub>',VC)+' × '+colored('R2 ÷ (R1 + R2)',RC);
 
 function diagram140(ctx,add,phrase,{side=false,compact=false}={}){
@@ -460,6 +511,7 @@ const SCENES={
    const d=divider140(c,a,u,{side:true,entry:'같은 전류가',result:'',input:'V전원',upper:'R1',lower:'R2',ground:'GND'});
    d.svg.style.left='25px';d.svg.style.width='830px';
    d.upperText.setAttribute('x',150);d.power.setAttribute('x',420);
+   d.power.textContent='';el('tspan',{text:'V'},d.power);el('tspan',{text:'전원','font-size':27,dy:8},d.power);
    const dots=Array.from({length:3},()=>el('circle',{cx:300,r:7,fill:IC},d.svg));
    // L08: 같은 간격의 전류 점이 R1·R2 전체를 지나고 끝에서 서서히 사라진다.
    const flowStart=cue(c,'같은 전류가');
@@ -468,11 +520,11 @@ const SCENES={
      dot.setAttribute('cy',48+phase*386);
      dot.style.opacity=t<flowStart?0:Math.min(1,phase*24,(1-phase)*24);
    }));
-   cards140(c,a,[['옴　·　KCL　·　KVL','세 법칙을',OUT_GREEN],['1　같은 전류가 흐름','같은 전류가',IC],['2　I = V전원 ÷ (R1 + R2)','전체 전압 나누기',RC,60]],{side:true});
+   cards140(c,a,[['옴　·　KCL　·　KVL','세 법칙을',OUT_GREEN],[step140(1,IC)+'같은 전류가 흐름','같은 전류가',IC],[step140(2,RC)+'I = '+vsub('전원')+' ÷ (R1 + R2)','전체 전압 나누기',RC,60]],{side:true});
  }),
  L09:scene((c,a)=>{
    title(c,a,'전압 분배 식');cards140(c,a,[
-     ['3　V출력 = I × R2','전류 곱하기',IC,77],
+     [step140(3,IC)+vsub('출력')+' = I × R2','전류 곱하기',IC,77],
      [formula140,'합치면',VC,96],
      ['전원 전압 × 내 몫의 비율','말로 풀면',OUT_GREEN,60],
    ]);
