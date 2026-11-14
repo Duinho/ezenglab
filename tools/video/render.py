@@ -25,6 +25,7 @@ MAXCH = {"long": 26, "short": 26}   # 쇼츠는 두 줄까지 한 화면에(폭 
 MAXLINES = {"long": 1, "short": 2}
 END_SEC = 2.2
 SCENE_CACHE = os.path.join(os.environ.get("EZ_HOME", "/home/claude"), "build", "scene_cache")   # 장면별 완성 조각(mp4)과 그림 지문
+JOIN_DIFF = 0.3  # 앞뒤 장면 무대 그림(그려진 칸 기준)이 이 비율 이하만 다르면 같은 화면으로 보고 페이드 없이 이어 감
 FP_TOL = 6      # 지문 비교 허용치(0~255). 시험: 그릴 때 생기는 차이 최대 1, 글자 하나 추가 79, 2px 이동 21
 
 CSS = """
@@ -91,8 +92,8 @@ window.render = function (t) {
   }
   const lt = t - sc.start;
   SCENES[sc.id].frame(ctx, lt);
-  // 장면 전환: 앞뒤 0.2초 살짝 밝게
-  stage.style.opacity = Math.min(1, lt / .2, (sc.dur - lt) / .2 + .0001);
+  // 장면 전환: 앞뒤 0.2초 살짝 밝게. 앞뒤 장면 그림이 거의 같으면(joinPrev/joinNext) 깜빡이지 않고 그대로 이어 감(팀장님 2026-11-14)
+  stage.style.opacity = Math.min(1, sc.joinPrev ? 1 : lt / .2, sc.joinNext ? 1 : (sc.dur - lt) / .2 + .0001);
   // 진행자: 말하는 단어 동안 입을 여닫고, 3.7초마다 눈 깜빡임
   const host = document.getElementById('host');
   if (host && host.firstChild) {
@@ -382,6 +383,36 @@ def main():
         import numpy as np
         return x is not None and x.shape == y.shape and int(np.abs(x.astype(np.int16) - y.astype(np.int16)).max()) <= FP_TOL
 
+    def join_same_scenes(pg):
+        """앞 장면 끝 그림과 다음 장면 시작 그림이 거의 같으면 사이의 페이드아웃·인을 없앤다(팀장님 2026-11-14
+        「같은 화면인데 굳이 페이드아웃했다가 다시 들어오는 것, 쭉 이어 가」). 무대(stage)만 비교하고 자막·진행자는 뺀다.
+        다음 장면은 시작 0.6초 뒤 그림(첫 그림이 자리 잡은 뒤)과 비교한다. 인트로·아웃트로 앞뒤는 그대로 둔다."""
+        import io, numpy as np
+        from PIL import Image
+        box = pg.evaluate("(()=>{const r=document.getElementById('stage').getBoundingClientRect();return {x:r.left,y:r.top,width:r.width,height:r.height}})()")
+        def shot(t):
+            pg.evaluate("resetScene()"); pg.evaluate(f"render({t})")
+            pg.evaluate("document.getElementById('stage').style.opacity=1")
+            im = Image.open(io.BytesIO(pg.screenshot(type="png", clip=box))).convert("L")
+            return np.asarray(im.resize((max(1, im.width // 8), max(1, im.height // 8)), Image.BILINEAR), dtype=np.int16)
+        joins, special = [], set(pg.evaluate("(()=>{const o=[];for(const k in SCENES){if((typeof INTRO!=='undefined'&&SCENES[k]===INTRO)||(typeof OUTRO!=='undefined'&&SCENES[k]===OUTRO))o.push(k)}return o})()"))
+        diffs = report.setdefault("전환 차이", [])
+        for x, y in zip(tl, tl[1:]):
+            if x["id"] in special or y["id"] in special:
+                continue
+            if x["dur"] < 1.0 or y["dur"] < 1.2:
+                continue
+            A = shot(x["start"] + x["dur"] - 0.25); B = shot(y["start"] + 0.6)
+            bg = int(np.bincount(A.ravel().clip(0, 255).astype(np.int64)).argmax())          # 배경색(가장 많은 밝기)
+            ink = (np.abs(A - bg) > 25) | (np.abs(B - bg) > 25)                             # 둘 중 하나라도 그림이 있는 칸
+            changed = float(((np.abs(A - B) > 40) & ink).sum() / max(1, ink.sum())); diffs.append([x["id"], y["id"], round(changed, 3)])
+            if changed <= JOIN_DIFF:
+                joins.append([x["id"], y["id"], round(changed, 3)])
+        if joins:
+            pairs = {(p, q) for p, q, _ in joins}
+            pg.evaluate("(pairs)=>{for(const [p,q] of pairs){const a=TL.scenes.find(s=>s.id===p),b=TL.scenes.find(s=>s.id===q);a.joinNext=true;b.joinPrev=true;}}", [list(p) for p in pairs])
+        return joins
+
     whole = a.preview or a.frames_only
     redo, reused = [], []
     with sync_playwright() as pw:
@@ -396,6 +427,7 @@ def main():
         report["fonts"] = pg.evaluate("[...document.fonts].filter(f=>f.status==='loaded').map(f=>f.weight).join(',')")
         for sid, f0, f1 in segs:                         # 미리 한 번씩 그려 글꼴·그림을 준비(첫 장면 지문이 흔들리지 않게)
             pg.evaluate("resetScene()"); pg.evaluate(f"render({(f0 + f1) // 2 / FPS})"); pg.screenshot(type="png")
+        report["이어진 전환"] = join_same_scenes(pg)
         if whole:
             for sid, f0, f1 in segs:
                 merge(sid, f0, check_range(pg, f0, f1, os.path.join(work, "f")))
