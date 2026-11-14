@@ -7,7 +7,7 @@ function svgGlyph(svg, kind, cx, cy, size, color) {          // SVG 안에 Ω �
   return g;
 }
 
-// 팀장님 2026-11-12·11-14: 저항 단위는 화면에서 무조건 기호로. 킬로옴 → K + Ω 도형, 숫자 뒤 옴 → Ω 도형.
+// 팀장님 2026-11-12·11-14: 저항 단위는 화면에서 무조건 기호로. 킬로옴 → k + Ω 도형(SI 접두어는 소문자 k), 숫자 뒤 옴 → Ω 도형.
 // 「옴의 법칙」처럼 이름으로 쓰인 옴은 그대로 둔다. 음성은 바꾸지 않는다. 롱폼·쇼츠 모두 적용.
 const OHM_SPLIT = /(킬로옴|(?<=[0-9?]\s?)옴)/;
 function ohmNotation(ctx, updates) {
@@ -22,7 +22,7 @@ function ohmNotation(ctx, updates) {
     const fragment = document.createDocumentFragment();
     node.textContent.split(OHM_SPLIT).forEach(part => {
       if (part === '킬로옴' || part === '옴') {
-        if (part === '킬로옴') fragment.appendChild(document.createTextNode('K'));
+        if (part === '킬로옴') fragment.appendChild(document.createTextNode('k'));
         const template = document.createElement('template'); template.innerHTML = symbol;
         fragment.appendChild(template.content);
       } else if (part) fragment.appendChild(document.createTextNode(part));
@@ -38,7 +38,7 @@ function ohmNotation(ctx, updates) {
       const raw = node.textContent, m = raw.match(OHM_SPLIT);
       if (node.ohmGlyph) { node.ohmGlyph.remove(); node.ohmGlyph = null; }
       if (!m) continue;
-      const before = raw.slice(0, m.index) + (m[0] === '킬로옴' ? 'K' : ''), after = raw.slice(m.index + m[0].length);
+      const before = raw.slice(0, m.index) + (m[0] === '킬로옴' ? 'k' : ''), after = raw.slice(m.index + m[0].length);
       const size = +node.getAttribute('font-size'), y = +node.getAttribute('y');
       node.setAttribute('x', centres.get(node)); node.setAttribute('text-anchor', 'middle');
       node.textContent = before; const leftWidth = before ? node.getComputedTextLength() : 0;
