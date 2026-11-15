@@ -52,8 +52,49 @@ const INTRO = {
 
 // 공통 마무리 인사: "지금까지 눈바공 연구소 바닥 연구소장이었습니다. … 구독과 좋아요 … 다음 영상에서 만나요."
 // 모든 강좌 영상 끝에 같은 장면을 쓴다(장면표에서 이 장면 이름을 OUTRO로 연결).
+// 롱폼 3판(팀장님 2026-11-15 「이전 영상 다음 영상 하는 그림 다시」): 유튜브 최종 화면(이전 강의·다음 강의 동영상 칸 + 구독)이
+// 정확히 얹히도록 칸을 미리 그려 둔다. 칸 위치는 영상_제작_기준.md 「최종 화면」 표와 같다(1920×1080 기준).
+//   이전 강의 x130 y330 600×338 · 다음 강의 x790 y330 600×338 · 구독 동그라미 중심 (1640, 500) 지름 250
+const OUTRO_LONG = {
+  init(ctx) {
+    const s = ctx.stage;
+    this.logo = el('div', { class: 'abs center intro-target', style: { left: 0, width: '100%', top: '44px', fontSize: '96px' } }, s);
+    this.logo.innerHTML = '눈바공<span class="lab"> 연구소</span><span class="intro-role outro-role">바닥 연구소장</span>';
+    this.role = this.logo.querySelector('.outro-role');
+    const slot = (x, label, color, left) => {
+      const lab = el('div', { class: 'abs outro-lab', style: { left: x + 'px', top: '262px', color, width: '600px', textAlign: left ? 'left' : 'left' } }, s);
+      lab.textContent = label;
+      const fr = el('div', { class: 'abs outro-fr', style: { left: x + 'px', top: '330px', borderColor: color } }, s);
+      fr.innerHTML = `<svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z" fill="${color}"/></svg>`;
+      return [lab, fr];
+    };
+    this.prev = slot(130, '◀ 이전 강의', '#3b6fb6');
+    this.next = slot(790, '다음 강의 ▶', '#e0701b');
+    this.subLab = el('div', { class: 'abs outro-lab', style: { left: '1515px', width: '250px', top: '262px', textAlign: 'center', color: '#d24a5a' } }, s);
+    this.subLab.textContent = '구독';
+    this.circ = el('div', { class: 'abs outro-circ' }, s);
+    this.bye = el('div', { class: 'abs center outro-bye', style: { left: 0, width: '100%', top: '735px', fontSize: '64px' } }, s);
+    this.bye.textContent = '다음 영상에서 만나요';
+    this.t = { role: ctx.at('바닥', 1, 1.4) - .1, sub: ctx.w('구독과') - .1, ask: ctx.w('부탁드려요') - .1, bye: ctx.w('다음') - .1 };
+  },
+  frame(ctx, t) {
+    // 최종 화면 카드는 장면 시작과 함께 뜨므로 칸도 처음부터 보이게 한다(짧은 페이드만).
+    const a = E.prog(t, 0, .3);
+    show(this.logo, a, 0);
+    [...this.prev, ...this.next, this.subLab, this.circ].forEach(n => show(n, a, 0));
+    this.role.style.opacity = E.prog(t, this.t.role, .4);
+    const press = E.prog(t, this.t.sub, .6);              // 「구독과」에서 구독 동그라미가 한 번 커졌다 돌아옴
+    const k = 1 + .08 * Math.sin(Math.PI * press);
+    this.circ.style.transform = `scale(${k})`;
+    this.circ.classList.toggle('on', press >= .5);
+    show(this.bye, E.prog(t, this.t.bye, .4), 20);
+  },
+};
+
 const OUTRO = {
   init(ctx) {
+    if (ctx.long) { this.long = true; return OUTRO_LONG.init.call(this, ctx); }
+    this.long = false;
     const L = ctx.long, s = ctx.stage;
     this.logo = el('div', { class: 'abs center intro-target', style: { left: 0, width: '100%', top: (L ? 90 : 30) + 'px', fontSize: (L ? 150 : 120) + 'px' } }, s);
     this.logo.innerHTML = '눈바공<span class="lab"> 연구소</span>';
@@ -69,6 +110,7 @@ const OUTRO = {
       ask: ctx.w('부탁드려요') - .1, bye: ctx.w('다음') - .1 };
   },
   frame(ctx, t) {
+    if (this.long) return OUTRO_LONG.frame.call(this, ctx, t);
     pop(this.logo, E.prog(t, Math.min(0, this.t.logo), .45), .8);
     pop(this.role, E.prog(t, this.t.role, .45), .7);
     pop(this.sub, E.prog(t, this.t.sub, .4), .6);

@@ -63,6 +63,9 @@ html,body{margin:0;width:%(W)dpx;height:%(H)dpx;overflow:hidden;background:#f2f8
 .ob.sub{border-color:#d24a5a;color:#d24a5a}.ob.sub.on{background:#d24a5a;color:#fff}
 .ob.like{border-color:#3b6fb6;color:#3b6fb6}
 .outro-bye{font-weight:800;color:#14936a}
+.outro-role{font-size:40px;padding:8px 30px;margin-left:24px;vertical-align:middle}.outro-lab{font-weight:800;font-size:46px}
+.outro-fr{width:600px;height:338px;border-radius:22px;background:#fff;border:6px solid;box-sizing:border-box;display:flex;align-items:center;justify-content:center}.outro-fr svg{width:110px;opacity:.25}
+.outro-circ{left:1515px;top:375px;width:250px;height:250px;border-radius:50%%;border:6px dashed #d24a5a;box-sizing:border-box;background:#fff}.outro-circ.on{background:#fde8eb}
 #host{position:absolute;z-index:5;width:%(hs)dpx;height:%(hs)dpx;left:%(hx)dpx;top:%(hy)dpx;filter:drop-shadow(0 6px 10px rgba(0,0,0,.12))}
 #host svg{width:100%%;height:100%%}
 #host #eyes{transform-box:fill-box;transform-origin:50%% 50%%}
