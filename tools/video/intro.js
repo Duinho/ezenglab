@@ -54,7 +54,8 @@ const INTRO = {
 // 모든 강좌 영상 끝에 같은 장면을 쓴다(장면표에서 이 장면 이름을 OUTRO로 연결).
 // 롱폼 3판(팀장님 2026-11-15 「이전 영상 다음 영상 하는 그림 다시」): 유튜브 최종 화면(이전 강의·다음 강의 동영상 칸 + 구독)이
 // 정확히 얹히도록 칸을 미리 그려 둔다. 칸 위치는 영상_제작_기준.md 「최종 화면」 표와 같다(1920×1080 기준).
-//   이전 강의 x130 y330 600×338 · 다음 강의 x790 y330 600×338 · 구독 동그라미 중심 (1640, 500) 지름 250
+//   이전 강의 x120 y326 620×349 · 다음 강의 x782 y326 620×349 · 구독 동그라미 중심 (1640, 500) 지름 296
+//   (칸 크기는 유튜브 최종 화면 요소의 최소 크기: 동영상·재생목록 619×349, 구독 296×296 — 2026-11-15 스튜디오에서 실측)
 const OUTRO_LONG = {
   init(ctx) {
     const s = ctx.stage;
@@ -64,13 +65,13 @@ const OUTRO_LONG = {
     const slot = (x, label, color, left) => {
       const lab = el('div', { class: 'abs outro-lab', style: { left: x + 'px', top: '262px', color, width: '600px', textAlign: left ? 'left' : 'left' } }, s);
       lab.textContent = label;
-      const fr = el('div', { class: 'abs outro-fr', style: { left: x + 'px', top: '330px', borderColor: color } }, s);
+      const fr = el('div', { class: 'abs outro-fr', style: { left: x + 'px', top: '326px', borderColor: color } }, s);
       fr.innerHTML = `<svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z" fill="${color}"/></svg>`;
       return [lab, fr];
     };
-    this.prev = slot(130, '◀ 이전 강의', '#3b6fb6');
-    this.next = slot(790, '다음 강의 ▶', '#e0701b');
-    this.subLab = el('div', { class: 'abs outro-lab', style: { left: '1515px', width: '250px', top: '262px', textAlign: 'center', color: '#d24a5a' } }, s);
+    this.prev = slot(120, '◀ 이전 강의', '#3b6fb6');
+    this.next = slot(782, '다음 강의 ▶', '#e0701b');
+    this.subLab = el('div', { class: 'abs outro-lab', style: { left: '1492px', width: '296px', top: '262px', textAlign: 'center', color: '#d24a5a' } }, s);
     this.subLab.textContent = '구독';
     this.circ = el('div', { class: 'abs outro-circ' }, s);
     this.bye = el('div', { class: 'abs center outro-bye', style: { left: 0, width: '100%', top: '735px', fontSize: '64px' } }, s);
