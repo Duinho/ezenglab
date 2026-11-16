@@ -93,3 +93,10 @@ SCENES.S2A=scene(c=>{const p=setup(c,'전자 부품 지도');const m=map(c,p,35,
 SCENES.S2E=scene(c=>{const p=setup(c,'');const m=map(c,p,35,75,790,480,{active:false,icons:false});m.cells.forEach(o=>{opacity(o.name,0);opacity(o.desc,0);text(o.node,o.x+o.w/2,o.y+o.h/2,'?',74,EP.gray,true);});appear(c,m.node,'다섯');});
 SCENES.S3A=scene(c=>{const p=setup(c,'');const a=componentCard(c,p,35,100,365,500,'아두이노','board',EP.control,'판단',36),b=componentCard(c,p,460,100,365,500,'모터','motor',EP.output,'움직임',36);appear(c,a.node,'작은');appear(c,b.node,'모터는');animateMotor(c,b,clock(c,'모터는'));});
 SCENES.S3E=scene(c=>{const p=setup(c,'');const s=motorSolution(c,p,40,40,780,340);animateMotor(c,s.mo,clock(c,'모터를'));const m=map(c,p,35,405,790,240,{icons:false,compact:true});appear(c,m.node,'어느');const q=text(p,430,350,'?',48,EP.circuit,true);appear(c,q,'어느');});
+
+SCENES.S1C=scene(c=>{setup(c,'');});
+SCENES.S1D=scene(c=>{setup(c,'');});
+SCENES.S2C=scene(c=>{setup(c,'');});
+SCENES.S2D=scene(c=>{setup(c,'');});
+SCENES.S3C=scene(c=>{setup(c,'');});
+SCENES.S3D=scene(c=>{setup(c,'');});

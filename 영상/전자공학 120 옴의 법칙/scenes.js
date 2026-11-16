@@ -959,3 +959,6 @@ for (const id of ['S2A','S2E']) {
   }
  };
 }
+
+SCENES.S3C=scene(()=>{});
+SCENES.S3D=scene(()=>{});

@@ -75,6 +75,11 @@ html,body{margin:0;width:%(W)dpx;height:%(H)dpx;overflow:hidden;background:#f2f8
 #hook b{color:#14936a}
 #brand{position:absolute;left:0;right:0;bottom:70px;text-align:center;font-size:34px;font-weight:600;color:#14936a;opacity:.85}
 #endcard{position:absolute;inset:0;background:#14936a;color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:30px;text-align:center;opacity:0}
+#endcard.cta{justify-content:flex-start;padding-top:330px;gap:22px}
+#ctanext{opacity:0;margin-top:70px;background:#fff;color:#14213d;border-radius:28px;padding:26px 44px;font-size:58px;font-weight:800;line-height:1.3;max-width:860px}
+#ctanext span{display:block;font-size:38px;font-weight:600;color:#14936a;margin-bottom:6px}
+#ctapill{margin-top:56px;color:#fff;font-size:70px;font-weight:800;padding:20px 78px;border-radius:999px;box-shadow:0 10px 24px rgba(0,0,0,.18);opacity:0}
+#ctaarrow{position:absolute;left:0;top:0;pointer-events:none}
 #endcard .a{font-size:%(endf)dpx;font-weight:800;line-height:1.3}#endcard .b{font-size:44px;font-weight:600;opacity:.9}
 """
 
@@ -86,6 +91,15 @@ window.resetScene = () => { cur = null; };   // 다음 render에서 장면을 �
 window.render = function (t) {
   let sc = TL.scenes.find(s => t >= s.start && t < s.start + s.dur);
   const end = document.getElementById('endcard');
+  const pill = document.getElementById('ctapill');
+  if (pill && TL.ctaAt != null) {
+    const k = Math.min(1, Math.max(0, (t - TL.ctaAt) / .3)), pop = k < 1 ? 1 + .25 * Math.sin(Math.PI * k) : 1;
+    const nx = document.getElementById('ctanext'); nx.style.opacity = Math.min(1, Math.max(0, (t - TL.nextAt) / .3));
+    pill.style.opacity = k; pill.style.transform = `scale(${k ? pop : .6})`;
+    const pa = document.getElementById('ctapath'), hd = document.getElementById('ctahead'), L = pa.getTotalLength();
+    const d = Math.min(1, Math.max(0, (t - TL.ctaAt - .2) / .5));
+    pa.style.strokeDasharray = L; pa.style.strokeDashoffset = L * (1 - d); hd.style.opacity = d >= 1 ? 1 : 0;
+  }
   if (!sc) { end.style.opacity = 1; sub.innerHTML = ''; return; }
   end.style.opacity = TL.endAt != null ? Math.min(1, Math.max(0, (t - TL.endAt) / .35)) : 0;
   if (cur !== sc.id) {
@@ -227,6 +241,9 @@ def main():
     ap.add_argument("--preview", type=float, default=0, help="영상 대신 N초마다 한 장씩만 저장(빠른 확인)")
     ap.add_argument("--end-cue", default="", help="마지막 장면에서 이 단어를 말할 때 끝 안내 화면을 띄움(쇼츠)")
     ap.add_argument("--full", action="store_true", help="저장된 장면을 쓰지 않고 전부 다시 만듦(업로드 전 최종본)")
+    ap.add_argument("--cta", default="", help="구독(유튜브) 또는 팔로우(인스타): 마지막 장면(SxC·SxD)에서 이 낱말을 말할 때 끝 카드에 버튼과 실제 버튼 쪽 화살표를 띄움(팀장님 2026-11-16)")
+    ap.add_argument("--next", default="", help="끝 카드 「다음 편」 상자 글자(다음 쇼츠 제목 질문). 마지막 장면 시작에 나타남")
+    ap.add_argument("--next-label", default="다음 편", help="상자 위 작은 글자(마지막 편이면 「다음 강의」)")
     ap.add_argument("--end-tail", type=float, default=0.5, help="--end-cue 쇼츠 최종 출력에서 마지막 말 뒤 남길 시간(초)")
     a = ap.parse_args()
     if not math.isfinite(a.end_tail) or a.end_tail < 0:ap.error("--end-tail은 0 이상이어야 합니다")
@@ -261,16 +278,21 @@ def main():
     end_at = None
     if a.end_cue:
         last = tl[-1]
-        w = [x for x in last["words"] if a.end_cue in x["text"]]
-        if not w:
+        hit = next(((sc, [x for x in sc["words"] if a.end_cue in x["text"]]) for sc in reversed(tl) if any(a.end_cue in x["text"] for x in sc["words"])), None)
+        if not hit:
             raise SystemExit(f"--end-cue 단어를 찾지 못함: {a.end_cue}")
-        end_at = round(last["start"] + w[-1]["start"] - 0.15, 3)   # 같은 단어가 여러 번이면 마지막 것
+        end_at = round(hit[0]["start"] + hit[1][-1]["start"] - 0.15, 3)   # 같은 단어가 여러 번이면 마지막 것
         spoken_end = last["start"] + max(x["end"] for x in last["words"])
         end_sec = 0
         last["dur"] = round(math.ceil(round((spoken_end + max(0.8, a.end_tail) - last["start"]) * FPS, 6)) / FPS, 4)
         last["hold"] = 0
         t = last["start"] + last["dur"]
     total = t + end_sec
+    cta_at = None
+    if a.cta:
+        cw = [x for x in tl[-1]["words"] if a.cta in x["text"]]
+        if not cw: raise SystemExit(f"--cta 낱말을 찾지 못함: {a.cta}")
+        cta_at = round(tl[-1]["start"] + cw[-1]["start"] - 0.1, 3)
 
     work = os.path.join(os.path.dirname(os.path.abspath(a.out)), "_work_" + os.path.basename(a.out).rsplit(".", 1)[0])
     shutil.rmtree(work, ignore_errors=True)
@@ -299,6 +321,13 @@ def main():
                      endf=72 if a.layout == "short" else 80,
                      hs=190 if a.layout == "long" else 160, hx=1700 if a.layout == "long" else 750,
                      hy=880 if a.layout == "long" else 1340)
+    cta_html = ""
+    if a.cta:
+        col = "#ff0033" if a.cta == "구독" else "#0095f6"
+        cta_html = (f'<div id="ctanext"><span>{a.next_label}</span>{a.next}</div>'
+                    f'<div id="ctapill" style="background:{col}">{a.cta}</div>'
+                    '<svg id="ctaarrow" width="1080" height="1920" viewBox="0 0 1080 1920"><path id="ctapath" d="M 400 1090 C 210 1150 120 1360 150 1560 C 160 1650 220 1700 300 1730" fill="none" stroke="#fff" stroke-width="14" stroke-linecap="round"/>'
+                    '<path id="ctahead" d="M 262 1690 L 312 1736 L 250 1758" fill="none" stroke="#fff" stroke-width="14" stroke-linecap="round" stroke-linejoin="round"/></svg>')
     hook = f'<div id="hook">{a.hook}</div>' if a.layout == "short" else ""   # 아래 채널 문구는 댓글 칸에 가려 뺌(2판)
     endtext = a.endtext or "전체 설명은<br>관련 동영상에서"
     host_svg = open(os.path.join(HERE, "characters", "sojang_face.svg"), encoding="utf-8").read() if not a.no_host else ""
@@ -308,8 +337,8 @@ def main():
     scn = open(os.path.join(a.folder, "scenes.js"), encoding="utf-8").read()
     html = f"""<!doctype html><html><head><meta charset="utf-8"><style>{css}</style><style>{extra_css}</style></head><body>
 <div id="stage"></div>{hook}<div id="host">{host_svg}</div><div id="sub"></div>
-<div id="endcard"><div class="a">{endtext}</div><div class="b">눈높이가 바닥에 있는 공학 연구소</div></div>
-<script>const TL={json.dumps({"layout": a.layout, "scenes": tl, "endAt": end_at}, ensure_ascii=False)};</script>
+<div id="endcard"{' class="cta"' if a.cta else ''}><div class="a">{endtext}</div><div class="b">눈높이가 바닥에 있는 공학 연구소</div>{cta_html}</div>
+<script>const TL={json.dumps({"layout": a.layout, "scenes": tl, "endAt": end_at, "ctaAt": cta_at, "nextAt": tl[-1]["start"] if a.cta else None}, ensure_ascii=False)};</script>
 <script>const FOLDER={json.dumps(os.path.abspath(a.folder), ensure_ascii=False)};</script><script>{lib}</script><script>{scn}</script><script>{RUNTIME}</script></body></html>"""
     page_path = os.path.join(work, "page.html")
     open(page_path, "w", encoding="utf-8").write(html)
@@ -321,7 +350,7 @@ def main():
     segs = [(sc["id"], int(round(sc["start"] * FPS)), int(round((sc["start"] + sc["dur"]) * FPS))) for sc in tl]
     if n > segs[-1][2]:
         segs.append(("끝", segs[-1][2], n))
-    vkey = [a.layout, a.hook, a.endtext, a.end_cue, max(0.8, a.end_tail), a.no_host] + ([SHORT_LAYOUT] if a.layout == "short" else [])
+    vkey = [a.layout, a.hook, a.endtext, a.end_cue] + ([a.cta, a.next, a.next_label] if a.cta else []) + [ max(0.8, a.end_tail), a.no_host] + ([SHORT_LAYOUT] if a.layout == "short" else [])
     variant = hashlib.md5(json.dumps(vkey).encode()).hexdigest()[:8]
     cdir = os.path.join(SCENE_CACHE, os.path.basename(os.path.abspath(a.folder)), f"{a.layout}_{variant}")
     os.makedirs(cdir, exist_ok=True)

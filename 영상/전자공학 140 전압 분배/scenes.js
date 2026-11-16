@@ -660,3 +660,10 @@ const SCENES={
    ribbon140(c,a,'무엇을 써야 할까요?','무엇을 써야',IC);
  }),
 };
+
+SCENES.S1C=scene(()=>{});
+SCENES.S1D=scene(()=>{});
+SCENES.S2C=scene(()=>{});
+SCENES.S2D=scene(()=>{});
+SCENES.S3C=scene(()=>{});
+SCENES.S3D=scene(()=>{});
