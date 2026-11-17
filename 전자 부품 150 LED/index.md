@@ -146,6 +146,34 @@ LED 하나는 색 하나만 내요. 그런데 조명용 LED는 흰색이에요. 
 >
 > 나카무라 슈지는 자기 발명에 대해 회사에서 받은 돈이 2만 엔뿐이었다며 회사를 상대로 소송을 걸었어요. 1심 법원은 회사가 200억 엔을 줘야 한다고 판결했고, 2005년 두 쪽은 약 8억 4천만 엔에 합의했어요. 회사는 그동안 승진과 보너스로 충분히 보상했다고 맞섰어요. 이 일로 일본에서는 회사 안 발명가의 보상을 두고 큰 논쟁이 벌어졌어요([The Japan Times](https://japantimes.co.jp/news/2005/01/13/national/inventor-of-blue-led-angry-with-settlement), [Wikipedia: Shuji Nakamura](https://en.wikipedia.org/wiki/Shuji_Nakamura)).
 
+### 4-4. 다른 색은 어떻게 만들까요?
+
+주황, 노랑, 청록, 보라 LED도 있어요. 자동차 방향지시등의 호박색, 살균기의 자외선도 LED예요. 띠틈은 재료가 정하는데, 재료를 물감처럼 섞는 비율을 바꾸면 띠틈을 조금씩 옮길 수 있어요.
+
+- 알루미늄·갈륨·인듐·인을 섞은 재료: 빨강, 주황, 노랑을 맡아요.
+- 질화갈륨에 인듐을 섞은 재료: 보라, 파랑, 초록을 맡아요. 인듐을 많이 넣을수록 띠틈이 작아져 초록 쪽으로 가요.
+
+그런데 두 재료 사이, 초록에서 노랑 구간은 LED가 유난히 어두워요. 질화갈륨 쪽은 초록으로 가려고 인듐을 많이 넣을수록 전자와 빈자리가 서로 잘 못 만나고, 반대쪽 재료는 노랑에서 초록으로 갈수록 전자가 엉뚱한 곳으로 새어 나가요. 이 구간을 「초록 틈(그린 갭)」이라고 부르고, 지금도 연구 중이에요([Compound Semiconductor](https://compoundsemiconductor.net/article/101325/Getting_to_grips_with_the_green_gap)).
+
+### 4-5. 왜 빨강·초록·파랑 세 가지일까요?
+
+![빨강·초록·파랑 빛을 섞으면](e16_rgb.png)
+
+TV, 휴대폰 화면, 전광판, RGB LED는 모두 빨강·초록·파랑(RGB) 세 가지 빛만 써요. 그런데도 노랑, 분홍, 하늘색까지 다 보여요. 비밀은 LED가 아니라 우리 눈에 있어요.
+
+우리 눈 안쪽에는 색을 느끼는 세포가 세 종류 있어요. 하나는 긴 파장(빨강 쪽), 하나는 중간 파장(초록 쪽), 하나는 짧은 파장(파랑 쪽)에 가장 잘 반응해요. 뇌는 이 세 세포가 각각 얼마나 반응했는지를 비교해서 색을 느껴요([Wikipedia: Cone cell](https://en.wikipedia.org/wiki/Cone_cell)).
+
+그래서 진짜 노란빛이 없어도, 빨간빛과 초록빛을 함께 비춰서 세 세포가 노란빛을 볼 때와 비슷하게 반응하면 우리는 노랑으로 느껴요. 세 가지를 다 켜면 흰색으로 느끼고요.
+
+- 빨강 + 초록 = 노랑
+- 초록 + 파랑 = 청록
+- 파랑 + 빨강 = 자홍(분홍빛 보라)
+- 셋 다 = 흰색
+
+빨강·초록·파랑을 고르는 이유는 이 세 빛이 눈의 세 세포를 서로 가장 다르게 자극하기 때문이에요. 셋이 서로 멀리 떨어져 있을수록 섞어서 만들 수 있는 색의 범위가 넓어져요. 대신 세 빛으로 만든 색의 범위 밖에 있는 아주 진한 색은 화면이 그대로 보여 주지 못해요([Wikipedia: RGB color model](https://en.wikipedia.org/wiki/RGB_color_model)).
+
+휴대폰 화면의 노란 부분을 돋보기로 가까이 보면 노란 점은 없고 빨간 점과 초록 점만 켜져 있는 경우가 많아요. 그래서 4-4의 어두운 노랑·연두 LED를 억지로 만들 필요 없이, 밝게 잘 만드는 빨강·초록·파랑 세 가지로 거의 모든 색을 보여 줄 수 있어요. 흰색 LED처럼 형광 물질로 색을 바꾸는 방법도 있고요.
+
 ## 5. 저항은 꼭 같이 달아요
 
 ### 5-1. LED만 전원에 이으면
@@ -327,7 +355,7 @@ LED에 걸리는 전압은 켜진 뒤에는 거의 그대로예요. 밝기를 �
 >
 > - 긴 다리 = 애노드(+), 짧은 다리·평평한 테두리 = 캐소드(−), 기호는 다이오드 + 바깥 화살표 두 개
 > - 색은 반도체 재료의 띠틈(떨어지는 에너지 높이)이 정한다. 띠틈이 클수록 파란 쪽이고 켜지는 전압도 높다(빨강 약 2V, 파랑·흰색 약 3V).
-> - 흰색 LED는 파란 LED + 노란 형광 물질
+> - 흰색 LED는 파란 LED + 노란 형광 물질. 화면은 빨강·초록·파랑 세 빛을 섞어 눈의 세 가지 색 세포를 속인다.
 > - 저항을 꼭 같이 단다. R = (전원 전압 − LED 전압) ÷ 전류
 > - 직렬이면 LED 전압이 더해지고, 병렬이면 LED마다 저항을 따로 단다.
 > - 밝기는 전류로 정한다. 아두이노에서는 PWM으로 켜진 시간의 비율을 바꾼다.
@@ -400,6 +428,9 @@ LED는 달구지 않고 빛을 만들어서 열이 적게 나기 때문이에요
 ## 참고 자료
 
 - [Wikipedia: Light-emitting diode](https://en.wikipedia.org/wiki/Light-emitting_diode)
+- [Wikipedia: Cone cell](https://en.wikipedia.org/wiki/Cone_cell)
+- [Wikipedia: RGB color model](https://en.wikipedia.org/wiki/RGB_color_model)
+- [Compound Semiconductor: Getting to grips with the green gap](https://compoundsemiconductor.net/article/101325/Getting_to_grips_with_the_green_gap)
 - [스웨덴 왕립과학원: 2014 노벨 물리학상](https://kva.se/en/news/nobelpriset-i-fysik-2014-2)
 - [IEEE Photonics Society: The Birth of the Visible LED](https://ieeephotonics.org/news/the-birth-of-the-visible-led-nick-holonyak-jr-and-a-turning-point-in-photonics/)
 - [Digi-Key: Whiter, Brighter LEDs](https://www.digikey.kr/ko/articles/whiter-brighter-leds)
