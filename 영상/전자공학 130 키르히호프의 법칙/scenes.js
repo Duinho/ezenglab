@@ -573,15 +573,26 @@ function branch6(c,a,u,arduino=false){
   const top=70,bottom=390,by=230;
   path(sv,'M180 70 H800 M180 390 H800 M180 70 V165 M180 295 V390',COLOR.ink,8);battery130(sv,180,by,arduino?'5V':'6V');if(!L)sv.querySelector('text').setAttribute('font-size',46);
   [430,800].forEach((x,i)=>{
-    path(sv,'M'+x+' 70 V183 M'+x+' 277 V390',COLOR.ink,8);resistor(sv,x,230,true);unit6(sv,x,25,arduino?'220옴':i?'1.5킬로옴':'1킬로옴',L?36:44);
+    path(sv,'M'+x+' 70 V183 M'+x+' 277 V390',COLOR.ink,8);resistor(sv,x,230,true);unit6(sv,x,L?40:25,arduino?'220옴':i?'1.5킬로옴':'1킬로옴',L?36:44);
     for(const y of [70,390])el('circle',{cx:x,cy:y,r:9,fill:COLOR.teal},sv);
     if(arduino){path(sv,'M'+(x-15)+' 300 h30 l-15 28 Z M'+(x-18)+' 330 h36',VC,4,VC);a(svgText(sv,x+160,230,'약 13.6mA',36,IC),'십삼 점 육');}
     else a(svgText(sv,x+100,230,i?'4mA':'6mA',L?40:46,IC),i?'사 밀리암페어':'육 밀리암페어');
-    dotFlow(c,sv,u,[x,85,x,175],arduino?'십삼 점 육':i?'사 밀리암페어':'육 밀리암페어',3);
+    // 갈림 전과 합류 뒤의 공통선까지 포함한 닫힌 경로를 순환한다.
+    let route='M180 212 V70 H'+x+' V183';
+    for(let j=0;j<6;j++)route+=' L'+(x-(j%2?18:-18))+' '+(183+94/12+j*94/6);
+    route+=' L'+x+' 277 V390 H180 V212';
+    const track=path(sv,route,'none');track.style.visibility='hidden';
+    const length=track.getTotalLength(),start=cue(c,arduino?'십삼 점 육':i?'사 밀리암페어':'육 밀리암페어');
+    const count=arduino?6:i?6:9;
+    const dots=Array.from({length:count},()=>el('circle',{r:6,fill:IC,'data-role':'current-flow','data-branch':i},sv));
+    u.push(t=>dots.forEach((dot,j)=>{
+      const distance=(j*length/count+Math.max(0,t-start)*150+i*35)%length,p=track.getPointAtLength(distance);
+      dot.setAttribute('cx',p.x);dot.setAttribute('cy',p.y);dot.style.visibility=t>=start?'visible':'hidden';
+    }));
   });
-  if(arduino){a(svgText(sv,265,25,'약 27.2mA',36,IC),'이십칠 점 이');const doc=el('g',{},sv);box130(doc,620,270,58,85,COLOR.sub);path(doc,'M633 296 H665 M633 314 H665 M633 332 H659',COLOR.sub,4);a(doc,'공식 사양');}
+  if(arduino){a(svgText(sv,265,40,'약 27.2mA',36,IC),'이십칠 점 이');const doc=el('g',{},sv);box130(doc,620,270,58,85,COLOR.sub);path(doc,'M633 296 H665 M633 314 H665 M633 332 H659',COLOR.sub,4);a(doc,'공식 사양');}
   else{
-    a(svgText(sv,290,25,'10mA',L?40:44,IC),'십 밀리암페어가');a(svgText(sv,290,455,'10mA',L?40:44,IC),'다시 만나는');
+    a(svgText(sv,290,L?40:25,'10mA',L?40:44,IC),'십 밀리암페어가');a(svgText(sv,290,455,'10mA',L?40:44,IC),'다시 만나는');
     const by=L?750:555,bx=L?400:42,bw=L?830:400;panel(c,a,bx,by,bw,L?120:92,'10 = 6 + 4','자전거',IC,L?76:44);
     const icon=svgAt(c.stage,L?1290:470,L?707:520,L?385:350,L?175:145,'0 0 385 175');path(icon,'M25 85 H180 M180 85 L280 30 H355 M180 85 L280 145 H355',IC,9);
     for(const [x,y] of [[35,58],[268,3],[268,118]]){const b=bicycle(icon,0,0,false);b.setAttribute('transform','translate('+x+' '+y+') scale(.23)');}a(icon,'자전거');
@@ -593,7 +604,19 @@ function shortSeries6(c,a,u){
   const sv=svgAt(c.stage,30,130,800,340,'0 0 800 390');a(sv,'한 줄로');
   path(sv,'M160 85 H323 M417 85 H580 V158 M580 252 V350 H160 V278 M160 148 V85',COLOR.ink,7);battery130(sv,160,213,'9V');resistor(sv,370,85);resistor(sv,580,205,true);
   unit6(sv,370,30,'1킬로옴',40);unit6(sv,701,220,'2킬로옴',40);
-  a(svgText(sv,385,300,'3mA',40,IC),'삼 밀리암페어');dotFlow(c,sv,u,[210,350,520,350],'같은 전류가',6);
+  a(svgText(sv,385,300,'3mA',40,IC),'삼 밀리암페어');
+  let route='M160 195 V85 H323';
+  for(let j=0;j<6;j++)route+=' L'+(323+94/12+j*94/6)+' '+(85+(j%2?18:-18));
+  route+=' L417 85 H580 V158';
+  for(let j=0;j<6;j++)route+=' L'+(580-(j%2?18:-18))+' '+(158+94/12+j*94/6);
+  route+=' L580 252 V350 H160 V195';
+  const track=path(sv,route,'none');track.style.visibility='hidden';
+  const length=track.getTotalLength(),start=cue(c,'같은 전류가');
+  const dots=Array.from({length:12},()=>el('circle',{r:6,fill:IC,'data-role':'current-flow'},sv));
+  u.push(t=>dots.forEach((dot,j)=>{
+    const p=track.getPointAtLength((j*length/dots.length+Math.max(0,t-start)*150)%length);
+    dot.setAttribute('cx',p.x);dot.setAttribute('cy',p.y);dot.style.visibility=t>=start?'visible':'hidden';
+  }));
   panel(c,a,42,468,776,65,notation6('1킬로옴 + 2킬로옴 = 3킬로옴'),'삼 킬로옴이고',RC,34);
   panel(c,a,42,576,776,58,notation6('9V ÷ 3,000옴 = 3mA'),'삼 밀리암페어',IC,34);
 }
