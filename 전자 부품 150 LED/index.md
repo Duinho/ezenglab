@@ -155,24 +155,51 @@ LED 하나는 색 하나만 내요. 그런데 조명용 LED는 흰색이에요. 
 
 그런데 두 재료 사이, 초록에서 노랑 구간은 LED가 유난히 어두워요. 질화갈륨 쪽은 초록으로 가려고 인듐을 많이 넣을수록 전자와 빈자리가 서로 잘 못 만나고, 반대쪽 재료는 노랑에서 초록으로 갈수록 전자가 엉뚱한 곳으로 새어 나가요. 이 구간을 「초록 틈(그린 갭)」이라고 부르고, 지금도 연구 중이에요([Compound Semiconductor](https://compoundsemiconductor.net/article/101325/Getting_to_grips_with_the_green_gap)).
 
-### 4-5. 왜 빨강·초록·파랑 세 가지일까요?
+### 4-5. 화면에 물 한 방울을 떨어뜨리면
 
 ![빨강·초록·파랑 빛을 섞으면](e16_rgb.png)
 
-TV, 휴대폰 화면, 전광판, RGB LED는 모두 빨강·초록·파랑(RGB) 세 가지 빛만 써요. 그런데도 노랑, 분홍, 하늘색까지 다 보여요. 비밀은 LED가 아니라 우리 눈에 있어요.
+휴대폰 화면에 노란 바나나 사진을 띄우고, 화면 위에 물을 아주 작게 한 방울 떨어뜨려 보세요. 동그란 물방울이 작은 돋보기처럼 화면을 크게 보여 줘요([MyTutor: 물방울 돋보기](https://mytutor.co.uk/answers/58674/GCSE/Physics/why-is-it-that-When-there-is-a-small-droplet-on-a-phone-the-pixels-of-the-screen-can-be-seen)).
 
-우리 눈 안쪽에는 색을 느끼는 세포가 세 종류 있어요. 하나는 긴 파장(빨강 쪽), 하나는 중간 파장(초록 쪽), 하나는 짧은 파장(파랑 쪽)에 가장 잘 반응해요. 뇌는 이 세 세포가 각각 얼마나 반응했는지를 비교해서 색을 느껴요([Wikipedia: Cone cell](https://en.wikipedia.org/wiki/Cone_cell)).
+물방울 속 바나나는 무슨 색 점들로 이루어져 있을까요?
 
-그래서 진짜 노란빛이 없어도, 빨간빛과 초록빛을 함께 비춰서 세 세포가 노란빛을 볼 때와 비슷하게 반응하면 우리는 노랑으로 느껴요. 세 가지를 다 켜면 흰색으로 느끼고요.
+<details>
+<summary>정답 보기</summary>
+
+노란 점은 없고 빨간 점과 초록 점이 나란히 켜져 있는 경우가 많아요. 하얀 부분을 보면 빨강·초록·파랑 셋이 모두 켜져 있어요. 화면마다 점의 모양과 배열은 조금씩 달라요.
+
+TV, 휴대폰, 모니터, 전광판은 빨강·초록·파랑(RGB) 세 가지 빛만으로 노랑, 분홍, 하늘색, 흰색까지 보여 줘요. 노란빛을 따로 내지 않는데 어떻게 노랗게 보일까요? 비밀은 화면이 아니라 우리 눈에 있어요.
+
+</details>
+
+### 4-6. 눈 속의 세 가지 색 세포
+
+![노란빛 하나와 빨강+초록 빛은 눈에 같은 신호를 만들어요](e17_cones.png)
+
+눈 안쪽에는 색을 느끼는 세포가 세 종류 있어요. 하나는 긴 파장(빨강 쪽), 하나는 중간 파장(초록 쪽), 하나는 짧은 파장(파랑 쪽)에 가장 잘 반응해요. 세 세포가 반응하는 범위는 서로 조금씩 겹쳐 있어요. 뇌는 빛의 파장을 직접 재지 못하고, 이 세 세포가 각각 얼마나 반응했는지만 비교해서 색을 정해요([Wikipedia: Cone cell](https://en.wikipedia.org/wiki/Cone_cell)).
+
+진짜 노란빛이 눈에 들어오면 빨강 쪽 세포와 초록 쪽 세포가 함께 반응하고, 파랑 쪽 세포는 거의 반응하지 않아요. 그런데 빨간빛과 초록빛을 알맞은 세기로 같이 비춰도 세 세포가 똑같은 모양으로 반응해요. 신호가 같으니 뇌는 둘을 구별하지 못하고 둘 다 노랑으로 느껴요.
+
+**눈이 받는 신호가 같으면 같은 색으로 보여요.** 화면은 이 점을 이용해서 세 가지 빛의 세기만 바꿔 수많은 색을 만들어 내요.
 
 - 빨강 + 초록 = 노랑
 - 초록 + 파랑 = 청록
 - 파랑 + 빨강 = 자홍(분홍빛 보라)
 - 셋 다 = 흰색
 
-빨강·초록·파랑을 고르는 이유는 이 세 빛이 눈의 세 세포를 서로 가장 다르게 자극하기 때문이에요. 셋이 서로 멀리 떨어져 있을수록 섞어서 만들 수 있는 색의 범위가 넓어져요. 대신 세 빛으로 만든 색의 범위 밖에 있는 아주 진한 색은 화면이 그대로 보여 주지 못해요([Wikipedia: RGB color model](https://en.wikipedia.org/wiki/RGB_color_model)).
+### 4-7. 하필 빨강·초록·파랑인 이유
 
-휴대폰 화면의 노란 부분을 돋보기로 가까이 보면 노란 점은 없고 빨간 점과 초록 점만 켜져 있는 경우가 많아요. 그래서 4-4의 어두운 노랑·연두 LED를 억지로 만들 필요 없이, 밝게 잘 만드는 빨강·초록·파랑 세 가지로 거의 모든 색을 보여 줄 수 있어요. 흰색 LED처럼 형광 물질로 색을 바꾸는 방법도 있고요.
+세 가지를 고를 때는 세 빛이 눈의 세 세포를 서로 최대한 다르게 자극해야 해요. 빨강은 주로 빨강 쪽 세포를, 초록은 주로 초록 쪽 세포를, 파랑은 주로 파랑 쪽 세포를 건드려요. 그래야 세 빛의 세기를 따로 조절해서 세 세포의 반응을 따로따로 움직일 수 있어요.
+
+세 빛이 서로 멀리 떨어진 색일수록 섞어서 만들 수 있는 색의 범위도 넓어져요. 노랑·청록·보라처럼 가까운 색끼리 고르면 만들 수 있는 색이 확 줄어요. 대신 빨강·초록·파랑으로도 범위 밖의 아주 진한 색은 똑같이 보여 줄 수 없어서, 화면에 따라 표현할 수 있는 색 범위가 달라요([Wikipedia: RGB color model](https://en.wikipedia.org/wiki/RGB_color_model)).
+
+LED 쪽 사정도 맞아떨어져요. 4-4에서 본 것처럼 연두·노랑 LED는 어두운데, 빨강·초록·파랑은 밝게 잘 만들 수 있어요. 어려운 색을 직접 만들 필요 없이 잘 만드는 세 가지만 섞으면 되는 거예요.
+
+> 미술 시간의 삼원색은 왜 다를까요?
+>
+> 물감은 빛을 더하는 게 아니라 빛을 빨아들여서 색을 내요. 그래서 섞을수록 빼는 빛이 많아져 어두워지고, 다 섞으면 검정에 가까워져요. 빛은 반대로 더할수록 밝아져 흰색이 돼요. 그래서 프린터 잉크는 빛의 삼원색을 하나씩 빼 주는 청록·자홍·노랑을 써요.
+
+**다른 동물이 보면?** 개는 색 세포가 두 종류라서 빨강과 주황을 잘 구별하지 못하고, 많은 새는 네 종류라서 사람에게 안 보이는 자외선까지 봐요([Wikipedia: Color vision](https://en.wikipedia.org/wiki/Color_vision)). 사람 눈에 맞춘 RGB 화면이 새에게는 우리와 다르게 보일 수 있어요.
 
 ## 5. 저항은 꼭 같이 달아요
 
@@ -425,11 +452,21 @@ LED는 달구지 않고 빛을 만들어서 열이 적게 나기 때문이에요
 
 </details>
 
+<b>Q8.</b> 휴대폰 화면의 노란 부분에는 어떤 색 점들이 켜져 있을까요? 왜 그렇게 해도 노랗게 보일까요?
+
+<details>
+<summary>정답 보기</summary>
+
+빨간 점과 초록 점이에요. 빨간빛과 초록빛을 함께 받으면 눈의 빨강 쪽 세포와 초록 쪽 세포가 노란빛을 볼 때와 같은 모양으로 반응해요. 뇌는 세 세포의 신호만 보고 색을 정하니 노랑으로 느껴요.
+
+</details>
+
 ## 참고 자료
 
 - [Wikipedia: Light-emitting diode](https://en.wikipedia.org/wiki/Light-emitting_diode)
 - [Wikipedia: Cone cell](https://en.wikipedia.org/wiki/Cone_cell)
 - [Wikipedia: RGB color model](https://en.wikipedia.org/wiki/RGB_color_model)
+- [Wikipedia: Color vision](https://en.wikipedia.org/wiki/Color_vision)
 - [Compound Semiconductor: Getting to grips with the green gap](https://compoundsemiconductor.net/article/101325/Getting_to_grips_with_the_green_gap)
 - [스웨덴 왕립과학원: 2014 노벨 물리학상](https://kva.se/en/news/nobelpriset-i-fysik-2014-2)
 - [IEEE Photonics Society: The Birth of the Visible LED](https://ieeephotonics.org/news/the-birth-of-the-visible-led-nick-holonyak-jr-and-a-turning-point-in-photonics/)
