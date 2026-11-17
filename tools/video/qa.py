@@ -27,7 +27,10 @@ out["1.5초 넘는 정적"] = [round(float(x), 1) for x in re.findall(r"silence_
 from faster_whisper import WhisperModel
 import numpy as np
 b = subprocess.run(["ffmpeg", "-v", "error", "-i", mp4, "-f", "s16le", "-ac", "1", "-ar", "16000", "-"], capture_output=True).stdout
-m = WhisperModel("medium", device="cpu", compute_type="int8")
+# 2026-11-18 팀장님 「빨라지게 할 수 있는 것들을 다 해보자」: 코덱스 노트북(CPU)에서 medium은 롱폼 한 편에 1시간 넘게 걸려
+# 강제 종료(143)가 잦았다. small/int8로 바꿈(11/17 키르히호프 6차 실측 롱폼 96.9%). 필요하면 EZ_QA_MODEL=medium.
+import os as _os
+m = WhisperModel(_os.environ.get("EZ_QA_MODEL", "small"), device="cpu", compute_type="int8", cpu_threads=_os.cpu_count() or 4)
 segs, _ = m.transcribe(np.frombuffer(b, np.int16).astype(np.float32) / 32768, language="ko")
 hyp = " ".join(s.text for s in segs)
 ref = " ".join(reading_text(byid[i]["reading"]) for i in want)
