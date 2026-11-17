@@ -132,6 +132,16 @@ M["diode"] = """
 <g stroke="#d1495b" stroke-width="9" stroke-linecap="round"><line x1="285" y1="70" x2="325" y2="110"/><line x1="325" y1="70" x2="285" y2="110"/></g>
 <text x="220" y="400" text-anchor="middle" font-family="P" font-weight="800" font-size="38" fill="{c}">정방향만 통과</text>"""
 
+M["led"] = """
+<defs><radialGradient id="ledglow"><stop offset="0" stop-color="#ff5a5a" stop-opacity="0.45"/><stop offset="1" stop-color="#ff5a5a" stop-opacity="0"/></radialGradient></defs>
+<circle cx="220" cy="140" r="120" fill="url(#ledglow)"/>
+<path d="M180 210 L180 120 A40 40 0 0 1 260 120 L260 210 Z" fill="#e23b3b" opacity="0.9"/>
+<rect x="168" y="204" width="96" height="18" rx="4" fill="#e23b3b" opacity="0.9"/>
+<line x1="200" y1="222" x2="200" y2="330" stroke="#9aa6bb" stroke-width="9" stroke-linecap="round"/>
+<line x1="240" y1="222" x2="240" y2="300" stroke="#9aa6bb" stroke-width="9" stroke-linecap="round"/>
+<g stroke="#e07a1f" stroke-width="7" stroke-linecap="round"><line x1="90" y1="100" x2="130" y2="115"/><line x1="350" y1="100" x2="310" y2="115"/><line x1="220" y1="20" x2="220" y2="48"/><line x1="120" y1="40" x2="148" y2="68"/><line x1="320" y1="40" x2="292" y2="68"/></g>
+<text x="220" y="400" text-anchor="middle" font-family="P" font-weight="800" font-size="40" fill="{c}">전기 → 빛</text>"""
+
 M["appliances"] = """
 <rect x="60" y="90" width="130" height="250" rx="16" fill="#f4f6f9" stroke="#7d8798" stroke-width="6"/>
 <line x1="60" y1="185" x2="190" y2="185" stroke="#7d8798" stroke-width="5"/>
@@ -154,6 +164,7 @@ M["heatmove"] = """
 <text x="220" y="410" text-anchor="middle" font-family="P" font-weight="800" font-size="38" fill="{c}">안의 열을 밖으로</text>"""
 
 COVERS = {
+    "전자 부품 150 LED": ("led", "다이오드처럼 한쪽으로만 흐르고\n저항과 함께 달아서 써요"),
     "전자 부품 140 다이오드": ("diode", "띠 쪽으로만 전류를 내보내고\n반대쪽은 거의 막아요"),
     "전자 부품 130 가변저항": ("pot", "손잡이로 나누는 자리를 옮겨서\n출력 전압을 바꿔요"),  # 폴더: (그림, 한 줄 문구 — 강좌 본문 문장에서 가져옴, \n=줄바꿈)
     "인공지능 110 인공지능 첫걸음": ("fruit", "데이터에서 규칙을 배워\n처음 보는 상황에서도 판단해요"),
