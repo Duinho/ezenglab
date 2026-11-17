@@ -25,39 +25,56 @@ LED는 Light Emitting Diode의 줄임말이에요. 우리말로는 「빛을 내
 
 ![눈에는 안 보이는데 카메라에는 보여요](e1_remote.png)
 
-TV 리모컨 앞쪽 끝에는 작은 창이 있어요. 버튼을 눌러도 눈에는 아무것도 안 보여요.
+지금 TV 리모컨을 하나 들어 보세요. 앞쪽 끝에 작은 창이 있어요. 버튼을 눌러도 눈에는 아무것도 안 보여요.
 
-그런데 휴대폰 카메라로 그 창을 비추고 버튼을 누르면 보랏빛 불이 깜빡여요. 무엇이 깜빡이는 걸까요?
-
-<details>
-<summary>정답 보기</summary>
-
-리모컨 안의 LED예요. 사람 눈에는 안 보이는 빛(적외선)을 내는 LED라서 눈으로는 꺼진 것처럼 보여요. 많은 휴대폰 카메라는 적외선을 조금 잡아서 화면에 보랏빛으로 보여 줘요. 기종에 따라 앞쪽 카메라가 더 잘 보여요.
-
-LED가 내는 빛의 색은 LED마다 정해져 있어요. 빨강, 파랑처럼 눈에 보이는 색도 있고 적외선처럼 안 보이는 빛도 있어요. 4장에서 색이 어떻게 정해지는지 볼게요.
-
-</details>
-
-### 2-2. 전구와 LED 전구를 만져 보면
-
-![같은 밝기라도 백열전구는 뜨겁고 LED 전구는 덜 뜨거워요](e2_bulb.png)
-
-옛날 백열전구는 켜 두면 손을 댈 수 없을 만큼 뜨거워요. 비슷한 밝기의 LED 전구는 따뜻한 정도예요.
-
-같은 밝기인데 왜 LED 전구는 덜 뜨겁고 전기도 덜 쓸까요?
+이번엔 휴대폰 카메라를 켜고 그 창을 비춘 채 버튼을 눌러 보세요. 화면 속 리모컨 끝에서 보랏빛 불이 깜빡여요. 눈에는 안 보이던 불이 카메라에는 왜 보일까요?
 
 <details>
 <summary>정답 보기</summary>
 
-빛을 만드는 방법이 달라서예요. 백열전구는 가는 선(필라멘트)을 아주 뜨겁게 달궈서 그 열로 빛을 내요. 그래서 전기 대부분이 빛보다 열이 돼요. LED는 달구지 않고 반도체 안에서 바로 빛을 만들어요. 열로 버리는 몫이 적어서 같은 밝기를 적은 전기로 내요.
+리모컨 안에 사람 눈에는 안 보이는 빛(적외선)을 내는 LED가 있어서예요. 눈으로는 꺼진 것처럼 보여요. 많은 휴대폰 카메라는 적외선을 조금 잡아서 화면에 보랏빛으로 보여 줘요. 기종에 따라 앞쪽 카메라가 더 잘 보여요.
+
+LED는 저마다 내는 빛이 하나로 정해져 있어요. 빨강, 파랑처럼 눈에 보이는 빛도 있고 적외선처럼 안 보이는 빛도 있어요. 그 빛이 어떻게 정해지는지는 4장에서 볼게요.
 
 </details>
 
-### 2-3. 두 예시에서 찾은 규칙
+### 2-2. 신호등에 쌓인 눈
 
-1. LED는 정해진 색(빛의 종류)을 하나 내요.
-2. 달구지 않고 반도체 안에서 바로 빛을 만들어요.
-3. 다이오드라서 한쪽으로만 흐르고, 켜지려면 문턱 전압을 넘어야 해요.
+![전구 신호등은 눈이 녹고 LED 신호등은 눈이 쌓여요](e2_snow.png)
+
+2009년 겨울, 미국 위스콘신과 일리노이 같은 곳에서 이상한 일이 생겼어요. 눈보라가 치자 신호등이 눈에 덮여서 빨간불인지 초록불인지 안 보이게 된 거예요. 사고까지 났어요.
+
+신호등은 예전부터 있었는데 그전에는 이런 일이 드물었어요. 그해에 신호등이 무엇으로 바뀌었길래 눈이 쌓였을까요?
+
+<details>
+<summary>정답 보기</summary>
+
+전구 신호등이 LED 신호등으로 바뀌었어요. 옛 신호등의 백열전구는 가는 선(필라멘트)을 아주 뜨겁게 달궈서 빛을 내요. 그 열이 신호등 앞에 붙은 눈을 녹여 줬어요. LED는 달구지 않고 반도체 안에서 바로 빛을 만들어서 열이 적게 나요. 그래서 눈이 녹지 않고 쌓였어요.
+
+열을 적게 낸다는 건 전기를 빛으로 더 많이 바꾼다는 뜻이에요. LED로 바꾼 도시들은 신호등 전기 요금을 80~90%까지 줄였다고 해요. 대신 눈 가리개를 달거나 사람이 눈을 털어 주는 일이 새로 생겼어요([ABC News, 2010](https://abcnews.com/amp/GMA/ConsumerNews/led-traffic-lights-unusual-potentially-deadly-winter-problem/story?id=9506449)).
+
+</details>
+
+### 2-3. 건전지 한 개로 LED를 켤 수 있을까요?
+
+![1.5V 건전지 하나로는 LED가 안 켜져요](e13_battery.png)
+
+AA 건전지(1.5V) 하나에 빨간 LED 다리를 대 봐요. 방향을 바꿔 봐도 불이 안 켜져요. LED가 고장 난 걸까요?
+
+<details>
+<summary>정답 보기</summary>
+
+고장이 아니에요. LED도 다이오드라서 문턱 전압을 넘어야 켜져요. 빨간 LED는 약 2V, 파란 LED는 약 3V가 문턱이라 1.5V로는 문이 안 열려요. 건전지 두 개를 한 줄로 이으면 1.5 + 1.5 = 3V가 돼서 빨간 LED가 켜져요. 이때도 5장에서 볼 저항을 같이 달아요. 그래서 리모컨이나 LED 손전등은 건전지를 두세 개 이어서 써요. 건전지 한 개로 켜는 작은 손전등도 있는데, 그 안에는 전압을 높여 주는 회로가 들어 있어요.
+
+색마다 문턱이 왜 다른지도 4장에서 볼게요. 색과 전압은 사실 한 가지 이야기예요.
+
+</details>
+
+### 2-4. 세 예시에서 찾은 규칙
+
+1. LED는 정해진 빛을 하나 내요. 눈에 안 보이는 빛도 있어요.
+2. 달구지 않고 반도체 안에서 바로 빛을 만들어서 열이 적어요.
+3. 다이오드라서 문턱 전압을 넘어야 켜져요. 문턱은 색마다 달라요.
 
 ## 3. 생김새와 다리
 
@@ -97,7 +114,7 @@ LED가 내는 빛의 색은 LED마다 정해져 있어요. 빨강, 파랑처럼 
 
 그래서 LED의 색은 렌즈 색이 아니라 안쪽 반도체 재료가 정해요. 렌즈 색은 꺼져 있을 때 무슨 색 LED인지 알아보게 해 주는 정도예요. 투명한 렌즈인데 켜면 파랗게 빛나는 LED도 있어요.
 
-이 높이는 문턱 전압과도 이어져요. 높은 데까지 전자를 올려 줘야 하니 파란 LED는 빨간 LED보다 켜지는 데 전압이 더 필요해요.
+이제 2-3의 수수께끼가 풀려요. 떨어지는 높이만큼 전자를 먼저 올려 줘야 빛이 나와요. 그 「올려 주는 힘」이 전압이에요. 높이가 큰 파란 LED는 빨간 LED보다 켜지는 데 전압이 더 필요하고, 1.5V는 빨간 LED의 높이에도 못 미쳐요. 색과 문턱 전압이 한 가지 이야기라는 게 이 뜻이에요.
 
 | 색 | 켜질 때 쓰는 전압(대략) |
 | --- | --- |
@@ -115,7 +132,13 @@ LED 하나는 색 하나만 내요. 그런데 조명용 LED는 흰색이에요. 
 
 가장 흔한 방법은 파란 LED 위에 노란빛을 내는 형광 물질을 덮는 거예요. 파란빛 일부가 형광 물질에 닿아 노란빛으로 바뀌고, 남은 파란빛과 노란빛이 섞여서 우리 눈에 흰색으로 보여요. 빨강·초록·파랑 LED 세 개를 함께 켜서 섞는 방법도 있어요([Digi-Key: Whiter, Brighter LEDs](https://www.digikey.kr/ko/articles/whiter-brighter-leds)).
 
-그래서 흰색 LED를 만들려면 밝은 파란 LED가 먼저 있어야 했어요. 빨간 LED는 1962년 닉 홀로니악이 처음 보여 줬어요([IEEE Photonics Society](https://ieeephotonics.org/news/the-birth-of-the-visible-led-nick-holonyak-jr-and-a-turning-point-in-photonics/)). 밝은 파란 LED는 30년쯤 지난 1990년대 초에야 나왔어요. 이 파란 LED를 만든 아카사키 이사무, 아마노 히로시, 나카무라 슈지 세 사람이 2014년 노벨 물리학상을 받았어요([스웨덴 왕립과학원](https://kva.se/en/news/nobelpriset-i-fysik-2014-2)).
+그래서 흰색 LED를 만들려면 밝은 파란 LED가 먼저 있어야 했어요. 빨간 LED는 1962년 닉 홀로니악이 처음 보여 줬어요([IEEE Photonics Society](https://ieeephotonics.org/news/the-birth-of-the-visible-led-nick-holonyak-jr-and-a-turning-point-in-photonics/)). 빨간 LED에 이어 초록 LED도 나왔어요. 그런데 파란 LED는 30년 가까이 아무도 밝게 만들지 못했어요. 파랑은 떨어지는 높이가 가장 커서 알맞은 재료를 찾기도, 깨끗하게 키우기도 어려웠거든요.
+
+1990년대 초에 드디어 밝은 파란 LED가 나왔어요. 나고야 대학의 아카사키 이사무와 아마노 히로시, 그리고 일본 도쿠시마의 회사 니치아에서 일하던 나카무라 슈지예요. 세 사람은 2014년 노벨 물리학상을 받았어요. 상의 이유가 「밝고 전기를 아끼는 흰색 조명을 가능하게 한 파란 LED」였어요([스웨덴 왕립과학원](https://kva.se/en/news/nobelpriset-i-fysik-2014-2)).
+
+> 2만 엔짜리 발명?
+>
+> 나카무라 슈지는 자기 발명에 대해 회사에서 받은 돈이 2만 엔뿐이었다며 회사를 상대로 소송을 걸었어요. 1심 법원은 회사가 200억 엔을 줘야 한다고 판결했고, 2005년 두 쪽은 약 8억 4천만 엔에 합의했어요. 회사는 그동안 승진과 보너스로 충분히 보상했다고 맞섰어요. 이 일로 일본에서는 회사 안 발명가의 보상을 두고 큰 논쟁이 벌어졌어요([The Japan Times](https://japantimes.co.jp/news/2005/01/13/national/inventor-of-blue-led-angry-with-settlement), [Wikipedia: Shuji Nakamura](https://en.wikipedia.org/wiki/Shuji_Nakamura)).
 
 ## 5. 저항은 꼭 같이 달아요
 
@@ -260,6 +283,16 @@ void loop() {
 
 휴대폰 뒷면의 손전등도 흰색 LED예요. 4-3처럼 안쪽은 파란 LED와 노란 형광 물질이에요.
 
+### 8-5. 거꾸로 써 보기: 빛을 비추면 전기가 나와요
+
+![LED에 빛을 비추면 작은 전기가 생겨요](e14_sensor.png)
+
+LED는 전기를 빛으로 바꿔요. 그럼 거꾸로 빛을 비추면 어떻게 될까요?
+
+LED 두 다리에 멀티미터를 대고 햇빛이나 밝은 손전등 쪽으로 향하면 아주 작은 전기가 잡혀요. 4-1에서 전자가 빈자리에 앉으며 빛을 냈던 일이 거꾸로 일어나는 거예요. 빛이 들어와 전자를 높은 곳으로 올려 주면 그 전자가 회로로 흘러나와요. 태양전지가 빛으로 전기를 만드는 원리와 같아요.
+
+LED는 주로 자기 색과 비슷하거나 에너지가 조금 더 큰 빛에 반응해요. 그래서 빨간 LED는 빨간빛이나 주황빛에 잘 반응해요. 실제로 LED를 햇빛 센서로 쓴 실험도 있어요([Make: How to Use LEDs to Detect Light](https://makezine.com/projects/how-to-use-leds-to-detect-light)). 나오는 전기의 양은 LED마다 차이가 커서, 어떤 LED는 거의 반응하지 않기도 해요([Hackaday](https://hackaday.com/2024/07/23/you-can-use-leds-as-sensors-too/)).
+
 ## 9. 자주 헷갈리는 점
 
 ### 9-1. 거꾸로 꽂으면 안 켜져요
@@ -349,6 +382,15 @@ LED에 걸리는 전압은 켜진 뒤에는 거의 그대로예요. 밝기를 �
 
 </details>
 
+<b>Q7.</b> LED 신호등에는 왜 전구 신호등보다 눈이 잘 쌓일까요?
+
+<details>
+<summary>정답 보기</summary>
+
+LED는 달구지 않고 빛을 만들어서 열이 적게 나기 때문이에요. 전구 신호등은 필라멘트의 열이 눈을 녹여 줬어요. 열이 적다는 건 그만큼 전기를 빛으로 많이 바꾼다는 뜻이기도 해요.
+
+</details>
+
 ## 참고 자료
 
 - [Wikipedia: Light-emitting diode](https://en.wikipedia.org/wiki/Light-emitting_diode)
@@ -358,6 +400,9 @@ LED에 걸리는 전압은 켜진 뒤에는 거의 그대로예요. 밝기를 �
 - [Digi-Key: Kingbright WP7113QBC/D 파란 LED](https://www.digikey.ca/en/products/detail/kingbright/WP7113QBC-D/2261460)
 - [SparkFun: LED - Basic Red 5mm](https://www.sparkfun.com/led-basic-red-5mm.html)
 - [Wikipedia: Arduino Uno](https://en.wikipedia.org/wiki/Arduino_Uno)
+- [ABC News: LED 신호등과 눈(2010)](https://abcnews.com/amp/GMA/ConsumerNews/led-traffic-lights-unusual-potentially-deadly-winter-problem/story?id=9506449)
+- [The Japan Times: 나카무라 슈지 합의(2005)](https://japantimes.co.jp/news/2005/01/13/national/inventor-of-blue-led-angry-with-settlement)
+- [Make: How to Use LEDs to Detect Light](https://makezine.com/projects/how-to-use-leds-to-detect-light)
 
 ## 강좌 이동
 
