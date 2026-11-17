@@ -4,6 +4,8 @@
 - 오늘(KST)부터 N일 동안 날마다 유튜브 공개(이미 공개됐거나 예약 공개) 영상 수를 센다.
 - 오늘과 어제 인스타 게시물 수를 센다(인스타는 예약이 없어 지난 것만 확인 가능).
 - 빈 날(유튜브 0개)이 있으면 그 날짜를 「빈 날」로, 오늘 인스타가 0이면 「인스타 빠짐」으로 알린다.
+- 최근 7일 안에 공개된 영상(공개 30분 지난 것)에 채널 본인 댓글(고정용: 블로그·타임라인 또는 전체 영상 안내)이
+  없으면 「댓글 빠짐」으로 알린다(팀장님 2026-11-17 「유튜브 댓글 또 안 달려있는디? 같은 실수 왜 자꾸 하지」).
 - 마지막 줄은 JSON 한 줄(점검 결과). 빈 날이나 빠짐이 있으면 종료 코드 1.
 토큰 값은 출력하지 않는다.
 """
@@ -29,19 +31,36 @@ def youtube_days(start, days):
         if not token:
             break
     per = {start + datetime.timedelta(d): [] for d in range(days)}
+    recent = []                                           # 최근 7일 공개 영상(댓글 점검용)
+    now = datetime.datetime.now(datetime.timezone.utc)
     for k in range(0, len(ids), 50):
         r = yt.api("GET", "videos?part=status,snippet&id=" + ",".join(ids[k:k + 50]))
         for v in r.get("items", []):
             st = v["status"]
             if st["privacyStatus"] == "public":
                 when = kst_day(v["snippet"]["publishedAt"])
+                pub = datetime.datetime.fromisoformat(v["snippet"]["publishedAt"].replace("Z", "+00:00"))
+                if datetime.timedelta(minutes=30) <= now - pub <= datetime.timedelta(days=7):
+                    recent.append((v["id"], v["snippet"]["title"], v["snippet"]["channelId"]))
             elif st.get("publishAt"):
                 when = kst_day(st["publishAt"])
             else:
                 continue                                  # 예약 없는 비공개(옛 판 등)는 세지 않음
             if when in per:
                 per[when].append(v["snippet"]["title"])
-    return per
+    return per, recent
+
+
+def missing_comments(recent):
+    """공개된 영상 중 채널 본인 댓글이 없는 것(제목, id) 목록"""
+    out = []
+    for vid, title, ch in recent:
+        r = yt.api("GET", f"commentThreads?part=snippet&maxResults=50&videoId={vid}")
+        mine = [t for t in r.get("items", [])
+                if t["snippet"]["topLevelComment"]["snippet"].get("authorChannelId", {}).get("value") == ch]
+        if not mine:
+            out.append(f"{title} ({vid})")
+    return out
 
 
 def instagram_days(start):
@@ -63,7 +82,7 @@ def instagram_days(start):
 def main():
     days = int(sys.argv[sys.argv.index("--days") + 1]) if "--days" in sys.argv else 14
     today = datetime.datetime.now(KST).date()
-    yt_per = youtube_days(today, days)
+    yt_per, recent = youtube_days(today, days)
     empty = [d.isoformat() for d, v in yt_per.items() if not v]
     for d, v in yt_per.items():
         print(d.isoformat(), "유튜브", len(v), "·", " / ".join(t[:30] for t in v) if v else "★ 빈 날")
@@ -71,11 +90,14 @@ def main():
     ig_today = ig.get(today, 0) if ig is not None else None
     ig_yday = ig.get(today - datetime.timedelta(1), 0) if ig is not None else None
     print("인스타 오늘", ig_today, "어제", ig_yday, err)
+    no_comment = missing_comments(recent)
+    for t in no_comment:
+        print("★ 댓글 빠짐:", t)
     now = datetime.datetime.now(KST)
     late = now.hour >= 20                                 # 19시 공개 뒤에만 오늘 인스타를 따진다
     out = {"날짜": today.isoformat(), "유튜브 빈 날": empty, "인스타 오늘": ig_today, "인스타 어제": ig_yday,
-           "인스타 오류": err, "다음 빈 날": empty[0] if empty else None}
-    problem = bool(empty) or bool(err) or (late and ig_today == 0)
+           "인스타 오류": err, "다음 빈 날": empty[0] if empty else None, "댓글 빠짐": no_comment}
+    problem = bool(empty) or bool(err) or (late and ig_today == 0) or bool(no_comment)
     out["문제"] = problem
     print(json.dumps(out, ensure_ascii=False))
     sys.exit(1 if problem else 0)
