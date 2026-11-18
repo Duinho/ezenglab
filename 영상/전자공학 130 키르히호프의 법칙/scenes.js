@@ -662,6 +662,85 @@ function trucks6(c,a,u){
   badge(c,a,'트럭 수 = 전류(그대로)','트럭 수가 전류',IC,0,2);badge(c,a,'짐 = 전압(내려감)','짐이 전압',VC,1,2);
 }
 
+// 제작8차: L09→L10은 전원·갈림선·저항의 좌표를 공유한다.
+// 회로 버스는 마지막 갈래에서 끝내며, 전압 꼬리표도 다음 장면에 유지한다.
+function branch8(c,a,u,current=false){
+  const L=c.long,sv=svgAt(c.stage,L?160:40,L?140:125,L?1600:780,L?530:395,'0 0 1000 470');
+  if(!current)a(sv,'전원에');
+  path(sv,'M180 70 H800 M180 390 H800 M180 70 V165 M180 295 V390',COLOR.ink,8);
+  battery130(sv,180,230,'6V');if(!L)sv.querySelector('text').setAttribute('font-size',46);
+  [430,800].forEach((x,i)=>{
+    const branch=el('g',{'data-role':'parallel-branch'},sv);
+    path(branch,'M'+x+' 70 V183 M'+x+' 277 V390',COLOR.ink,8);resistor(branch,x,230,true);
+    unit6(branch,x,L?40:25,i?'1.5킬로옴':'1킬로옴',L?36:44);
+    for(const y of [70,390])el('circle',{cx:x,cy:y,r:9,fill:COLOR.teal},branch);
+    if(!current)a(branch,'나란히');
+    const value=svgText(sv,x+100,335,'6V',L?40:46,VC);if(!current)a(value,'같은 육 볼트가');
+    if(!current)return;
+    const phrase=i?'사 밀리암페어':'육 밀리암페어';
+    a(svgText(sv,x+100,230,i?'4mA':'6mA',L?40:46,IC),phrase);
+    let route='M180 212 V70 H'+x+' V183';
+    for(let j=0;j<6;j++)route+=' L'+(x-(j%2?18:-18))+' '+(183+94/12+j*94/6);
+    route+=' L'+x+' 277 V390 H180 V212';
+    const track=path(sv,route,'none');track.style.visibility='hidden';
+    const length=track.getTotalLength(),start=cue(c,phrase),count=i?6:9;
+    const dots=Array.from({length:count},()=>el('circle',{r:6,fill:IC,'data-role':'current-flow','data-branch':i},sv));
+    u.push(t=>dots.forEach((dot,j)=>{const p=track.getPointAtLength((j*length/count+Math.max(0,t-start)*150+i*35)%length);dot.setAttribute('cx',p.x);dot.setAttribute('cy',p.y);dot.style.visibility=t>=start?'visible':'hidden';}));
+  });
+  if(current){
+    a(svgText(sv,290,L?40:25,'10mA',L?40:44,IC),'십 밀리암페어가');a(svgText(sv,290,455,'10mA',L?40:44,IC),'다시 만나는');
+    panel(c,a,L?400:42,L?750:555,L?830:400,L?120:92,'10 = 6 + 4','자전거',IC,L?76:44);
+    const icon=svgAt(c.stage,L?1290:470,L?707:520,L?385:350,L?175:145,'0 0 385 175');path(icon,'M25 85 H180 M180 85 L280 30 H355 M180 85 L280 145 H355',IC,9);
+    for(const [x,y] of [[35,58],[268,3],[268,118]]){const bike=bicycle(icon,0,0,false);bike.setAttribute('transform','translate('+x+' '+y+') scale(.23)');}a(icon,'자전거');
+  }
+  return sv;
+}
+
+// L11→L12도 같은 회로를 유지하고 전압·화살표·높이 그래프만 덧붙인다.
+function series8(c,a,u,voltage=false){
+  const L=c.long;
+  if(!L){const marker=el('div',{class:'kir-l11-round6',style:{display:'none'}},c.stage),style=document.createElement('style');style.textContent='body:has(.kir-l11-round6) #sub{left:140px;width:800px} body:has(.kir-l11-round6) #sub span{font-size:46px}';marker.appendChild(style);}
+  const sv=svgAt(c.stage,L?160:45,L?165:140,L?1250:600,L?480:350,'0 0 850 470');if(!voltage)a(sv,'한 줄로');
+  path(sv,'M180 90 H323 M417 90 H590 V183 M590 277 V410 H180 V310 M180 180 V90',COLOR.ink,8);
+  battery130(sv,180,245,'9V');if(!L)sv.querySelector('text').setAttribute('font-size',48);
+  resistor(sv,370,90);resistor(sv,590,230,true);
+  unit6(sv,370,25,'1킬로옴',L?36:48);unit6(sv,745,220,'2킬로옴',L?36:48);
+  const current=svgText(sv,370,335,'3mA',L?42:50,IC);if(!voltage)a(current,'삼 밀리암페어');
+  let route='M180 227 V90 H323';
+  for(let j=0;j<6;j++)route+=' L'+(323+94/12+j*94/6)+' '+(90+(j%2?18:-18));
+  route+=' L417 90 H590 V183';
+  for(let j=0;j<6;j++)route+=' L'+(590-(j%2?18:-18))+' '+(183+94/12+j*94/6);
+  route+=' L590 277 V410 H180 V227';
+  const track=path(sv,route,'none');track.style.visibility='hidden';
+  const length=track.getTotalLength(),start=voltage?0:cue(c,'같은 전류가'),dots=Array.from({length:12},()=>el('circle',{r:6,fill:IC,'data-role':'current-flow'},sv));
+  u.push(t=>dots.forEach((dot,j)=>{const p=track.getPointAtLength((j*length/dots.length+Math.max(0,t-start)*150)%length);dot.setAttribute('cx',p.x);dot.setAttribute('cy',p.y);dot.style.visibility=t>=start?'visible':'hidden';}));
+  if(!voltage){
+    panel(c,a,L?240:42,L?600:468,L?1440:776,L?120:65,notation6('1킬로옴 + 2킬로옴 = 3킬로옴'),'삼 킬로옴이고',RC,L?57:34);
+    panel(c,a,L?240:42,L?750:576,L?1440:776,L?125:58,notation6('9V ÷ 3,000옴 = 3mA'),'삼 밀리암페어',IC,L?57:34);
+    return sv;
+  }
+  a(svgText(sv,370,186,'3V',L?42:50,VC),'삼 볼트');a(svgText(sv,745,315,'6V',L?42:50,VC),'육 볼트가 걸려요');
+  voltageArrow130(c,a,u,sv,20,220,100,'올라가고','rise-arrow');voltageArrow130(c,a,u,sv,460,130,225,'내려가요','drop-arrow-1');voltageArrow130(c,a,u,sv,510,180,295,'내려가요','drop-arrow-2');
+  const gr=svgAt(c.stage,L?1430:660,L?225:165,L?310:180,L?330:315,'0 0 310 430');a(gr,'동네 한 바퀴');
+  path(gr,'M25 320 H285',COLOR.line,5);path(gr,'M35 315 L100 100 L175 172 L270 315',IC,8);
+  svgText(gr,50,50,'+9',L?43:60,VC);svgText(gr,200,50,'−3',L?43:60,IC);svgText(gr,255,410,'−6',L?43:60,IC);
+  centered(c,a,L?750:549,L?1440:776,L?125:96,'3V + 6V = 9V','삼 더하기 육은 구',VC,L?96:49);return sv;
+}
+function resistanceLabel8(svg){
+  for(const node of [...svg.querySelectorAll('text')]){
+    if(!/^[0-9.,?]+(?:킬로옴|옴)$/.test(node.textContent))continue;
+    const group=unit6(svg,+node.getAttribute('x'),+node.getAttribute('y'),node.textContent,+node.getAttribute('font-size'),node.getAttribute('fill'));
+    node.replaceWith(group);
+  }
+}
+// 수정 대상에서 숫자 뒤 한글 저항 단위가 다시 나오면 공식 렌더의 콘솔 검사로 돌려보낸다.
+function resistanceScene8(draw){
+  return scene((c,a,u)=>{
+    draw(c,a,u);let reported=false;
+    u.push(()=>{const bad=c.stage.textContent.match(/[0-9?][0-9,.]*\s*(?:킬로옴|옴)/);if(bad&&!reported){reported=true;console.error('숫자 저항 단위 한글 표기: '+bad[0]);}});
+  });
+}
+
 const SCENES={
   L01: scene((c,a,u)=>{
     const heading=title(c,a,'여는 질문');
@@ -684,14 +763,14 @@ const SCENES={
   L06:scene((c,a,u)=>{title(c,a,'갈림길 정답');split130(c,a,u,[['10대'],['6대'],['4대','네 대예요']],{compact:true});badge(c,a,'10 = 6 + 4','더한 값과',IC);}),
   L07:scene((c,a,u)=>{title(c,a,'동네 한 바퀴');profile130(c,a,u,null,true);badge(c,a,'+9 = 3 + 6','같아야 해요',VC);}),
   L08:scene(twoRules130),
-  L09:scene((c,a,u)=>{const h=title(c,a,'갈림길은 전류로');if(!c.long)h.style.top='30px';branch130(c,a,u,{mode:'voltage',begin:'전원에'});}),
-  L10:scene((c,a,u)=>{const h=title(c,a,'나뉘고 합쳐지는 전류');if(!c.long)h.style.top='30px';branch6(c,a,u);}),
-  L11:scene((c,a,u)=>{const heading=title(c,a,'한 바퀴는 전압으로');if(!c.long){shortSeries6(c,a,u);return;}loop130(c,a,u,{clearance:true,doubleBadges:true,compact:true,phrase:'한 줄로',flow:'같은 전류가',labels:[[375,324,'3mA',IC,'삼 밀리암페어']]});badge(c,a,'1킬로옴 + 2킬로옴 = 3킬로옴','삼 킬로옴이고',RC,0,2);badge(c,a,'9V ÷ 3,000옴 = 3mA','삼 밀리암페어',IC,1,2);}),
-  L12:scene((c,a,u)=>{title(c,a,'올라간 만큼 내려가요');voltage6(c,a,u);}),
+  L09:resistanceScene8((c,a,u)=>{const h=title(c,a,'갈림길은 전류로');if(!c.long)h.style.top='30px';branch8(c,a,u);}),
+  L10:resistanceScene8((c,a,u)=>{const h=title(c,a,'나뉘고 합쳐지는 전류');if(!c.long)h.style.top='30px';branch8(c,a,u,true);}),
+  L11:resistanceScene8((c,a,u)=>{title(c,a,'한 바퀴는 전압으로');series8(c,a,u);}),
+  L12:resistanceScene8((c,a,u)=>{title(c,a,'올라간 만큼 내려가요');series8(c,a,u,true);}),
   L13:scene(naming130),
   L14:scene(textbook130),
   L15:scene((c,a)=>{title(c,a,'직렬과 병렬');comparison6(c,a);}),
-  L16:scene((c,a,u)=>{title(c,a,'LED 한 개 검산');loop130(c,a,u,{voltage:'5V',r1:'220옴',r2:'LED',clearance:true,doubleBadges:true,compact:true,led:true,phrase:'연결했어요',flow:'한 바퀴',labels:[[358,210,'3V',VC,'삼 볼트'],[660,340,'약 2V',VC,'이 볼트']]});badge(c,a,'2V + 3V = 5V','이 더하기 삼은 오',VC,0,2);badge(c,a,'전압 법칙','전압 법칙',VC,1,2);}),
+  L16:resistanceScene8((c,a,u)=>{title(c,a,'LED 한 개 검산');const sv=loop130(c,a,u,{voltage:'5V',r1:'220옴',r2:'LED',clearance:true,doubleBadges:true,compact:true,led:true,phrase:'연결했어요',flow:'한 바퀴',labels:[[358,210,'3V',VC,'삼 볼트'],[660,340,'약 2V',VC,'이 볼트']]});resistanceLabel8(sv);badge(c,a,'2V + 3V = 5V','이 더하기 삼은 오',VC,0,2);badge(c,a,'전압 법칙','전압 법칙',VC,1,2);}),
   L17:scene((c,a,u)=>{title(c,a,'LED 두 개를 나란히');branch6(c,a,u,true);badge(c,a,'전류 법칙','이십칠 점 이',IC);}),
   L18:scene((c,a,u)=>{title(c,a,'리모컨 건전지');remote130(c,a,u,'거꾸로',true);const result=badge(c,a,'+1.5V + 1.5V = 3V','삼 볼트가',VC);const flip=cue(c,'남는 전압이 없어요');u.push(t=>{result.firstChild.textContent=t<flip?'+1.5V + 1.5V = 3V':'+1.5V − 1.5V = 0V';});}),
   L19:scene((c,a,u)=>{title(c,a,'멀티탭 최대 용량');outlets6(c,a,u);}),
@@ -719,3 +798,9 @@ SCENES.S2C=scene(()=>{});
 SCENES.S2D=scene(()=>{});
 SCENES.S3C=scene(()=>{});
 SCENES.S3D=scene(()=>{});
+
+// 지정한 연속 회로 두 쌍의 페이드만 제거한다. 다른 장면의 전환은 유지한다.
+if(typeof TL!=='undefined')for(const [prev,next] of [['L09','L10'],['L11','L12']]){
+  const i=TL.scenes.findIndex(s=>s.id===prev);
+  if(i>=0&&TL.scenes[i+1]?.id===next){TL.scenes[i].joinNext=true;TL.scenes[i+1].joinPrev=true;}
+}
