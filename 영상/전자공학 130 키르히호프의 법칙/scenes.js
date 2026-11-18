@@ -712,3 +712,10 @@ const SCENES={
   S3A:scene((c,a)=>{title(c,a,'저항을 잇는 두 가지 방법');comparison6(c,a,false);}),
   S3E:scene((c,a,u)=>{title(c,a,'집 안 콘센트');outlets130(c,a,u,{start:'콘센트는',compact:true,two:true});badge(c,a,'직렬?　병렬?','직렬일까요',IC);}),
 };
+
+SCENES.S1C=scene(()=>{});
+SCENES.S1D=scene(()=>{});
+SCENES.S2C=scene(()=>{});
+SCENES.S2D=scene(()=>{});
+SCENES.S3C=scene(()=>{});
+SCENES.S3D=scene(()=>{});
