@@ -190,5 +190,12 @@ SCENES.S3E=scene130('어떻게 직선 하나로 찾아낼까요?',(c,s,a,u)=>{
  const gr=standardGraph130(c,s);points130(gr);const ln=fit130(gr);const at=cue130(c,'어떻게 직선 하나로'),end=cue130(c,'찾아낼까요');u.push(t=>{let t0=Math.min(Math.max(0,t-at),end-at),m=4+Math.sin(t0*2)*1.4*(1-E.prog(t, end-.4,.4));ln.setAttribute('y1',gr.Y(72+m*(18-25)));ln.setAttribute('y2',gr.Y(72+m*(32-25)));});side130(c,s,a,'?', '찾아낼까요',AI.orange);
 });
 
+SCENES.S1C=scene(()=>{});
+SCENES.S1D=scene(()=>{});
+SCENES.S2C=scene(()=>{});
+SCENES.S2D=scene(()=>{});
+SCENES.S3C=scene(()=>{});
+SCENES.S3D=scene(()=>{});
+
 // 페이퍼로지에 없는 위첨자 ²는 자막에서도 같은 글꼴의 작은 2 경로로 낸다.
 new MutationObserver(()=>{for(const e of document.querySelectorAll('#sub i')){if(e.dataset.sup130||!e.textContent.includes('²'))continue;const [b,a]=e.textContent.split('²');e.textContent=b;e.dataset.sup130='yes';const z=document.createElementNS('http://www.w3.org/2000/svg','svg');z.setAttribute('viewBox','0 0 100 110');z.setAttribute('style','width:.48em;height:.48em;vertical-align:.42em;overflow:visible');z.innerHTML='<path d="M8 30C8 -4 92 -4 92 30C92 52 38 61 8 94L92 94" fill="none" stroke="currentColor" stroke-width="15" stroke-linecap="round" stroke-linejoin="round"/>';e.appendChild(z);e.appendChild(document.createTextNode(a));}}).observe(document.getElementById('sub'),{childList:true,subtree:true});
