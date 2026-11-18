@@ -73,7 +73,7 @@ def main():
         if rep.exists():
             (outdir / f"{name}_report.json").write_bytes(rep.read_bytes())
         item = {"이름": name, "렌더 초": round(time.time() - t0, 1)}
-        if job.get("검사"):
+        if v.get("검사", job.get("검사")):   # 영상별로 끌 수 있음(수정 회차에 음성이 그대로인 영상은 받아쓰기 생략)
             t1 = time.time()
             rng = [] if layout == "long" else [v["범위"]]
             qa = subprocess.run([sys.executable, str(HERE / "qa.py"), str(folder), str(out)] + rng,
