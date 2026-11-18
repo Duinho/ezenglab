@@ -231,6 +231,17 @@ def wav_info(p):
         return w.getparams()
 
 
+def end_cue_hit(timeline, cue):
+    # Prefer the spoken cue itself over a longer token such as 강의에서는.
+    for exact in (True, False):
+        for sc in reversed(timeline):
+            words = [w for w in sc["words"] if
+                     (w["text"].rstrip(".,!?…") == cue.rstrip(".,!?…") if exact else cue in w["text"])]
+            if words:
+                return sc, words
+    return None
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("folder"); ap.add_argument("audio"); ap.add_argument("layout", choices=["long", "short"])
@@ -278,7 +289,7 @@ def main():
     end_at = None
     if a.end_cue:
         last = tl[-1]
-        hit = next(((sc, [x for x in sc["words"] if a.end_cue in x["text"]]) for sc in reversed(tl) if any(a.end_cue in x["text"] for x in sc["words"])), None)
+        hit = end_cue_hit(tl, a.end_cue)
         if not hit:
             raise SystemExit(f"--end-cue 단어를 찾지 못함: {a.end_cue}")
         end_at = round(hit[0]["start"] + hit[1][-1]["start"] - 0.15, 3)   # 같은 단어가 여러 번이면 마지막 것
