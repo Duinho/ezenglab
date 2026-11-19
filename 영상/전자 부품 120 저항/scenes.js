@@ -295,6 +295,8 @@ SCENES.L07=scene((c,p)=>{
   reveal(c,rainbow,'무지개 순서');
 });
 SCENES.L08=scene((c,p)=>{
+  // 이 장면의 첫 쇼츠 자막만 한 줄에 담고, 다음 장면에서 style도 함께 지운다.
+  if (!c.long) el('style',{text:'#sub[data-t="그런데 무지개는 빨주노초파남보잖아요"] span{font-size:44px;white-space:nowrap}'},c.stage);
   heading(p,'무지개와 저항 색띠');
   const indices=[2,3,4,5,6,-1,7], x=i=>152+i*116;
   const top=cue(c,'빨주노초파남보'), exit=cue(c,'남색이 없어요'), close=cue(c,'파랑 육');
