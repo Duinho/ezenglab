@@ -12,6 +12,7 @@
 import sys, os, json, datetime, urllib.request, urllib.error
 sys.path.insert(0, os.path.dirname(__file__))
 import youtube_upload as yt
+from comment_retry import enqueue
 from pathlib import Path
 import importlib.util
 
@@ -72,15 +73,20 @@ def youtube_days(start, days):
     return per, recent
 
 
-def missing_comments(recent):
+def missing_comments(recent, work=None):
     """공개된 영상 중 채널 본인 댓글이 없는 것(제목, id) 목록"""
     out = []
     for vid, title, ch in recent:
-        r = yt.api("GET", f"commentThreads?part=snippet&maxResults=50&videoId={vid}")
-        mine = [t for t in r.get("items", [])
-                if t["snippet"]["topLevelComment"]["snippet"].get("authorChannelId", {}).get("value") == ch]
-        if not mine:
+        # Use the scheduler's complete top-level/reply pagination and author check.
+        # This reader never calls process() or any POST method.
+        root = Path(work) if work else Path(os.environ.get("EZ_HOME", "/home/claude")) / "ezenglab-work"
+        spec = importlib.util.spec_from_file_location("daily_comment_reader", root / "우체통/youtube_comments.py")
+        module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(module)
+        reader = module.Comments(root.parent, yt, lambda: datetime.datetime.now(KST))
+        if reader.existing(vid) is None:
             out.append(f"{title} ({vid})")
+            enqueue(root, vid, "daily_check")
     return out
 
 

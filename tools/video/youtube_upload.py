@@ -106,9 +106,8 @@ def update_desc(vid, desc):
 
 
 def comment(vid, text):
-    """영상에 댓글을 단다(고정은 API에 없어서 팀장님이 직접 함)"""
-    j = api("POST", "commentThreads?part=snippet", {"snippet": {"videoId": vid, "topLevelComment": {"snippet": {"textOriginal": text}}}})
-    return j["id"]
+    """Compatibility guard: only the scheduler owns comment insertion."""
+    raise RuntimeError("유튜브 댓글은 예약 게시기에 재시도 대상을 접수하십시오")
 
 
 PL_REG = os.path.join(EZ, "ezenglab-work", "업로드", "재생목록.json")   # 과목별 재생목록 ID와 들어 있는 강좌 번호
@@ -217,7 +216,7 @@ def main():
                   "업로드 상태": st.get("uploadStatus"), "예약": st.get("publishAt"), "시각": time.strftime("%Y-%m-%d %H:%M"), "설명": st0}
         json.dump(plan, open(plan_path, "w", encoding="utf-8"), ensure_ascii=False, indent=1)
         print(k, "올림:", res[k])
-    # 설명 고치기(업로드표의 설명이 바뀌었을 때)와 고정용 댓글
+    # 설명·썸네일·재생목록 갱신. 댓글은 예약 게시기로 접수합니다.
     for v in plan["영상"]:
         k = v["키"]
         if k not in res:
@@ -252,13 +251,9 @@ def main():
             import subprocess                              # 블로그 글 끝에 이 영상 링크 넣기(세 곳 연결)
             subprocess.run([sys.executable, os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "blogger.py"), "links", v["재생목록"]])
         if v.get("댓글") and not r.get("댓글 id"):
-            priv = api("GET", f"videos?part=status&id={r['id']}")["items"][0]["status"]["privacyStatus"]
-            if priv == "private":                         # 비공개 영상에는 댓글을 달 수 없음(403). 공개(또는 일부 공개) 뒤 다시 실행
-                print(k, "비공개라 댓글은 공개 뒤에 담"); continue
-            t = v["댓글"]
-            for kk, rr in res.items():             # 댓글에는 링크 꼬리를 붙이지 않음(설명에만)
-                t = t.replace("{" + kk + "}", rr["주소"])
-            r["댓글 id"] = comment(r["id"], t); print(k, "댓글 달음(고정은 팀장님)")
+            from comment_retry import enqueue
+            enqueue(os.path.join(EZ, "ezenglab-work"), r["id"], "upload")
+            print(k, "댓글은 예약 게시기에 접수(댓글 id 확인은 공개 후)")
         json.dump(plan, open(plan_path, "w", encoding="utf-8"), ensure_ascii=False, indent=1)
 
 
