@@ -12,8 +12,26 @@
 import sys, os, json, datetime, urllib.request, urllib.error
 sys.path.insert(0, os.path.dirname(__file__))
 import youtube_upload as yt
+from pathlib import Path
+import importlib.util
 
 KST = datetime.timezone(datetime.timedelta(hours=9))
+
+
+def course_labels():
+    """옛 이름/코드 이름 업로드표를 읽어 표시만 연결합니다. 일정은 바꾸지 않습니다."""
+    try:
+        spec=importlib.util.spec_from_file_location('daily_course_codes',Path(__file__).parents[1]/'강좌코드.py')
+        module=importlib.util.module_from_spec(spec);spec.loader.exec_module(module)
+        work=module.work_dir();labels={}
+        for path in (work/'업로드').glob('*.json') if work else []:
+            code=module.code_of(path.stem)
+            if not code:continue
+            data=json.loads(path.read_text(encoding='utf-8'))
+            for row in data.get('결과',{}).values():
+                if isinstance(row,dict) and row.get('id'):labels[row['id']]=code
+        return labels
+    except (OSError,ValueError,ImportError,TypeError,AttributeError):return {}
 
 
 def kst_day(iso):
@@ -21,6 +39,7 @@ def kst_day(iso):
 
 
 def youtube_days(start, days):
+    labels=course_labels()
     ch = yt.api("GET", "channels?part=contentDetails&mine=true")["items"][0]
     uploads = ch["contentDetails"]["relatedPlaylists"]["uploads"]
     ids, token = [], ""
@@ -36,18 +55,20 @@ def youtube_days(start, days):
     for k in range(0, len(ids), 50):
         r = yt.api("GET", "videos?part=status,snippet&id=" + ",".join(ids[k:k + 50]))
         for v in r.get("items", []):
+            code=labels.get(v['id'],'')
+            title=(code+' ' if code else '')+v['snippet']['title']
             st = v["status"]
             if st["privacyStatus"] == "public":
                 when = kst_day(v["snippet"]["publishedAt"])
                 pub = datetime.datetime.fromisoformat(v["snippet"]["publishedAt"].replace("Z", "+00:00"))
                 if datetime.timedelta(minutes=30) <= now - pub <= datetime.timedelta(days=7):
-                    recent.append((v["id"], v["snippet"]["title"], v["snippet"]["channelId"]))
+                    recent.append((v["id"], title, v["snippet"]["channelId"]))
             elif st.get("publishAt"):
                 when = kst_day(st["publishAt"])
             else:
                 continue                                  # 예약 없는 비공개(옛 판 등)는 세지 않음
             if when in per:
-                per[when].append(v["snippet"]["title"])
+                per[when].append(title)
     return per, recent
 
 

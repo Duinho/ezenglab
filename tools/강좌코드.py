@@ -16,14 +16,23 @@ import json
 import os
 import re
 import sys
+from functools import lru_cache
 from pathlib import Path
 
 HERE = Path(__file__).resolve().parent.parent
 TABLE = HERE / "강좌코드.json"
 
 
+@lru_cache(maxsize=4)
+def _load(path, mtime, size):
+    return json.loads(Path(path).read_text(encoding="utf-8"))
+
+
 def load():
-    return json.loads(TABLE.read_text(encoding="utf-8"))
+    stat = TABLE.stat()
+    # 호출자가 sync에서 수정해도 읽기 캐시는 바뀌지 않게 합니다.
+    import copy
+    return copy.deepcopy(_load(str(TABLE), stat.st_mtime_ns, stat.st_size))
 
 
 def _norm(s):
@@ -47,6 +56,7 @@ def find(text, table=None):
     return None
 
 
+@lru_cache(maxsize=512)
 def _pattern(key):
     sep = r"[\s_\-·]*"
     return re.compile(sep.join(re.escape(c) for c in key) + r"(?!\d)", re.I)
@@ -80,7 +90,7 @@ def related(e):
     w = work_dir()
     if not w:
         return out
-    names = [e["작업 이름"]] + e.get("다른 이름", [])
+    names = [e["코드"], e["작업 이름"]] + e.get("다른 이름", [])
     up = []
     for p in sorted((w / "업로드").glob("*.json")):
         stem = p.stem
@@ -88,13 +98,14 @@ def related(e):
             up.append(f"업로드/{p.name}")
     if up:
         out["업로드표"] = up
-    res = [f"결과/{n}" for n in names if (w / "결과" / n).is_dir()]
+    res = [f"결과/{p.name}" for p in sorted((w / "결과").glob('*'))
+           if p.is_dir() and code_of(p.name) == e["코드"]] if (w / "결과").is_dir() else []
     if res:
         out["결과"] = res
     reqs = []
-    for p in sorted((w / "요청").glob("*.md")):
+    for p in sorted([*(w / "요청").glob("*.md"), *(w / "기록/지난요청").rglob("*.md")]):
         if code_of(p.stem) == e["코드"]:
-            reqs.append(f"요청/{p.name}")
+            reqs.append(p.relative_to(w).as_posix())
     if reqs:
         out["지시서"] = reqs
     return out
