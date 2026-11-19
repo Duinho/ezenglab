@@ -10,6 +10,7 @@ sys.path.insert(0, os.path.dirname(__file__))
 from final_output import finalize
 from common import parse_scenes
 from subtitles import scene_phrases, forced_phrases
+from render_text import TextCapture, merge_text, trim_text, cached_text
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 FONTS = os.path.join(os.path.dirname(HERE), "fonts")
@@ -84,6 +85,9 @@ html,body{margin:0;width:%(W)dpx;height:%(H)dpx;overflow:hidden;background:#f2f8
 """
 
 RUNTIME = """
+// 옛 강좌의 복사된 변환 진입점도 다음 렌더부터 공통 구현으로 보낸다.
+// scenes.js/기존 mp4는 이 도구 작업에서 수정하지 않는다.
+if (typeof ohmNotation === 'function') ohmNotation = (c, updates) => updates.push(() => TextNotation.normalize(c.stage));
 let cur = null, ctx = null;
 const stage = document.getElementById('stage'), sub = document.getElementById('sub');
 const SUB_LEAD = 0.25;   // 자막이 말보다 먼저 뜨는 시간(초)
@@ -100,7 +104,7 @@ window.render = function (t) {
     const d = Math.min(1, Math.max(0, (t - TL.ctaAt - .2) / .5));
     pa.style.strokeDasharray = L; pa.style.strokeDashoffset = L * (1 - d); hd.style.opacity = d >= 1 ? 1 : 0;
   }
-  if (!sc) { end.style.opacity = 1; sub.innerHTML = ''; return; }
+  if (!sc) { end.style.opacity = 1; sub.innerHTML = ''; TextNotation.normalize(document.body); return; }
   end.style.opacity = TL.endAt != null ? Math.min(1, Math.max(0, (t - TL.endAt) / .35)) : 0;
   if (cur !== sc.id) {
     stage.innerHTML = ''; cur = sc.id;
@@ -131,19 +135,11 @@ window.render = function (t) {
   let ph = null; for (const p of sc.phrases) if (lt >= p.start - SUB_LEAD && lt < p.end + .25) ph = p;
   const txt = ph ? ph.text : '';
   if (sub.dataset.t !== txt) { sub.dataset.t = txt; sub.innerHTML = txt ? '<span></span>' : '';
-    if (txt) { const box = sub.firstChild; txt.split(' ').forEach((w, i) => { if (i) box.appendChild(document.createTextNode(' ')); const e = document.createElement('i'); subWord(e, w); e.style.fontStyle = 'normal'; box.appendChild(e); }); } }
+    if (txt) { const box = sub.firstChild; txt.split(' ').forEach((w, i) => { if (i) box.appendChild(document.createTextNode(' ')); const e = document.createElement('i'); e.textContent = w; e.style.fontStyle = 'normal'; box.appendChild(e); }); TextNotation.normalize(box); } }
+  TextNotation.normalize(document.body); // HTML·SVG·훅·끝카드·동적 글자 모두 공통 처리
 };
 // 자막의 저항 단위도 기호로(영상_제작_기준: 화면·자막 모두 Ω, 킬로옴은 kΩ(SI 소문자 k), 팀장님 2026-11-12·11-14).
 // 페이퍼로지에 Ω가 없으므로 글꼴 대체 문자 대신 도형으로 그린다. 「옴의 법칙」 같은 이름은 숫자 뒤가 아니라 그대로 둔다.
-const SUB_OHM = '<svg viewBox="0 0 100 100" style="height:.74em;width:.74em;vertical-align:-.02em;overflow:visible"><path d="M 12 92 L 38 92 L 38 79 A 38 38 0 1 1 62 79 L 62 92 L 88 92" fill="none" stroke="currentColor" stroke-width="13" stroke-linejoin="round" stroke-linecap="round"/></svg>';
-function subWord(e, w) {
-  const re = /((?<=[0-9?→=·]\\s?)킬로옴|(?<=[0-9?→=·]\\s?)옴)/;   // 값·단위 자리만(2026-11-15 팀장님: 게오르크 옴·옴의 법칙·「킬로옴은 옴으로」 같은 이름·낱말은 한글)
-  if (!re.test(w)) { e.textContent = w; return; }
-  w.split(re).forEach(part => {
-    if (part === '킬로옴' || part === '옴') { if (part === '킬로옴') e.appendChild(document.createTextNode('k')); const t = document.createElement('template'); t.innerHTML = SUB_OHM; e.appendChild(t.content); }
-    else if (part) e.appendChild(document.createTextNode(part));
-  });
-}
 window.overlaps = () => {
   // 글·그림·상자가 서로 겹치는지, 화면 가장자리 여백(MARGIN)을 지키는지, 진행자 얼굴을 가리는지 검사
   const st = stage.getBoundingClientRect(), out = [], M = 30;   // 화면 가장자리 여백(px)
@@ -202,6 +198,7 @@ window.overlaps = () => {
   }
   for (let i = 0; i < items.length; i++) for (let j = i + 1; j < items.length; j++) {
     const A = items[i], B = items[j];
+    if (A.n.notationOwner === B.n || B.n.notationOwner === A.n) continue; // 자기 단위 도형과 글자 예약 폭
     if (vis(A.n) < .6 || vis(B.n) < .6) continue;                   // 장면 안에서 바뀌는 순간(사라지는 중·나타나는 중)은 겹침에서 뺌
     if (A.k === 'line' || B.k === 'line') {   // 가로·세로 선(축, 기준선)이 글자나 상자를 지나가면 겹침. 격자와 사선은 뺌
       const L = A.k === 'line' ? A : B, O = A.k === 'line' ? B : A;
@@ -344,7 +341,7 @@ def main():
     host_svg = open(os.path.join(HERE, "characters", "sojang_face.svg"), encoding="utf-8").read() if not a.no_host else ""
     cssf = os.path.join(a.folder, "style.css")
     extra_css = open(cssf, encoding="utf-8").read() if os.path.exists(cssf) else ""
-    lib = open(os.path.join(HERE, "lib.js"), encoding="utf-8").read() + "\n" + open(os.path.join(HERE, "intro.js"), encoding="utf-8").read()
+    lib = "\n".join(Path(HERE, name).read_text(encoding="utf-8") for name in ("text_notation.js", "lib.js", "intro.js"))
     scn = open(os.path.join(a.folder, "scenes.js"), encoding="utf-8").read()
     html = f"""<!doctype html><html><head><meta charset="utf-8"><style>{css}</style><style>{extra_css}</style></head><body>
 <div id="stage"></div>{hook}<div id="host">{host_svg}</div><div id="sub"></div>
@@ -369,10 +366,12 @@ def main():
     def check_range(pg, f0, f1, shot_dir):
         """f0~f1 프레임을 찍고(shot_dir가 있으면) 자막·빈 화면·겹침을 검사. 결과는 장면 안 시간으로 돌려줌"""
         rep = {"subtitle_max_lines": 0, "subtitle_over_1line": []}
+        texts = TextCapture(f1 - f0)
         last_sub, run, empty_flagged, seen = None, 0.0, False, set()
         for i in range(f0, f1):
             tt = i / FPS; k = i - f0
             pg.evaluate(f"render({tt})")
+            texts.add(pg.evaluate("TextNotation.collect()"), k / FPS)
             s_ = pg.evaluate("document.getElementById('sub').dataset.t||''")
             if s_ and s_ != last_sub:
                 lines = pg.evaluate("subLines()")
@@ -396,10 +395,12 @@ def main():
                     key = json.dumps(o[:3], ensure_ascii=False)
                     if key not in seen:
                         seen.add(key); rep.setdefault("layout_issues", []).append([round(k / FPS, 1)] + o)
+        rep["rendered_text"] = texts.report()
         return rep
 
     def merge(sid, f0, rep):
         t0 = f0 / FPS
+        merge_text(report, sid, t0, rep["rendered_text"])
         report["subtitle_max_lines"] = max(report["subtitle_max_lines"], rep.get("subtitle_max_lines", 0))
         report["subtitle_over_1line"] += [[round(t0 + x[0], 2)] + x[1:] for x in rep.get("subtitle_over_1line", [])]
         for k in ("subtitle_orphan", "empty_stage"):
@@ -482,6 +483,7 @@ def main():
                 old = json.load(open(cj)) if os.path.exists(cj) else None
                 ofp = np.load(cf) if os.path.exists(cf) else None
                 if not a.full and old and same_fp(ofp, fp) and old["frames"] == f1 - f0 and os.path.exists(cv):
+                    old["report"]["rendered_text"] = cached_text(old["report"].get("rendered_text"), f1-f0)
                     merge(sid, f0, old["report"]); reused.append(sid); continue
                 d = os.path.join(work, "f_" + sid); os.makedirs(d, exist_ok=True)
                 pg.evaluate("resetScene()")
@@ -520,6 +522,7 @@ def main():
     report["최종 출력 처리"] = finalize(os.path.join(work, "unprocessed.mkv"), a.out, a.layout == "short" and bool(a.end_cue), a.end_tail)
     total = report["최종 출력 처리"]["duration"]
     n = report["최종 출력 처리"]["frames"]; report["frames"] = n
+    trim_text(report, n)
     for scene in tl:
         scene["dur"] = round(max(0, min(scene["dur"], total-scene["start"])), 4)
     json.dump({"timeline": [{k: v for k, v in s.items() if k != "words"} for s in tl], "report": report},
