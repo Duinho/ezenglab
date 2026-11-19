@@ -23,6 +23,7 @@ import sys
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import blogger as B  # noqa: E402
+import 강좌코드 as K  # noqa: E402  강좌 코드(AI-130 등), 팀장님 2026-11-19
 
 ROOT = B.ROOT
 FIELDS = ["인공지능", "전자공학", "전자 부품", "생활 기기"]   # 블로그 목차·README에 놓는 분야 순서(없는 분야는 뒤에)
@@ -69,12 +70,26 @@ def fix_md(apply=True):
                 changed.append(p)
                 if apply:
                     open(p, "w", encoding="utf-8").write(new)
+    # 코드표 맞추기(새 강좌에 코드 붙이기, 예정→게시) — 팀장님 2026-11-19 「앞으로 그렇게 붙이고」
+    kc, kn = K.sync(write=apply)
+    for n in kn:
+        print("  알림:", n)
+    if kc:
+        changed.append(os.path.join(ROOT, "강좌코드.json"))
+    table = K.load()
     # README
     p = os.path.join(ROOT, "README.md")
     src = open(p, encoding="utf-8").read()
     body = ""
     for field, items in L.items():
-        body += f"\n### {field}\n\n" + "".join(f"- {n} · [{t}](<{f}/index.md>)\n" for n, f, t in items)
+        def code(f):
+            e = K.find(f, table)
+            return e["코드"] if e else ""
+        body += f"\n### {field}\n\n" + "".join(f"- {code(f) or n} · [{t}](<{f}/index.md>)\n" for n, f, t in items)
+        if table:
+            plan = [e for e in table["강좌"] if e["과목"] == field and e["상태"] == "예정"]
+            if plan:
+                body += "\n예정: " + " · ".join(f'{e["코드"]} {e["이름"]}' for e in plan) + "\n"
     new = LIST_RE.sub(lambda m: m.group(1) + body + "\n" + m.group(3), src)
     if not LIST_RE.search(src):
         print("  알림: README.md에 <!-- 강좌 목록 --> 표시가 없음")
