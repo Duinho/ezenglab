@@ -226,7 +226,7 @@ function dotFlow(ctx, svg, updates, coords, phrase, count=4) {
     d.style.visibility=t>=start?'visible':'hidden';
   }));
 }
-function split130(ctx, add, updates, values, {compact=false, quiz=false}={}) {
+function split130(ctx, add, updates, values, {compact=false, quiz=false, continuous=false}={}) {
   const svg=canvas130(ctx,add,null,compact);
   svg.style.top=(ctx.long?153:123)+'px'; svg.style.overflow='visible';
   const lines=[['M55 229 H306', [75,229,288,229]],['M306 229 L485 85 H705',[505,85,687,85]],['M306 229 L485 370 H705',[505,370,687,370]]];
@@ -234,9 +234,25 @@ function split130(ctx, add, updates, values, {compact=false, quiz=false}={}) {
     path(svg,d,'#dce6e1',27);
     const [label, phrase]=values[i];
     add(svgText(svg,i ? 588 : 173,i===1 ? 35 : i===2 ? 460 : 175,label,48,IC),phrase);
-    dotFlow(ctx,svg,updates,coords,phrase,i===0?5:3);
+    if(!continuous)dotFlow(ctx,svg,updates,coords,phrase,i===0?5:3);
   });
   el('circle',{cx:306,cy:229,r:20,fill:'#fff',stroke:COLOR.teal,'stroke-width':8},svg);
+  if(continuous) {
+    // One stream of ten: six upper, four lower; every dot traverses the junction.
+    const dots=Array.from({length:10},(_,i)=>({
+      node:el('circle',{r:8,fill:IC,'data-role':'split-bike','data-destination':i%5<3?'upper':'lower'},svg),
+      route:[[75,229],[306,229],[485,i%5<3?85:370],[687,i%5<3?85:370]]
+    }));
+    updates.push(t=>dots.forEach(({node,route},i)=>{
+      const lengths=route.slice(1).map((v,j)=>Math.hypot(v[0]-route[j][0],v[1]-route[j][1]));
+      const total=lengths.reduce((a,v)=>a+v,0);
+      let distance=(((t/4.8+i/10)%1)+1)%1*total, segment=0;
+      while(segment<lengths.length-1&&distance>lengths[segment])distance-=lengths[segment++];
+      const fraction=distance/lengths[segment];
+      node.setAttribute('cx',E.lerp(route[segment][0],route[segment+1][0],fraction));
+      node.setAttribute('cy',E.lerp(route[segment][1],route[segment+1][1],fraction));
+    }));
+  }
   if(quiz) {
     if(ctx.long) {
       svg.style.width='1260px'; svg.style.left='110px';
@@ -330,7 +346,7 @@ function voltageArrow130(ctx,add,updates,svg,x,y0,y1,phrase,role){
   updates.push(t=>draw(E.prog(t,start,.42)));
   add(group,phrase);
 }
-function profile130(ctx,add,updates,phrase,compact=false){
+function profile130(ctx,add,updates,phrase,compact=false,dotScale=1){
   const svg=canvas130(ctx,add,phrase,ctx.long?false:compact);
   if(!ctx.long)svg.style.top='113px';
   const segments=[[74,345,260,80,'구 미터'],[260,80,428,169,'삼 미터와'],[428,169,660,345,'육 미터']];
@@ -341,7 +357,7 @@ function profile130(ctx,add,updates,phrase,compact=false){
     const g=el('g',{},svg);path(g,'M'+x+' '+y+' L'+x1+' '+y1,labels[i][3],13);
     add(g,key);add(svgText(svg,labels[i][0],labels[i][1],labels[i][2],ctx.long?37:44,labels[i][3]),key);
   });
-  const bike=el('circle',{r:6,fill:IC,'data-role':'course-bike'},svg);const starts=segments.map(s=>cue(ctx,s[4])),returned=cue(ctx,'돌아와요');
+  const bike=el('circle',{r:6*dotScale,fill:IC,'data-role':'course-bike'},svg);const starts=segments.map(s=>cue(ctx,s[4])),returned=cue(ctx,'돌아와요');
   updates.push(t=>{let xy=[74,345];for(let i=0;i<3;i++){const end=i<2?starts[i+1]:returned;if(t>=starts[i]&&t<end){const u=E.prog(t,starts[i],end-starts[i]);xy=[E.lerp(segments[i][0],segments[i][2],u),E.lerp(segments[i][1],segments[i][3],u)];}}if(t>=returned){const u=E.prog(t,returned,.45);xy=[E.lerp(660,74,u),345];}bike.setAttribute('cx',xy[0]);bike.setAttribute('cy',xy[1]);bike.style.opacity=t>=starts[0]?1:0;});
   return svg;
 }
@@ -760,8 +776,8 @@ const SCENES={
   L03:scene((c,a,u)=>{const heading=title(c,a,'한 줄로 먼저');const at=cue(c,'키르히호프의 법칙');u.push(t=>{heading.textContent=t<at?'한 줄로 먼저':'키르히호프의 법칙';});rulePair130(c,a,[['전류 법칙','들어온 전류 = 나간 전류','전류 법칙',IC,true],['전압 법칙','올라간 전압 = 내려간 전압','전압 법칙',VC,false]]);}),
   L04:scene((c,a)=>{title(c,a,'부품 하나와 회로 전체');rulePair130(c,a,[['옴의 법칙','부품 하나','부품 하나에서',RC,false],['키르히호프의 법칙','회로 전체','회로 전체에서',IC,true]]);}),
   L05:scene((c,a,u)=>{title(c,a,'자전거 갈림길');split130(c,a,u,[['10대','열 대가'],['6대','여섯 대가'],['? 대','몇 대가']],{quiz:true});}),
-  L06:scene((c,a,u)=>{title(c,a,'갈림길 정답');split130(c,a,u,[['10대'],['6대'],['4대','네 대예요']],{compact:true});badge(c,a,'10 = 6 + 4','더한 값과',IC);}),
-  L07:scene((c,a,u)=>{title(c,a,'동네 한 바퀴');profile130(c,a,u,null,true);badge(c,a,'+9 = 3 + 6','같아야 해요',VC);}),
+  L06:scene((c,a,u)=>{title(c,a,'갈림길 정답');split130(c,a,u,[['10대'],['6대'],['4대','네 대예요']],{compact:true,continuous:true});badge(c,a,'10 = 6 + 4','더한 값과',IC);}),
+  L07:scene((c,a,u)=>{title(c,a,'동네 한 바퀴');profile130(c,a,u,null,true,c.long?1.75:1);badge(c,a,'+9 = 3 + 6','같아야 해요',VC);}),
   L08:scene(twoRules130),
   L09:resistanceScene8((c,a,u)=>{const h=title(c,a,'갈림길은 전류로');if(!c.long)h.style.top='30px';branch8(c,a,u);}),
   L10:resistanceScene8((c,a,u)=>{const h=title(c,a,'나뉘고 합쳐지는 전류');if(!c.long)h.style.top='30px';branch8(c,a,u,true);}),
