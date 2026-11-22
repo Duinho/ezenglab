@@ -226,7 +226,7 @@ function dotFlow(ctx, svg, updates, coords, phrase, count=4) {
     d.style.visibility=t>=start?'visible':'hidden';
   }));
 }
-function split130(ctx, add, updates, values, {compact=false, quiz=false, continuous=false}={}) {
+function split130(ctx, add, updates, values, {compact=false, quiz=false, continuous=false, flowScale=1, flowStart=0}={}) {
   const svg=canvas130(ctx,add,null,compact);
   svg.style.top=(ctx.long?153:123)+'px'; svg.style.overflow='visible';
   const lines=[['M55 229 H306', [75,229,288,229]],['M306 229 L485 85 H705',[505,85,687,85]],['M306 229 L485 370 H705',[505,370,687,370]]];
@@ -238,19 +238,20 @@ function split130(ctx, add, updates, values, {compact=false, quiz=false, continu
   });
   el('circle',{cx:306,cy:229,r:20,fill:'#fff',stroke:COLOR.teal,'stroke-width':8},svg);
   if(continuous) {
-    // One stream of ten: six upper, four lower; every dot traverses the junction.
-    const dots=Array.from({length:10},(_,i)=>({
+    // Keep the same dots through the junction; each group of five splits three/two.
+    const dots=Array.from({length:10*flowScale},(_,i)=>({
       node:el('circle',{r:8,fill:IC,'data-role':'split-bike','data-destination':i%5<3?'upper':'lower'},svg),
       route:[[75,229],[306,229],[485,i%5<3?85:370],[687,i%5<3?85:370]]
     }));
     updates.push(t=>dots.forEach(({node,route},i)=>{
       const lengths=route.slice(1).map((v,j)=>Math.hypot(v[0]-route[j][0],v[1]-route[j][1]));
       const total=lengths.reduce((a,v)=>a+v,0);
-      let distance=(((t/4.8+i/10)%1)+1)%1*total, segment=0;
+      let distance=(((Math.max(0,t-flowStart)/4.8+i/(10*flowScale))%1)+1)%1*total, segment=0;
       while(segment<lengths.length-1&&distance>lengths[segment])distance-=lengths[segment++];
       const fraction=distance/lengths[segment];
       node.setAttribute('cx',E.lerp(route[segment][0],route[segment+1][0],fraction));
       node.setAttribute('cy',E.lerp(route[segment][1],route[segment+1][1],fraction));
+      if(flowStart>0)node.style.visibility=t>=flowStart?'visible':'hidden';
     }));
   }
   if(quiz) {
@@ -775,7 +776,7 @@ const SCENES={
   L02:INTRO,
   L03:scene((c,a,u)=>{const heading=title(c,a,'한 줄로 먼저');const at=cue(c,'키르히호프의 법칙');u.push(t=>{heading.textContent=t<at?'한 줄로 먼저':'키르히호프의 법칙';});rulePair130(c,a,[['전류 법칙','들어온 전류 = 나간 전류','전류 법칙',IC,true],['전압 법칙','올라간 전압 = 내려간 전압','전압 법칙',VC,false]]);}),
   L04:scene((c,a)=>{title(c,a,'부품 하나와 회로 전체');rulePair130(c,a,[['옴의 법칙','부품 하나','부품 하나에서',RC,false],['키르히호프의 법칙','회로 전체','회로 전체에서',IC,true]]);}),
-  L05:scene((c,a,u)=>{title(c,a,'자전거 갈림길');split130(c,a,u,[['10대','열 대가'],['6대','여섯 대가'],['? 대','몇 대가']],{quiz:true});}),
+  L05:scene((c,a,u)=>{title(c,a,'자전거 갈림길');split130(c,a,u,[['10대','열 대가'],['6대','여섯 대가'],['? 대','몇 대가']],{quiz:true,continuous:c.long,flowStart:c.long?cue(c,'열 대가'):0});}),
   L06:scene((c,a,u)=>{title(c,a,'갈림길 정답');split130(c,a,u,[['10대'],['6대'],['4대','네 대예요']],{compact:true,continuous:true});badge(c,a,'10 = 6 + 4','더한 값과',IC);}),
   L07:scene((c,a,u)=>{title(c,a,'동네 한 바퀴');profile130(c,a,u,null,true,c.long?1.75:1);badge(c,a,'+9 = 3 + 6','같아야 해요',VC);}),
   L08:scene(twoRules130),
@@ -798,7 +799,7 @@ const SCENES={
   L25:scene((c,a)=>{title(c,a,'비유는 감 잡기용');const svg=svgAt(c.stage,160,120,1550,600,'0 0 1100 500');a(svg,'그림이에요');a(svgText(svg,550,60,'감 잡기용',43,COLOR.sub),'그림이에요');const bike=bicycle(svg,20,40,false);bike.setAttribute('transform','translate(20 40) scale(2.1)');const truck=g130(svg,620,125,2.5);box130(truck,0,0,105,72,IC,'#cfe3fa');box130(truck,104,24,50,48,IC);for(const x of [27,123])el('circle',{cx:x,cy:78,r:12,fill:IC},truck);for(const [i,text] of ['V = I × R','KCL','KVL'].entries())panel(c,a,205+i*500,735,440,150,text,'정확한 값은',COLOR.green,i?80:64);}),
   L26:scene((c,a)=>{title(c,a,'한눈에 정리');stack130(c,a,[['전류 법칙 KCL · 들어온 전류 = 나간 전류의 합','전류 법칙은',IC],['전압 법칙 KVL · 올라간 전압 = 내려간 전압의 합','전압 법칙은',VC],['직렬 · 전류 같음, 전압 나눔','직렬은',RC],['병렬 · 전압 같음, 전류 나눔','병렬은',IC]]);}),
   L27:scene((c,a,u)=>{title(c,a,'퀴즈');split130(c,a,u,[['20mA','이십 밀리암페어'],['12mA','십이 밀리암페어'],['? mA','몇 밀리암페어']],{quiz:true});}),
-  L27B:scene((c,a,u)=>{title(c,a,'퀴즈 정답');split130(c,a,u,[['20mA'],['12mA'],['8mA','팔 밀리암페어']],{compact:true});badge(c,a,'20 = 12 + 8','이십은',IC);}),
+  L27B:scene((c,a,u)=>{title(c,a,'퀴즈 정답');split130(c,a,u,[['20mA'],['12mA'],['8mA','팔 밀리암페어']],{compact:true,continuous:c.long,flowScale:c.long?2:1});badge(c,a,'20 = 12 + 8','이십은',IC);}),
   L28:scene((c,a,u)=>{title(c,a,'키르히호프의 법칙');loop130(c,a,u,{voltage:'',r1:'? V',r2:'? V',clearance:true,doubleBadges:true,compact:true,phrase:'나눠 가질까요'});badge(c,a,'블로그 글 · 설명란 링크','블로그',COLOR.green,0,2);badge(c,a,'다음 영상 · 전압 분배','전압 분배',IC,1,2);}),
   L29:OUTRO,
   S1E:scene((c,a,u)=>{title(c,a,'전류는 어떻게 될까요?');voltage6(c,a,u,true);}),
