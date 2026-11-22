@@ -105,11 +105,24 @@ SCENES.L10=scene130('직선과 점 사이의 거리',(c,s,a,u)=>{
  [3,4,5].forEach((m,i)=>{const gr=graph130(s,100+i*500,250,390,280,{xt:[20,30],yt:[],xmin:18,xmax:32,ymin:35,ymax:110}),at=cue130(c,'세 개를');u.push(t=>{const q=E.prog(t,at,.18);gr.g.style.opacity=.35+.65*q;gr.g.style.filter=`grayscale(${1-q})`;});points130(gr);fit130(gr,m,72-25*m);residual130(gr,m,72-25*m).forEach(n=>{const from=+n.getAttribute('y1'),to=+n.getAttribute('y2'),at=cue130(c,'빨간 막대는');a(n,'빨간 막대는');u.push(t=>n.setAttribute('y2',E.lerp(from,to,E.prog(t,at,.7))));});txt130(gr.g,295+i*500,140,['A 완만','B 가운데','C 가파름'][i],42,i===1?AI.green:AI.sub);if(i===1)a(el('rect',{x:560,y:180,width:465,height:470,rx:24,fill:'none',stroke:AI.green,'stroke-width':8},s),'가장 짧아요');});a(label130(s,470,660,660,'오차',AI.red,44),'이 차이를');
 });
 SCENES.L11=scene130('오차를 제곱해서 더해요',(c,s,a,u)=>{
- const concept=group130(s),plus=group130(concept),minus=group130(concept);
- box130(plus,290,240,90,210,'#cfe5da',AI.green);txt130(plus,335,200,'+',64,AI.green);box130(minus,680,240,90,210,'#f7dce1',AI.red);txt130(minus,725,200,'-',64,AI.red);a(plus,'플러스');a(minus,'마이너스라서');
- const st=cue130(c,'서로 지워지거든요');u.push(t=>{let k=E.prog(t,st,.8);plus.setAttribute('transform',`translate(${k*195} 0)`);minus.setAttribute('transform',`translate(${-k*195} 0)`);plus.style.opacity=Math.min(E.prog(t,cue130(c,'플러스'),.2),1-k);minus.style.opacity=Math.min(E.prog(t,cue130(c,'마이너스라서'),.2),1-k);});a(txt130(concept,540,350,'0',90,AI.sub),'서로 지워지거든요');
- const beam=group130(concept);line130(beam,170,475,900,475,AI.sub,8);el('polygon',{points:'535,490 495,550 575,550',fill:AI.sub},beam);a(beam,'그냥 더하면');
- const sq=group130(concept);[85,140,105].forEach((size,i)=>{let node=box130(sq,1050+i*155,300,size,size,'#f2c6cf',AI.red);const start=cue130(c,'제곱해서');u.push(t=>{let k=E.prog(t,start,.8);node.setAttribute('height',Math.max(2,size*k));node.setAttribute('transform',`translate(${E.prog(t,cue130(c,'뒤 더해요'),.8)*(-50+25*i)} ${E.prog(t,cue130(c,'뒤 더해요'),.8)*(200-size)})`);});});a(sq,'제곱해서');a(label130(concept,1000,160,500,'최소제곱법',AI.green,48),'최소제곱법이라고');
+ const concept=group130(s),signed=group130(concept),values=ICE.map(([x,y])=>y-(4*x-28));
+ line130(signed,110,360,1490,360,AI.sub,5);
+ values.forEach((value,i)=>{
+  const x=210+i*285,col=group130(signed),height=Math.abs(value)*30;
+  const bar=box130(col,x-42,value>0?360-height:360,84,height,value>0?'#cfe5da':'#f7dce1',value>0?AI.green:AI.red);
+  txt130(col,x,200,(value>0?'+':'')+value,54,value>0?AI.green:AI.red);
+  a(col,value>0?'플러스':'마이너스라서');
+  const cancel=cue130(c,'서로 지워지거든요');u.push(t=>{const k=E.prog(t,cancel,.8);bar.setAttribute('height',Math.max(1,height*(1-k)));bar.style.opacity=1-k;});
+ });
+ a(label130(signed,220,590,1160,'+3 - 5 + 4 - 5 + 3 = 0',AI.sub,48),'서로 지워지거든요');
+ const squareAt=cue130(c,'제곱해서');u.push(t=>signed.style.opacity=1-E.prog(t,squareAt,.2));
+ const squared=group130(concept);values.forEach((value,i)=>{
+  const x=210+i*285,size=Math.abs(value)*28,box=box130(squared,x-size/2,300,size,size,'#f2c6cf',AI.red);
+  txt130(squared,x,240,'('+(value>0?'+':'')+value+')² = '+value*value,34,AI.red);
+  u.push(t=>{const k=E.prog(t,squareAt,.7);box.setAttribute('height',Math.max(2,size*k));box.setAttribute('transform',`translate(0 ${E.prog(t,cue130(c,'뒤 더해요'),.8)*(150-size)})`);});
+ });a(squared,'제곱해서');
+ a(label130(squared,220,590,1160,'9 + 25 + 16 + 25 + 9 = 84',AI.green,44),'뒤 더해요');
+ a(label130(concept,1000,120,500,'최소제곱법',AI.green,48),'최소제곱법이라고');
  const compareAt=cue130(c,'그림에서는');u.push(t=>concept.style.opacity=1-E.prog(t,compareAt,.22));
  const comparison=group130(s);[3,4,5].forEach((slope,i)=>{const gr=graph130(comparison,100+i*500,290,390,210,{xt:[20,30],yt:[],xmin:18,xmax:32,ymin:35,ymax:110});points130(gr);fit130(gr,slope,72-25*slope);residual130(gr,slope,72-25*slope);txt130(comparison,295+i*500,190,i===1?'B · 최소제곱법':['A','','C'][i],i===1?38:42,i===1?AI.green:AI.sub);});a(comparison,'그림에서는');
  ['A 152','B 84','C 152'].forEach((value,i)=>a(label130(comparison,140+i*470,640,400,value,i===1?AI.green:AI.sub,54),i===1?'팔십사':'백오십이'));
