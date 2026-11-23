@@ -520,9 +520,10 @@ SCENES.L19=scene((c,p)=>{
   const myth=group(p); pill(myth,500,64,485,'낮은 쪽으로만?',MINT,GREEN,40);
   reveal(c,myth,'낮은 쪽으로만');
   const strike=cue(c,'아니에요'); reveal(c,line(myth,334,62,666,62,'#c24739',5),strike);
-  pen(p,'M182 302 V207 H805 V370 H182 V302 H75 V319 M75 338 V475 H908 V302 H805',WIRE,5);
-  line(p,51,319,99,319,INK,5); line(p,61,338,89,338,INK,5);
-  reveal(c,word(p,129,368,'5V',30,GREEN),'같은 전압을');
+  const sourceY=(302+475)/2, sourceTop=sourceY-9.5, sourceBottom=sourceY+9.5;
+  pen(p,`M182 302 V207 H805 V370 H182 V302 H75 V${sourceTop} M75 ${sourceBottom} V475 H908 V302 H805`,WIRE,5);
+  line(p,51,sourceTop,99,sourceTop,INK,5); line(p,61,sourceBottom,89,sourceBottom,INK,5);
+  reveal(c,word(p,129,sourceY+39.5,'5V',30,GREEN),'같은 전압을');
   const b=cue(c,'낮은 쪽으로만'), on=cue(c,'같은 전압을');
   for(const [i,y] of [207,370].entries()) {
     resistor(p,488,y,.78,i?[BANDS[2],BANDS[0],BANDS[2],GOLD]:FOUR);
@@ -530,8 +531,8 @@ SCENES.L19=scene((c,p)=>{
     reveal(c,pill(p,690,y-65,172,i?'2.5mA':'5mA',MINT,GREEN,35),i?'이 점 오 밀리':'오 밀리암페어');
     stream(c,p,[[182,302],[182,y],[805,y],[805,302]],i?7:14,{start:i?on:b,speed:65});
   }
-  stream(c,p,[[805,302],[908,302],[908,475],[75,475],[75,338]],17,{start:b,speed:65});
-  stream(c,p,[[75,319],[75,302],[182,302]],3,{start:b,speed:65});
+  stream(c,p,[[805,302],[908,302],[908,475],[75,475],[75,sourceBottom]],17,{start:b,speed:65});
+  stream(c,p,[[75,sourceTop],[75,302],[182,302]],3,{start:b,speed:65});
   reveal(c,word(p,620,547,'7.5mA',42,BLUE,800),'높은 쪽에도');
 });
 SCENES.L20=scene((c,p)=>{
@@ -688,8 +689,11 @@ SCENES.L25=scene((c,p)=>{
   }
   stream(c,p,[[213,322],[103,322],[84,342],[84,411]],7,{start:cue(c,'십오 암페어'),r:7});
   reveal(c,pill(p,153,502,170,'15A',GREEN,'#fff',36),'십오 암페어');
-  const rating=group(p);word(rating,690,525,'정격',34);oval(rating,690,513,63,34,'none',HEAT,5);
-  pen(rating,'M677 477 L720 392',HEAT,3);
+  const rating=group(p);
+  box(rating,816,413,134,60,'#fff7ee',HEAT,14,2);
+  word(rating,883,454,'정격',32,INK,800);
+  pen(rating,'M816 443 H799 V370 H779',HEAT,3);
+  oval(rating,779,370,3.5,3.5,HEAT);
   reveal(c,rating,'정격을');
 });
 SCENES.L26=scene((c,p)=>{
