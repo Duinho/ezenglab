@@ -163,6 +163,19 @@ M["heatmove"] = """
 <text x="268" y="185" text-anchor="middle" font-family="P" font-weight="800" font-size="40" fill="#d1495b">열</text>
 <text x="220" y="410" text-anchor="middle" font-family="P" font-weight="800" font-size="38" fill="{c}">안의 열을 밖으로</text>"""
 
+M["induction"] = """
+<rect x="70" y="250" width="300" height="70" rx="12" fill="#4a4f55"/>
+<rect x="60" y="226" width="320" height="26" rx="6" fill="#cfd8de"/>
+<g fill="#c27a3e" stroke="#8a4f22" stroke-width="3"><circle cx="120" cy="282" r="12"/><circle cx="160" cy="282" r="12"/><circle cx="280" cy="282" r="12"/><circle cx="320" cy="282" r="12"/></g>
+<rect x="72" y="140" width="40" height="14" rx="7" fill="#3d3d3d"/><rect x="328" y="140" width="40" height="14" rx="7" fill="#3d3d3d"/>
+<path d="M110 120 L110 212 Q110 226 124 226 L316 226 Q330 226 330 212 L330 120 Z" fill="#6d7680"/>
+<rect x="102" y="112" width="236" height="12" rx="6" fill="#555"/>
+<rect x="124" y="150" width="192" height="58" rx="8" fill="#bcdcf8"/>
+<rect x="112" y="210" width="216" height="16" rx="6" fill="#ff5a2a"/>
+<g fill="none" stroke="#7b4fb5" stroke-width="4" stroke-dasharray="10 8"><path d="M140 284 C140 175 300 175 300 284"/><path d="M100 284 C100 140 340 140 340 284"/></g>
+<g fill="none" stroke="#e07b1f" stroke-width="6" stroke-linecap="round"><path d="M180 100 q10 -16 0 -32 q-10 -16 0 -32"/><path d="M220 100 q10 -16 0 -32 q-10 -16 0 -32"/><path d="M260 100 q10 -16 0 -32 q-10 -16 0 -32"/></g>
+<text x="220" y="390" text-anchor="middle" font-family="P" font-weight="800" font-size="38" fill="{c}">냄비가 스스로 뜨겁게</text>"""
+
 COVERS = {
     "전자 부품 150 LED": ("led", "다이오드처럼 한쪽으로만 흐르고\n저항과 함께 달아서 써요"),
     "전자 부품 140 다이오드": ("diode", "띠 쪽으로만 전류를 내보내고\n반대쪽은 거의 막아요"),
@@ -181,6 +194,7 @@ COVERS = {
     "전자 부품 120 저항": ("resistor", "전류가 지나가기 어렵게 만들어\n흐름을 원하는 만큼 줄여요"),
     "생활 기기 100 생활 기기 들여다보기": ("appliances", "알아채고 판단하고 움직이는\n원리를 하나씩 들여다봐요"),
     "생활 기기 110 냉장고와 에어컨": ("heatmove", "안쪽의 열을\n바깥으로 옮기는 기계예요"),
+    "생활 기기 120 인덕션": ("induction", "자기장으로 냄비 바닥에\n전류를 흘려서 데워요"),
 }
 
 TITLE_LINES = {  # 왼쪽 정사각형에 크게 넣을 제목 줄(없으면 띄어쓰기 기준으로 나눔)
