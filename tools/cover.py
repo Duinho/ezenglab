@@ -164,16 +164,13 @@ M["heatmove"] = """
 <text x="220" y="410" text-anchor="middle" font-family="P" font-weight="800" font-size="38" fill="{c}">안의 열을 밖으로</text>"""
 
 M["induction"] = """
-<rect x="70" y="250" width="300" height="70" rx="12" fill="#4a4f55"/>
-<rect x="60" y="226" width="320" height="26" rx="6" fill="#cfd8de"/>
-<g fill="#c27a3e" stroke="#8a4f22" stroke-width="3"><circle cx="120" cy="282" r="12"/><circle cx="160" cy="282" r="12"/><circle cx="280" cy="282" r="12"/><circle cx="320" cy="282" r="12"/></g>
-<rect x="72" y="140" width="40" height="14" rx="7" fill="#3d3d3d"/><rect x="328" y="140" width="40" height="14" rx="7" fill="#3d3d3d"/>
-<path d="M110 120 L110 212 Q110 226 124 226 L316 226 Q330 226 330 212 L330 120 Z" fill="#6d7680"/>
-<rect x="102" y="112" width="236" height="12" rx="6" fill="#555"/>
-<rect x="124" y="150" width="192" height="58" rx="8" fill="#bcdcf8"/>
-<rect x="112" y="210" width="216" height="16" rx="6" fill="#ff5a2a"/>
-<g fill="none" stroke="#7b4fb5" stroke-width="4" stroke-dasharray="10 8"><path d="M140 284 C140 175 300 175 300 284"/><path d="M100 284 C100 140 340 140 340 284"/></g>
-<g fill="none" stroke="#e07b1f" stroke-width="6" stroke-linecap="round"><path d="M180 100 q10 -16 0 -32 q-10 -16 0 -32"/><path d="M220 100 q10 -16 0 -32 q-10 -16 0 -32"/><path d="M260 100 q10 -16 0 -32 q-10 -16 0 -32"/></g>
+<rect x="70" y="250" width="300" height="60" rx="12" fill="#d9dee2"/>
+<rect x="60" y="226" width="320" height="24" rx="6" fill="#eef3f6" stroke="#9aa3ab" stroke-width="3"/>
+<g fill="#e3a66f" stroke="#c27a3e" stroke-width="3"><circle cx="120" cy="280" r="11"/><circle cx="160" cy="280" r="11"/><circle cx="280" cy="280" r="11"/><circle cx="320" cy="280" r="11"/></g>
+<path d="M110 120 L110 212 Q110 226 124 226 L316 226 Q330 226 330 212 L330 120 Z" fill="#e6f0fb" stroke="#7d8798" stroke-width="6"/>
+<rect x="112" y="208" width="216" height="16" rx="6" fill="#d1495b"/>
+<g fill="none" stroke="#7b4fb5" stroke-width="4" stroke-dasharray="10 8"><path d="M140 282 C140 190 300 190 300 282"/></g>
+<g fill="none" stroke="#d1495b" stroke-width="7" stroke-linecap="round"><path d="M180 190 q10 -16 0 -32 q-10 -16 0 -32"/><path d="M220 190 q10 -16 0 -32 q-10 -16 0 -32"/><path d="M260 190 q10 -16 0 -32 q-10 -16 0 -32"/></g>
 <text x="220" y="390" text-anchor="middle" font-family="P" font-weight="800" font-size="38" fill="{c}">냄비가 스스로 뜨겁게</text>"""
 
 COVERS = {
