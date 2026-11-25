@@ -704,8 +704,8 @@ SCENES.L26=scene((c,p)=>{
   const t0=cue(c,'무지개에서'),t1=cue(c,'남색만');
   c.updates.push(t=>{alpha(indigo,E.prog(t,t0,.14)*(1-E.prog(t,t1,.47)));set(indigo,'transform',`translate(0 ${-58*E.prog(t,t1,.47)})`);});
   reveal(c,word(p,500,373,'4띠 · 숫자 · 숫자 · 곱하기 · 오차',39,GREEN,800),'네 띠는');
-  ['E12 표준값','1/4W','직렬 +','병렬 · 작아져요'].forEach((s,i)=>reveal(c,pill(p,139+i*237,443,i===3?257:204,s,MINT,GREEN,30),
-    ['표준값','견디는 열','직렬은','병렬은'][i]));
+  ['E12 표준값','1/4W','직렬 커져요','병렬 작아져요'].forEach((s,i)=>reveal(c,pill(p,139+i*237,443,i===3?257:204,s,MINT,GREEN,30),
+    ['표준값','견디는 열','직렬로','병렬로'][i]));
   reveal(c,pill(p,500,534,752,'저항: 색띠 읽고 고르고 합치기',GREEN,'#fff',37),'블로그 글');
 });
 SCENES.S1A=scene((c,p)=>{
