@@ -10,6 +10,7 @@
 토큰 값은 출력하지 않는다.
 """
 import sys, os, json, datetime, urllib.request, urllib.error
+os.environ.setdefault('EZ_HOME','/home/ezworker/ez')
 sys.path.insert(0, os.path.dirname(__file__))
 import youtube_upload as yt
 from comment_retry import enqueue
@@ -97,13 +98,22 @@ def instagram_days(start):
     try:
         r = json.loads(urllib.request.urlopen(urllib.request.Request(url, headers={"Authorization": "Bearer " + t["access_token"]}), timeout=60).read())
     except urllib.error.HTTPError as e:
-        msg = json.loads(e.read()).get("error", {}).get("message", "")[:80]
-        return None, f"인스타 조회 실패 {e.code}: {msg}"
+        e.close()
+        return None, f"인스타 조회 실패 HTTP {e.code}"
     per = {}
     for m in r.get("data", []):
         d = datetime.datetime.strptime(m["timestamp"], "%Y-%m-%dT%H:%M:%S%z").astimezone(KST).date()
         per[d] = per.get(d, 0) + 1
     return per, ""
+
+
+def release_readback(today):
+    """Use the publisher's same platform reader; never a second authoring route."""
+    base = Path(os.environ.get('EZ_HOME', '/home/ezworker/ez'))
+    private = base/'ezenglab-work/우체통/publisher_followup.py'
+    spec = importlib.util.spec_from_file_location('daily_release_readback', private)
+    module = importlib.util.module_from_spec(spec); spec.loader.exec_module(module)
+    return module.Observer(base, notify=True).postcheck(today, retry=False, send=True)
 
 
 def main():
@@ -117,14 +127,19 @@ def main():
     ig_today = ig.get(today, 0) if ig is not None else None
     ig_yday = ig.get(today - datetime.timedelta(1), 0) if ig is not None else None
     print("인스타 오늘", ig_today, "어제", ig_yday, err)
-    no_comment = missing_comments(recent)
+    release = release_readback(today)
+    current_ids = {row['video_id'] for row in release.get('youtube', [])}
+    no_comment = missing_comments([row for row in recent if row[0] not in current_ids])
+    no_comment += [row['video_id'] for row in release.get('youtube', []) if not row.get('ok')]
     for t in no_comment:
         print("★ 댓글 빠짐:", t)
     now = datetime.datetime.now(KST)
     late = now.hour >= 20                                 # 19시 공개 뒤에만 오늘 인스타를 따진다
     out = {"날짜": today.isoformat(), "유튜브 빈 날": empty, "인스타 오늘": ig_today, "인스타 어제": ig_yday,
-           "인스타 오류": err, "다음 빈 날": empty[0] if empty else None, "댓글 빠짐": no_comment}
-    problem = bool(empty) or bool(err) or (late and ig_today == 0) or bool(no_comment)
+           "인스타 오류": err, "다음 빈 날": empty[0] if empty else None, "댓글 빠짐": no_comment,
+           "공개 후속": release}
+    release_due = late and bool(release.get('youtube') or release.get('instagram') or release.get('errors'))
+    problem = bool(empty) or bool(err) or (late and ig_today == 0) or bool(no_comment) or (release_due and not release.get('complete'))
     out["문제"] = problem
     print(json.dumps(out, ensure_ascii=False))
     sys.exit(1 if problem else 0)
