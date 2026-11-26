@@ -194,7 +194,7 @@ def arrange_sections():
     return order
 
 
-def main():
+def _main():
     plan_path = sys.argv[1]
     plan = json.load(open(plan_path, encoding="utf-8"))
     res = plan.setdefault("결과", {})
@@ -255,6 +255,31 @@ def main():
             enqueue(os.path.join(EZ, "ezenglab-work"), r["id"], "upload")
             print(k, "댓글은 예약 게시기에 접수(댓글 id 확인은 공개 후)")
         json.dump(plan, open(plan_path, "w", encoding="utf-8"), ensure_ascii=False, indent=1)
+
+
+def result_ids(plan_path):
+    with open(plan_path, encoding="utf-8") as f:
+        return {v["id"] for v in json.load(f).get("결과", {}).values()
+                if isinstance(v, dict) and v.get("id")}
+
+
+def main():
+    plan_path = sys.argv[1]
+    before = result_ids(plan_path)
+    try:
+        _main()
+    finally:
+        # 일부 업로드 뒤 후속 처리가 실패해도 저장된 새 ID만 한 번 수집 요청합니다.
+        new_ids = result_ids(plan_path) - before
+        helper = os.path.join(EZ, "ezenglab-work", "서버", "collection_refresh.py")
+        python = os.path.join(EZ, "build", "dashboard-venv", "bin", "python")
+        if new_ids and os.path.isfile(helper) and os.path.isfile(python):
+            import subprocess
+            try:
+                result = subprocess.run([python, helper, *sorted(new_ids)], timeout=190)
+                if result.returncode:print("현황 수집 요청 실패 · 기존 정기 수집에서 재확인")
+            except (OSError, subprocess.TimeoutExpired):
+                print("현황 수집 요청 실패 · 기존 정기 수집에서 재확인")
 
 
 if __name__ == "__main__":
