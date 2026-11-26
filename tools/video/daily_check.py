@@ -130,7 +130,7 @@ def main():
     release = release_readback(today)
     current_ids = {row['video_id'] for row in release.get('youtube', [])}
     no_comment = missing_comments([row for row in recent if row[0] not in current_ids])
-    no_comment += [row['video_id'] for row in release.get('youtube', []) if not row.get('ok')]
+    no_comment += [row['video_id'] for row in release.get('youtube', []) if row.get('due', True) and not row.get('ok')]
     for t in no_comment:
         print("★ 댓글 빠짐:", t)
     now = datetime.datetime.now(KST)
