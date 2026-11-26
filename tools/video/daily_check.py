@@ -116,7 +116,7 @@ def release_readback(today):
     return module.Observer(base, notify=True).postcheck(today, retry=False, send=True)
 
 
-def main():
+def publication_check(prevention=None):
     days = int(sys.argv[sys.argv.index("--days") + 1]) if "--days" in sys.argv else 14
     today = datetime.datetime.now(KST).date()
     yt_per, recent = youtube_days(today, days)
@@ -137,12 +137,26 @@ def main():
     late = now.hour >= 20                                 # 19시 공개 뒤에만 오늘 인스타를 따진다
     out = {"날짜": today.isoformat(), "유튜브 빈 날": empty, "인스타 오늘": ig_today, "인스타 어제": ig_yday,
            "인스타 오류": err, "다음 빈 날": empty[0] if empty else None, "댓글 빠짐": no_comment,
-           "공개 후속": release}
+           "공개 후속": release,"오류대장":prevention}
     release_due = late and bool(release.get('youtube') or release.get('instagram') or release.get('errors'))
     problem = bool(empty) or bool(err) or (late and ig_today == 0) or bool(no_comment) or (release_due and not release.get('complete'))
+    problem = problem or bool(prevention and prevention.get('problem'))
     out["문제"] = problem
     print(json.dumps(out, ensure_ascii=False))
     sys.exit(1 if problem else 0)
+
+
+def main():
+    # 게시/댓글 조회 실패로 중단되더라도 오류 재검사는 먼저 한 번 실행합니다.
+    work=Path(os.environ.get('EZ_HOME','/home/ezworker/ez'))/'ezenglab-work'
+    sys.path.insert(0,str(work/'우체통'))
+    try:
+        from error_ledger_daily import run_daily
+        prevention=run_daily(work)
+    except Exception as error:
+        prevention={'problem':True,'state':'오류대장 재검사 실행 실패','reason':type(error).__name__}
+    print(json.dumps({'오류대장':prevention},ensure_ascii=False))
+    publication_check(prevention)
 
 
 if __name__ == "__main__":
